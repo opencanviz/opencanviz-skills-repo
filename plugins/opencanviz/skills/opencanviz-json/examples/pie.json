@@ -1,0 +1,675 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Where the time goes",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Day"
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_how_a_developer_spends_a",
+          "kind": "text",
+          "x": -840,
+          "y": -480,
+          "w": 1680,
+          "h": 110,
+          "text": "How a developer spends a day",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s1_pie_coding",
+          "kind": "wedge",
+          "x": -747,
+          "y": -330,
+          "w": 654,
+          "h": 654,
+          "fill": "#38bdf8",
+          "stroke": "#0f172a",
+          "strokeWidth": 4,
+          "startAngle": -90,
+          "endAngle": -90,
+          "noGlow": true,
+          "innerRadius": 0.55,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_meetings",
+          "kind": "wedge",
+          "x": -747,
+          "y": -330,
+          "w": 654,
+          "h": 654,
+          "fill": "#f59e0b",
+          "stroke": "#0f172a",
+          "strokeWidth": 4,
+          "startAngle": -90,
+          "endAngle": -90,
+          "noGlow": true,
+          "innerRadius": 0.55,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_reviews",
+          "kind": "wedge",
+          "x": -747,
+          "y": -330,
+          "w": 654,
+          "h": 654,
+          "fill": "#22c55e",
+          "stroke": "#0f172a",
+          "strokeWidth": 4,
+          "startAngle": -90,
+          "endAngle": -90,
+          "noGlow": true,
+          "innerRadius": 0.55,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_email",
+          "kind": "wedge",
+          "x": -747,
+          "y": -330,
+          "w": 654,
+          "h": 654,
+          "fill": "#a78bfa",
+          "stroke": "#0f172a",
+          "strokeWidth": 4,
+          "startAngle": -90,
+          "endAngle": -90,
+          "noGlow": true,
+          "innerRadius": 0.55,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_key0",
+          "kind": "rect",
+          "x": 84,
+          "y": -143,
+          "w": 40,
+          "h": 40,
+          "fill": "#38bdf8",
+          "stroke": "none",
+          "strokeWidth": 3,
+          "cornerRadius": 6,
+          "noGlow": true,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_keytext0",
+          "kind": "text",
+          "x": 144,
+          "y": -155,
+          "w": 696,
+          "h": 64,
+          "text": "Coding  35%",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 36,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_key1",
+          "kind": "rect",
+          "x": 84,
+          "y": -63,
+          "w": 40,
+          "h": 40,
+          "fill": "#f59e0b",
+          "stroke": "none",
+          "strokeWidth": 3,
+          "cornerRadius": 6,
+          "noGlow": true,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_keytext1",
+          "kind": "text",
+          "x": 144,
+          "y": -75,
+          "w": 696,
+          "h": 64,
+          "text": "Meetings  25%",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 36,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_key2",
+          "kind": "rect",
+          "x": 84,
+          "y": 17,
+          "w": 40,
+          "h": 40,
+          "fill": "#22c55e",
+          "stroke": "none",
+          "strokeWidth": 3,
+          "cornerRadius": 6,
+          "noGlow": true,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_keytext2",
+          "kind": "text",
+          "x": 144,
+          "y": 5,
+          "w": 696,
+          "h": 64,
+          "text": "Reviews  20%",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 36,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_key3",
+          "kind": "rect",
+          "x": 84,
+          "y": 97,
+          "w": 40,
+          "h": 40,
+          "fill": "#a78bfa",
+          "stroke": "none",
+          "strokeWidth": 3,
+          "cornerRadius": 6,
+          "noGlow": true,
+          "opacity": 0
+        },
+        {
+          "id": "s1_pie_keytext3",
+          "kind": "text",
+          "x": 144,
+          "y": 85,
+          "w": 696,
+          "h": 64,
+          "text": "Email  20%",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 36,
+          "opacity": 0
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 2900,
+          "caption": "Where does a working day go?",
+          "nodes": [
+            {
+              "id": "s1_how_a_developer_spends_a",
+              "kind": "text",
+              "x": -840,
+              "y": -480,
+              "w": 1680,
+              "h": 110,
+              "text": "How a developer spends a day",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_coding",
+              "kind": "wedge",
+              "x": -747,
+              "y": -330,
+              "w": 654,
+              "h": 654,
+              "fill": "#38bdf8",
+              "stroke": "#0f172a",
+              "strokeWidth": 4,
+              "startAngle": -90,
+              "endAngle": -90,
+              "noGlow": true,
+              "innerRadius": 0.55,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_meetings",
+              "kind": "wedge",
+              "x": -747,
+              "y": -330,
+              "w": 654,
+              "h": 654,
+              "fill": "#f59e0b",
+              "stroke": "#0f172a",
+              "strokeWidth": 4,
+              "startAngle": -90,
+              "endAngle": -90,
+              "noGlow": true,
+              "innerRadius": 0.55,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_reviews",
+              "kind": "wedge",
+              "x": -747,
+              "y": -330,
+              "w": 654,
+              "h": 654,
+              "fill": "#22c55e",
+              "stroke": "#0f172a",
+              "strokeWidth": 4,
+              "startAngle": -90,
+              "endAngle": -90,
+              "noGlow": true,
+              "innerRadius": 0.55,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_email",
+              "kind": "wedge",
+              "x": -747,
+              "y": -330,
+              "w": 654,
+              "h": 654,
+              "fill": "#a78bfa",
+              "stroke": "#0f172a",
+              "strokeWidth": 4,
+              "startAngle": -90,
+              "endAngle": -90,
+              "noGlow": true,
+              "innerRadius": 0.55,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_key0",
+              "kind": "rect",
+              "x": 84,
+              "y": -143,
+              "w": 40,
+              "h": 40,
+              "fill": "#38bdf8",
+              "stroke": "none",
+              "strokeWidth": 3,
+              "cornerRadius": 6,
+              "noGlow": true,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_keytext0",
+              "kind": "text",
+              "x": 144,
+              "y": -155,
+              "w": 696,
+              "h": 64,
+              "text": "Coding  35%",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 36,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_key1",
+              "kind": "rect",
+              "x": 84,
+              "y": -63,
+              "w": 40,
+              "h": 40,
+              "fill": "#f59e0b",
+              "stroke": "none",
+              "strokeWidth": 3,
+              "cornerRadius": 6,
+              "noGlow": true,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_keytext1",
+              "kind": "text",
+              "x": 144,
+              "y": -75,
+              "w": 696,
+              "h": 64,
+              "text": "Meetings  25%",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 36,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_key2",
+              "kind": "rect",
+              "x": 84,
+              "y": 17,
+              "w": 40,
+              "h": 40,
+              "fill": "#22c55e",
+              "stroke": "none",
+              "strokeWidth": 3,
+              "cornerRadius": 6,
+              "noGlow": true,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_keytext2",
+              "kind": "text",
+              "x": 144,
+              "y": 5,
+              "w": 696,
+              "h": 64,
+              "text": "Reviews  20%",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 36,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_key3",
+              "kind": "rect",
+              "x": 84,
+              "y": 97,
+              "w": 40,
+              "h": 40,
+              "fill": "#a78bfa",
+              "stroke": "none",
+              "strokeWidth": 3,
+              "cornerRadius": 6,
+              "noGlow": true,
+              "opacity": 0
+            },
+            {
+              "id": "s1_pie_keytext3",
+              "kind": "text",
+              "x": 144,
+              "y": 85,
+              "w": 696,
+              "h": 64,
+              "text": "Email  20%",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 36,
+              "opacity": 0
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_how_a_developer_spends_a"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            }
+          ],
+          "camera": {
+            "x": 0,
+            "y": -347,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 3500,
+          "caption": "Only about a third of it is spent writing code.",
+          "nodes": [
+            {
+              "id": "s1_pie_coding",
+              "startAngle": -90,
+              "endAngle": 36,
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_meetings",
+              "startAngle": 36,
+              "endAngle": 126,
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_reviews",
+              "startAngle": 126,
+              "endAngle": 198,
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_email",
+              "startAngle": 198,
+              "endAngle": 270,
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_key0",
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_keytext0",
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_key1",
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_keytext1",
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_key2",
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_keytext2",
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_key3",
+              "opacity": 1
+            },
+            {
+              "id": "s1_pie_keytext3",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_coding"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_meetings"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_reviews"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_email"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_key0"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_keytext0"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_key1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_keytext1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_key2"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_keytext2"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_key3"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_pie_keytext3"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            }
+          ],
+          "camera": {
+            "x": -121.5,
+            "y": 0,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "Where does a working day go?",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "Only about a third of it is spent writing code.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

@@ -1,0 +1,939 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Most spoken languages",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Speakers"
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_most_spoken_languages_to",
+          "kind": "text",
+          "x": -840,
+          "y": -480,
+          "w": 1680,
+          "h": 110,
+          "text": "Most spoken languages (total speakers, millions)",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 58,
+          "opacity": 1
+        },
+        {
+          "id": "s1_bars",
+          "kind": "algo-chart",
+          "x": -760,
+          "y": -310,
+          "w": 1520,
+          "h": 574,
+          "fill": "transparent",
+          "stroke": "none",
+          "strokeWidth": 3,
+          "noGlow": true,
+          "chartBars": [
+            {
+              "id": "b0",
+              "value": 0,
+              "label": ""
+            },
+            {
+              "id": "b1",
+              "value": 0,
+              "label": ""
+            },
+            {
+              "id": "b2",
+              "value": 0,
+              "label": ""
+            },
+            {
+              "id": "b3",
+              "value": 0,
+              "label": ""
+            },
+            {
+              "id": "b4",
+              "value": 0,
+              "label": ""
+            }
+          ],
+          "chartMaxValue": 1705.5,
+          "chartShowValues": false,
+          "chartBarSpacing": 92.1,
+          "chartBarColor": "#38bdf8",
+          "labelColor": "#f8fafc",
+          "opacity": 1
+        },
+        {
+          "id": "s1_bars_lbl0",
+          "kind": "text",
+          "x": -806.1,
+          "y": 252,
+          "w": 322.4,
+          "h": 50,
+          "text": "English",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_bars_val0",
+          "kind": "text",
+          "x": -796.8,
+          "y": 187,
+          "w": 304,
+          "h": 59,
+          "text": "1,500M",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "countFrom": 0,
+          "countTo": 1500,
+          "countIsInt": true,
+          "countSuffix": "M",
+          "fontSize": 34,
+          "opacity": 0,
+          "countStartMs": 3300,
+          "countDurationMs": 4400
+        },
+        {
+          "id": "s1_bars_lbl1",
+          "kind": "text",
+          "x": -483.6,
+          "y": 252,
+          "w": 322.4,
+          "h": 50,
+          "text": "Mandarin",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_bars_val1",
+          "kind": "text",
+          "x": -474.4,
+          "y": 187,
+          "w": 304,
+          "h": 59,
+          "text": "1,100M",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "countFrom": 0,
+          "countTo": 1100,
+          "countIsInt": true,
+          "countSuffix": "M",
+          "fontSize": 34,
+          "opacity": 0,
+          "countStartMs": 7700,
+          "countDurationMs": 3700
+        },
+        {
+          "id": "s1_bars_lbl2",
+          "kind": "text",
+          "x": -161.2,
+          "y": 252,
+          "w": 322.4,
+          "h": 50,
+          "text": "Hindi",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_bars_val2",
+          "kind": "text",
+          "x": -152,
+          "y": 187,
+          "w": 304,
+          "h": 59,
+          "text": "610M",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "countFrom": 0,
+          "countTo": 610,
+          "countIsInt": true,
+          "countSuffix": "M",
+          "fontSize": 34,
+          "opacity": 0,
+          "countStartMs": 11400,
+          "countDurationMs": 2500
+        },
+        {
+          "id": "s1_bars_lbl3",
+          "kind": "text",
+          "x": 161.2,
+          "y": 252,
+          "w": 322.4,
+          "h": 50,
+          "text": "Spanish",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_bars_val3",
+          "kind": "text",
+          "x": 170.4,
+          "y": 187,
+          "w": 304,
+          "h": 59,
+          "text": "560M",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "countFrom": 0,
+          "countTo": 560,
+          "countIsInt": true,
+          "countSuffix": "M",
+          "fontSize": 34,
+          "opacity": 0,
+          "countStartMs": 11400,
+          "countDurationMs": 2500
+        },
+        {
+          "id": "s1_bars_lbl4",
+          "kind": "text",
+          "x": 483.6,
+          "y": 252,
+          "w": 322.4,
+          "h": 50,
+          "text": "Arabic",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_bars_val4",
+          "kind": "text",
+          "x": 492.8,
+          "y": 187,
+          "w": 304,
+          "h": 59,
+          "text": "420M",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "countFrom": 0,
+          "countTo": 420,
+          "countIsInt": true,
+          "countSuffix": "M",
+          "fontSize": 34,
+          "opacity": 0,
+          "countStartMs": 11400,
+          "countDurationMs": 2500
+        }
+      ],
+      "edges": [
+        {
+          "id": "s1_bars_line",
+          "from": "s1_bars",
+          "to": "s1_bars",
+          "fromXY": {
+            "x": -770,
+            "y": 246
+          },
+          "toXY": {
+            "x": 770,
+            "y": 246
+          },
+          "lineType": "straight",
+          "arrow": "none",
+          "stroke": "#94a3b8",
+          "width": 3,
+          "animationStyle": "none",
+          "trim": 1,
+          "opacity": 1
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 3300,
+          "caption": "Which languages do the most people speak?",
+          "nodes": [
+            {
+              "id": "s1_most_spoken_languages_to",
+              "kind": "text",
+              "x": -840,
+              "y": -480,
+              "w": 1680,
+              "h": 110,
+              "text": "Most spoken languages (total speakers, millions)",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 58,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars",
+              "kind": "algo-chart",
+              "x": -760,
+              "y": -310,
+              "w": 1520,
+              "h": 574,
+              "fill": "transparent",
+              "stroke": "none",
+              "strokeWidth": 3,
+              "noGlow": true,
+              "chartBars": [
+                {
+                  "id": "b0",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b1",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b2",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b3",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b4",
+                  "value": 0,
+                  "label": ""
+                }
+              ],
+              "chartMaxValue": 1705.5,
+              "chartShowValues": false,
+              "chartBarSpacing": 92.1,
+              "chartBarColor": "#38bdf8",
+              "labelColor": "#f8fafc",
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_lbl0",
+              "kind": "text",
+              "x": -806.1,
+              "y": 252,
+              "w": 322.4,
+              "h": 50,
+              "text": "English",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_val0",
+              "kind": "text",
+              "x": -796.8,
+              "y": 187,
+              "w": 304,
+              "h": 59,
+              "text": "1,500M",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "countFrom": 0,
+              "countTo": 1500,
+              "countIsInt": true,
+              "countSuffix": "M",
+              "fontSize": 34,
+              "opacity": 0,
+              "countStartMs": 3300,
+              "countDurationMs": 4400
+            },
+            {
+              "id": "s1_bars_lbl1",
+              "kind": "text",
+              "x": -483.6,
+              "y": 252,
+              "w": 322.4,
+              "h": 50,
+              "text": "Mandarin",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_val1",
+              "kind": "text",
+              "x": -474.4,
+              "y": 187,
+              "w": 304,
+              "h": 59,
+              "text": "1,100M",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "countFrom": 0,
+              "countTo": 1100,
+              "countIsInt": true,
+              "countSuffix": "M",
+              "fontSize": 34,
+              "opacity": 0,
+              "countStartMs": 7700,
+              "countDurationMs": 3700
+            },
+            {
+              "id": "s1_bars_lbl2",
+              "kind": "text",
+              "x": -161.2,
+              "y": 252,
+              "w": 322.4,
+              "h": 50,
+              "text": "Hindi",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_val2",
+              "kind": "text",
+              "x": -152,
+              "y": 187,
+              "w": 304,
+              "h": 59,
+              "text": "610M",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "countFrom": 0,
+              "countTo": 610,
+              "countIsInt": true,
+              "countSuffix": "M",
+              "fontSize": 34,
+              "opacity": 0,
+              "countStartMs": 11400,
+              "countDurationMs": 2500
+            },
+            {
+              "id": "s1_bars_lbl3",
+              "kind": "text",
+              "x": 161.2,
+              "y": 252,
+              "w": 322.4,
+              "h": 50,
+              "text": "Spanish",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_val3",
+              "kind": "text",
+              "x": 170.4,
+              "y": 187,
+              "w": 304,
+              "h": 59,
+              "text": "560M",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "countFrom": 0,
+              "countTo": 560,
+              "countIsInt": true,
+              "countSuffix": "M",
+              "fontSize": 34,
+              "opacity": 0,
+              "countStartMs": 11400,
+              "countDurationMs": 2500
+            },
+            {
+              "id": "s1_bars_lbl4",
+              "kind": "text",
+              "x": 483.6,
+              "y": 252,
+              "w": 322.4,
+              "h": 50,
+              "text": "Arabic",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_val4",
+              "kind": "text",
+              "x": 492.8,
+              "y": 187,
+              "w": 304,
+              "h": 59,
+              "text": "420M",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "countFrom": 0,
+              "countTo": 420,
+              "countIsInt": true,
+              "countSuffix": "M",
+              "fontSize": 34,
+              "opacity": 0,
+              "countStartMs": 11400,
+              "countDurationMs": 2500
+            }
+          ],
+          "edges": [
+            {
+              "id": "s1_bars_line",
+              "from": "s1_bars",
+              "to": "s1_bars",
+              "fromXY": {
+                "x": -770,
+                "y": 246
+              },
+              "toXY": {
+                "x": 770,
+                "y": 246
+              },
+              "lineType": "straight",
+              "arrow": "none",
+              "stroke": "#94a3b8",
+              "width": 3,
+              "animationStyle": "none",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_bars_line"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "durationMs": 300,
+              "ease": "linear"
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_most_spoken_languages_to"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_lbl0"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_lbl1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_lbl2"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_lbl3"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_lbl4"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_bars_line"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 500,
+              "offsetMs": 300
+            }
+          ]
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 4400,
+          "caption": "English leads with about one and a half billion speakers.",
+          "nodes": [
+            {
+              "id": "s1_bars",
+              "chartBars": [
+                {
+                  "id": "b0",
+                  "value": 1500,
+                  "label": ""
+                },
+                {
+                  "id": "b1",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b2",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b3",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b4",
+                  "value": 0,
+                  "label": ""
+                }
+              ]
+            },
+            {
+              "id": "s1_bars_val0",
+              "y": -306,
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val0"
+              },
+              "mode": "fadeIn",
+              "durationMs": 300
+            }
+          ]
+        },
+        {
+          "id": "s1_step2",
+          "delta": true,
+          "durationMs": 3700,
+          "caption": "Mandarin follows with about one point one billion.",
+          "nodes": [
+            {
+              "id": "s1_bars",
+              "chartBars": [
+                {
+                  "id": "b0",
+                  "value": 1500,
+                  "label": ""
+                },
+                {
+                  "id": "b1",
+                  "value": 1100,
+                  "label": ""
+                },
+                {
+                  "id": "b2",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b3",
+                  "value": 0,
+                  "label": ""
+                },
+                {
+                  "id": "b4",
+                  "value": 0,
+                  "label": ""
+                }
+              ]
+            },
+            {
+              "id": "s1_bars_val1",
+              "y": -175.6,
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 300
+            }
+          ]
+        },
+        {
+          "id": "s1_step3",
+          "delta": true,
+          "durationMs": 2500,
+          "caption": "Then Hindi, Spanish and Arabic.",
+          "nodes": [
+            {
+              "id": "s1_bars",
+              "chartBars": [
+                {
+                  "id": "b0",
+                  "value": 1500,
+                  "label": ""
+                },
+                {
+                  "id": "b1",
+                  "value": 1100,
+                  "label": ""
+                },
+                {
+                  "id": "b2",
+                  "value": 610,
+                  "label": ""
+                },
+                {
+                  "id": "b3",
+                  "value": 560,
+                  "label": ""
+                },
+                {
+                  "id": "b4",
+                  "value": 420,
+                  "label": ""
+                }
+              ]
+            },
+            {
+              "id": "s1_bars_val2",
+              "y": -15.9,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_val3",
+              "y": 0.4,
+              "opacity": 1
+            },
+            {
+              "id": "s1_bars_val4",
+              "y": 46.1,
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val2"
+              },
+              "mode": "fadeIn",
+              "durationMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val3"
+              },
+              "mode": "fadeIn",
+              "durationMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val4"
+              },
+              "mode": "fadeIn",
+              "durationMs": 300
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "Which languages do the most people speak?",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "English leads with about one and a half billion speakers.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n2",
+          "text": "Mandarin follows with about one point one billion.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n3",
+          "text": "Then Hindi, Spanish and Arabic.",
+          "stepIndex": 3,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

@@ -58,7 +58,9 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
-          "trim": 0
+          "animationStyle": "none",
+          "trim": 0,
+          "opacity": 0
         }
       ],
       "steps": [
@@ -111,7 +113,9 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
-              "trim": 0
+              "animationStyle": "none",
+              "trim": 0,
+              "opacity": 0
             }
           ],
           "actions": [
@@ -146,7 +150,8 @@
           "edges": [
             {
               "id": "s1_idea_to_video",
-              "trim": 1
+              "trim": 1,
+              "opacity": 1
             }
           ],
           "actions": [
@@ -157,7 +162,8 @@
                 "id": "s1_video"
               },
               "mode": "fadeIn",
-              "durationMs": 400
+              "durationMs": 400,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -166,14 +172,16 @@
                 "id": "s1_idea_to_video"
               },
               "from": {
-                "trim": 0
+                "trim": 0,
+                "opacity": 1
               },
               "to": {
-                "trim": 1
+                "trim": 1,
+                "opacity": 1
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 400
+              "offsetMs": 1100
             }
           ],
           "camera": {
@@ -181,7 +189,7 @@
             "y": 0,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         }
       ],

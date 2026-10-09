@@ -107,8 +107,9 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "trim": 0,
-          "opacity": 1
+          "opacity": 0
         },
         {
           "id": "s1_vaccine_to_immune_cells",
@@ -120,10 +121,14 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "label": "shows a harmless piece",
           "labelColor": "#94a3b8",
           "labelFontSize": 30,
           "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 18,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 0,
           "opacity": 0
@@ -138,8 +143,9 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "trim": 0,
-          "opacity": 1
+          "opacity": 0
         },
         {
           "id": "s1_immune_cells_to_antibodi",
@@ -151,10 +157,14 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "label": "learn the shape",
           "labelColor": "#94a3b8",
           "labelFontSize": 30,
           "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 18,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 0,
           "opacity": 0
@@ -169,8 +179,9 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "trim": 0,
-          "opacity": 1
+          "opacity": 0
         },
         {
           "id": "s1_antibodies_to_protection",
@@ -182,10 +193,14 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "label": "remember it",
           "labelColor": "#94a3b8",
           "labelFontSize": 30,
           "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 18,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 0,
           "opacity": 0
@@ -290,8 +305,9 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "trim": 0,
-              "opacity": 1
+              "opacity": 0
             },
             {
               "id": "s1_vaccine_to_immune_cells",
@@ -303,10 +319,14 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "label": "shows a harmless piece",
               "labelColor": "#94a3b8",
               "labelFontSize": 30,
               "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 18,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 0,
               "opacity": 0
@@ -321,8 +341,9 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "trim": 0,
-              "opacity": 1
+              "opacity": 0
             },
             {
               "id": "s1_immune_cells_to_antibodi",
@@ -334,10 +355,14 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "label": "learn the shape",
               "labelColor": "#94a3b8",
               "labelFontSize": 30,
               "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 18,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 0,
               "opacity": 0
@@ -352,8 +377,9 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "trim": 0,
-              "opacity": 1
+              "opacity": 0
             },
             {
               "id": "s1_antibodies_to_protection",
@@ -365,10 +391,14 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "label": "remember it",
               "labelColor": "#94a3b8",
               "labelFontSize": 30,
               "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 18,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 0,
               "opacity": 0
@@ -412,7 +442,8 @@
                 "id": "s1_vaccine"
               },
               "mode": "slideInLeft",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             }
           ],
           "camera": {
@@ -420,13 +451,13 @@
             "y": -437.2,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         },
         {
           "id": "s1_step2",
           "delta": true,
-          "durationMs": 2500,
+          "durationMs": 2800,
           "caption": "Immune cells study its shape.",
           "nodes": [
             {
@@ -454,7 +485,8 @@
                 "id": "s1_immune_cells"
               },
               "mode": "slideInLeft",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -472,7 +504,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 500
+              "offsetMs": 1200
             },
             {
               "type": "edgeTween",
@@ -488,9 +520,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
-              "offsetMs": 1200,
-              "ease": "ease-out"
+              "durationMs": 60,
+              "offsetMs": 1900,
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -499,13 +531,15 @@
                 "id": "s1_vaccine_to_immune_cells_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 1500
+              "durationMs": 300,
+              "offsetMs": 1900
             }
           ],
           "camera": {
@@ -513,7 +547,7 @@
             "y": -291.5,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         },
         {
@@ -547,7 +581,8 @@
                 "id": "s1_antibodies"
               },
               "mode": "slideInLeft",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -565,7 +600,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 500
+              "offsetMs": 1200
             },
             {
               "type": "edgeTween",
@@ -581,9 +616,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
-              "offsetMs": 1200,
-              "ease": "ease-out"
+              "durationMs": 60,
+              "offsetMs": 1900,
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -592,13 +627,15 @@
                 "id": "s1_immune_cells_to_antibodi_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 1500
+              "durationMs": 300,
+              "offsetMs": 1900
             }
           ],
           "camera": {
@@ -606,7 +643,7 @@
             "y": -145.8,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         },
         {
@@ -640,7 +677,8 @@
                 "id": "s1_protection"
               },
               "mode": "slideInLeft",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -658,7 +696,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 500
+              "offsetMs": 1200
             },
             {
               "type": "edgeTween",
@@ -674,9 +712,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
-              "offsetMs": 1200,
-              "ease": "ease-out"
+              "durationMs": 60,
+              "offsetMs": 1900,
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -685,13 +723,15 @@
                 "id": "s1_antibodies_to_protection_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 1500
+              "durationMs": 300,
+              "offsetMs": 1900
             }
           ],
           "camera": {
@@ -699,7 +739,7 @@
             "y": 0,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         },
         {

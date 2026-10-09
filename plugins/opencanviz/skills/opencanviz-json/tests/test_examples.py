@@ -191,8 +191,8 @@ class ValidatorCatches(unittest.TestCase):
 
     def test_drawn_edge_with_hidden_end(self):
         doc = base_doc()
-        doc["diagrams"][0]["steps"][0]["edges"][0]["trim"] = 1
-        doc["diagrams"][0]["edges"][0]["trim"] = 1
+        for edges in (doc["diagrams"][0]["steps"][0]["edges"], doc["diagrams"][0]["edges"]):
+            edges[0].update(trim=1, opacity=1)
         errors, _ = oc.validate(doc)
         self.assertTrue(any("hidden" in e for e in errors), errors)
 
@@ -360,8 +360,128 @@ class LayoutOnScreen(unittest.TestCase):
         s.step("And back to the ocean.").draw(back)
         doc = p.to_dict()
         self.assertEqual((back.fields["fromPort"], back.fields["toPort"]), ("S", "S"))
-        self.assertEqual(back.fields["labelPosition"], "below")
+        self.assertEqual(back.fields["labelPosition"], "center")
         self.assertEqual(clean(doc), [])
+
+
+def load_example(name):
+    with open(os.path.join(ROOT, "examples", name + ".json")) as fh:
+        return json.load(fh)
+
+
+def all_text(errors, warnings):
+    return "\n".join(errors + warnings)
+
+
+class CheckCatchesRenderBreakers(unittest.TestCase):
+    """Fields the render probe showed to break playback or export."""
+
+    def first_node(self, doc):
+        sc = doc["diagrams"][0]
+        return sc["nodes"][0], sc["steps"][0]["nodes"][0]
+
+    def test_glow_zero(self):
+        doc = load_example("minimal")
+        for n in self.first_node(doc):
+            n["glow"] = 0
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("noGlow" in e for e in errors), errors)
+
+    def test_sketch_mode(self):
+        doc = load_example("minimal")
+        for n in self.first_node(doc):
+            n["sketchMode"] = True
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("sketchMode" in e for e in errors), errors)
+
+    def test_icon_kind(self):
+        doc = load_example("minimal")
+        for n in self.first_node(doc):
+            n["kind"] = "icon"
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("white box" in e for e in errors), errors)
+
+    def test_edge_without_animation_style(self):
+        doc = load_example("minimal")
+        sc = doc["diagrams"][0]
+        for e in sc["edges"] + sc["steps"][0]["edges"]:
+            e.pop("animationStyle", None)
+        _, warnings = oc.validate(doc)
+        self.assertTrue(any("animationStyle" in w for w in warnings), warnings)
+
+    def test_delta_with_edges_but_no_nodes(self):
+        doc = load_example("minimal")
+        sc = doc["diagrams"][0]
+        st = next(st for st in sc["steps"][1:] if st["edges"])
+        st["nodes"] = []
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("lists no nodes" in e for e in errors), errors)
+
+    def test_missing_font_field(self):
+        doc = load_example("bubble_sort")
+        sc = doc["diagrams"][0]
+        for n in sc["nodes"] + sc["steps"][0]["nodes"]:
+            if n["kind"] == "algo-array":
+                n.pop("cellFontSize")
+        _, warnings = oc.validate(doc)
+        self.assertTrue(any("cellFontSize" in w for w in warnings), warnings)
+
+    def test_path_needs_length_and_cum(self):
+        doc = load_example("path_follow")
+        sc = doc["diagrams"][0]
+        for pth in sc["paths"].values():
+            pth.pop("cum")
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("\"cum\"" in e for e in errors), errors)
+
+    def test_code_keeps_only_the_highlight_flag(self):
+        doc = load_example("code_walkthrough")
+        sc = doc["diagrams"][0]
+        code = [n for n in sc["nodes"] if n.get("highlightedLines") is not None or n.get("_animatedProps")]
+        self.assertTrue(code and code[0]["_animatedProps"] == {"highlightedLines": False})
+        code[0]["_animatedProps"] = {"x": False}
+        for n in sc["steps"][0]["nodes"]:
+            if n["id"] == code[0]["id"]:
+                n["_animatedProps"] = {"x": False}
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("_animatedProps" in e for e in errors), errors)
+
+
+class RecipeShapes(unittest.TestCase):
+    def test_path_carries_length_and_cum(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        pid = s.path([(0, 0), (300, 0), (300, 400)])
+        pth = s.paths[pid]
+        self.assertEqual(pth["cum"], [0, 300, 700])
+        self.assertEqual(pth["length"], 700)
+
+    def test_grid_values_are_not_shared_with_later_steps(self):
+        doc = load_example("scatter_grid")
+        sc = doc["diagrams"][1]
+        g0 = next(n for n in sc["steps"][0]["nodes"] if n["kind"] == "algo-grid")
+        self.assertEqual(g0["gridValues"][2][2], "")
+
+    def test_cleared_cell_fades_to_the_fill(self):
+        doc = load_example("bubble_sort")
+        sc = doc["diagrams"][0]
+        arr = next(n for n in sc["nodes"] if n["kind"] == "algo-array")
+        patch = next(n for n in sc["steps"][2]["nodes"] if n["id"] == arr["id"])
+        self.assertEqual(patch["cellColors"][0], arr["fill"])
+
+    def test_bar_chart_grows_after_step_zero_only(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        chart = s.bar_chart([("a", 3), ("b", 5)], at=p.area())
+        with self.assertRaises(oc.OpenCanvizError):
+            s.step("Bars grow in the first step.").grow(chart)
+
+    def test_every_recipe_example_is_clean(self):
+        for name in ["bar_chart", "line_chart", "scatter_grid", "bubble_sort", "data_structures",
+                     "code_walkthrough", "sequence", "timeline", "before_after", "bullets",
+                     "counter_progress", "pie", "path_follow"]:
+            with self.subTest(example=name):
+                self.assertEqual(clean(load_example(name)), [])
 
 
 if __name__ == "__main__":

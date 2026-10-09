@@ -90,7 +90,9 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
-          "trim": 0
+          "animationStyle": "none",
+          "trim": 0,
+          "opacity": 0
         },
         {
           "id": "s1_api_server_to_database",
@@ -102,7 +104,9 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
-          "trim": 0
+          "animationStyle": "none",
+          "trim": 0,
+          "opacity": 0
         }
       ],
       "steps": [
@@ -187,7 +191,9 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
-              "trim": 0
+              "animationStyle": "none",
+              "trim": 0,
+              "opacity": 0
             },
             {
               "id": "s1_api_server_to_database",
@@ -199,7 +205,9 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
-              "trim": 0
+              "animationStyle": "none",
+              "trim": 0,
+              "opacity": 0
             }
           ],
           "actions": [
@@ -244,7 +252,8 @@
           "edges": [
             {
               "id": "s1_browser_to_api_server",
-              "trim": 1
+              "trim": 1,
+              "opacity": 1
             }
           ],
           "actions": [
@@ -255,7 +264,8 @@
                 "id": "s1_api_server"
               },
               "mode": "fadeIn",
-              "durationMs": 400
+              "durationMs": 400,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -264,14 +274,16 @@
                 "id": "s1_browser_to_api_server"
               },
               "from": {
-                "trim": 0
+                "trim": 0,
+                "opacity": 1
               },
               "to": {
-                "trim": 1
+                "trim": 1,
+                "opacity": 1
               },
               "ease": "ease-out",
               "durationMs": 600,
-              "offsetMs": 400
+              "offsetMs": 1100
             }
           ],
           "camera": {
@@ -279,7 +291,7 @@
             "y": -188.5,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         },
         {
@@ -296,7 +308,8 @@
           "edges": [
             {
               "id": "s1_api_server_to_database",
-              "trim": 1
+              "trim": 1,
+              "opacity": 1
             }
           ],
           "actions": [
@@ -307,7 +320,8 @@
                 "id": "s1_database"
               },
               "mode": "fadeIn",
-              "durationMs": 400
+              "durationMs": 400,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -316,14 +330,16 @@
                 "id": "s1_api_server_to_database"
               },
               "from": {
-                "trim": 0
+                "trim": 0,
+                "opacity": 1
               },
               "to": {
-                "trim": 1
+                "trim": 1,
+                "opacity": 1
               },
               "ease": "ease-out",
               "durationMs": 600,
-              "offsetMs": 400
+              "offsetMs": 1100
             }
           ],
           "camera": {
@@ -331,7 +347,7 @@
             "y": 0,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         },
         {

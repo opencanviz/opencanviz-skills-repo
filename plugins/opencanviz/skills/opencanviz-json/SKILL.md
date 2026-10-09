@@ -9,6 +9,28 @@ openCanviz turns a JSON file into an animated, narrated video. The user pastes y
 
 **If you can run Python, use `scripts/opencanviz.py` (see `examples/*.py`); otherwise write JSON by hand following the rules below.** The helper applies every rule on this page for you and refuses to save a file that breaks one.
 
+## Pick the visual that fits the topic
+
+Boxes and arrows are for flows, systems and processes only. Everything else has a better shape; each row names the helper call and the example that shows it.
+
+| The topic is | Show it as | Helper (scene / step) | Example |
+| --- | --- | --- | --- |
+| A flow, a system, a pipeline, a cycle | Boxes and labeled arrows | `box`, `arrow` / `reveal`, `draw` | `flow`, `two_scenes`, `portrait_stack` |
+| Amounts compared across categories | Bar chart, values count up | `bar_chart` / `grow` | `bar_chart` |
+| A trend over time | Line chart that draws itself | `line_chart` / `extend` | `line_chart` |
+| Two measures per item, clusters | Scatter chart, dots move | `scatter` / `scatter_to` | `scatter_grid` |
+| Parts of a whole | Pie or donut | `pie` / `sweep` | `pie` |
+| Sorting, searching, two pointers | Array with pointers | `array`, `pointer` / `swap`, `color`, `point`, `bracket` | `bubble_sort` |
+| A tree, a linked list, a graph | The structure itself | `tree`, `linked_list`, `graph` / `color`, `point`, `append` | `data_structures` |
+| A table, a matrix, dynamic programming | Grid | `grid` / `set_cell`, `color` | `scatter_grid` |
+| Code, line by line | Code panel plus variables | `code`, `variable` / `highlight`, `assign` | `code_walkthrough` |
+| Who calls whom, in order | Sequence diagram | `sequence`, `message` / `draw`, `activate` | `sequence` |
+| History, dates, milestones | Timeline | `timeline` / `event` | `timeline` |
+| Before and after, A versus B | Two panels | `panels` | `before_after` |
+| Tips, rules, steps of advice | Bullets with check marks | `bullets` / `reveal` | `bullets` |
+| One big number, a percentage done | Counter, progress bar | `counter`, `progress` / `set` | `counter_progress` |
+| Something travelling a route | A node on a path, a packet on an arrow | `path` / `follow`, `packet` | `path_follow` |
+
 ## Files in this skill
 
 - `schema.json`: the JSON Schema (draft 2020-12), the same as https://opencanviz.com/schema/v1.json. Validate every file against it.
@@ -19,6 +41,7 @@ openCanviz turns a JSON file into an animated, narrated video. The user pastes y
 - `examples/short.json`: a 9:16 Short in the flat single-scene form, with stacked cards and a progress bar.
 - `examples/science_explainer.json`: three narrated scenes with labeled arrows and a two-row comparison.
 - `examples/portrait_stack.json`: a 9:16 Short with a vertical chain of cards and labeled arrows.
+- Recipe examples, one per visual in the table above: `bar_chart`, `line_chart`, `scatter_grid`, `pie`, `bubble_sort`, `data_structures`, `code_walkthrough`, `sequence`, `timeline`, `before_after`, `bullets`, `counter_progress`, `path_follow`.
 - Each example has a matching `.py` that writes it. `tests/test_examples.py` runs them all.
 
 Read the example closest to the request before you write. Copy its structure, not its content. Every example passes the schema, the rules below, and plays correctly in openCanviz.
@@ -41,6 +64,44 @@ p.save("out.json")                                 # validates; raises with a fi
 ```
 
 `p.area()` is the artboard minus the margin and the caption band. `rect.cut_top(h)` returns `(band, rest)` but `rect.cut_bottom(h)` returns `(rest, band)`; two visible nodes on the same rect are refused. Fonts are fitted to their boxes. Ids get the `s1_` prefix. Step durations follow the narration length. The camera follows what is visible so each step's content sits centered in the safe area, a lone first node included (`Project(..., follow=False)` turns this off, as does any explicit `.camera`). `draw()` on a labeled edge draws an unlabeled copy (`<id>_line`) and fades the label in once the line is drawn. Rows keep 120 px side margins in landscape. To check a file written by hand, run `python3 scripts/opencanviz.py check out.json`.
+
+## Recipes
+
+Each recipe is a `scene.*` call that builds the visual inside a rect and `step.*` calls that animate it. They write only fields openCanviz plays and exports correctly, so use them rather than writing these node kinds by hand. Reveal the visual first (`step.reveal(node)`), then animate it in a later step: a recipe action in step 0 raises, because a change cannot tween before the scene has a previous state.
+
+```python
+title_area, body = p.area().cut_top(110)
+chart = s.bar_chart([("Python", 49), ("Java", 30)], at=body, suffix="M")  # labels, baseline, counting values
+s.step("Two languages.").reveal(chart)
+s.step("Python grows first.").grow(chart, 0)                 # one bar; grow(chart) grows the rest
+line = s.line_chart(pts, at=body, x_ticks=[1800, 1900, 2000], y_ticks=[0, 4, 8], y_title="billions",
+                    notes={3: "2 billion"})                  # .extend(line, upto) draws on to a point
+arr = s.array([5, 2, 8], at=body.inset(140, 40))             # .swap(arr, 0, 1) .color(arr, {0: c}) .bracket(arr, 2, 2, "sorted")
+j = s.pointer(arr, 0, label="j")                             # .point(j, 1); also tree/list/graph values, grid (r, c)
+tree = s.tree({"8": ["4", "12"], "4": ["2", "6"]}, at=body)  # sized for you; .color(tree, {"4": c})
+lst = s.linked_list([3, 7], at=body, capacity=3)             # .append(lst, 9); capacity = the most it will hold
+g = s.graph({"A": (0, .5), "B": (1, .5)}, [("A", "B")], at=body)  # .color(g, {...}, edges={("A", "B"): c})
+grid = s.grid([[1, 1], [1, ""]], at=body)                    # .set_cell(grid, 1, 1, 2)
+code = s.code(source, at=left)                               # .highlight(code, 3), 1-based lines
+i = s.variable("i", 1, at=right)                             # .assign(i, 2)
+web, api = s.sequence(["Browser", "Server"], at=body)        # m = s.message(web, api, "GET /"); .draw(m)
+tl = s.timeline([(1961, "Program starts"), (1969, "Moon landing")], at=body)  # .event(tl) once per event
+before, after = s.panels(["Before", "After"], at=body)       # lay out inside before.content
+pts = s.bullets(["Use 12+ characters", "Never reuse"], at=body)  # reveal one per step
+n = s.counter(2048, at=r, suffix=" MB"); bar = s.progress(0, at=r2)  # .set(bar, value=1) fills it over the step
+pie = s.pie([("Rent", 40), ("Food", 25)], at=body, donut=0.55)  # .sweep(pie) reveals it; do not reveal it yourself
+road = s.path([(-600, 0), (0, -200), (600, 0)])              # .follow(parcel, road); .packet(edge) sends a dot
+```
+
+What the recipes take care of, and what to keep in mind if you write these kinds by hand:
+
+- **Arrays:** always build them with `scene.array`. It turns openCanviz's index row off (`cellShowIndices: false`; that row resets the canvas alpha, so the array could not fade) and draws the indices as text nodes. Swaps change `cellValues` and openCanviz slides the two values past each other; there is no `algoSwap` action, because the exported video snaps it. Use distinct values in an array you swap.
+- **Pointers** sit above the cells (`side="top"`); a bottom pointer would cover the index row. A grid pointer covers the cell above its target, so mark grid cells with `color` instead.
+- **Colors** on cells and structure nodes switch on at the start of the step. A cleared color (`None`) is written as the node's fill hex, because openCanviz keeps a cleared (`null`) cell in its old color for the whole step.
+- **Code highlight:** the code node carries `"_animatedProps": {"highlightedLines": false}`, the one internal field you should write. Without it openCanviz shows the old and the new lines lit for the whole step. Keep it when you edit a code node.
+- **Paths:** `pathFollow` needs `length` (total px) and `cum` (length so far at each point, from 0) on the path, or the exported video leaves the node where it is. `scene.path` fills them.
+- **Fonts:** each structure kind has its own font field (`cellFontSize`, `nodeFontSize`, `gridCellFontSize`, `labelFontSize`, `fontSize`); without it the text renders at 11 to 14 px. The recipes size every one for the frame.
+- Charts, trees, timelines and code panels size and center themselves in the rect you pass; give them the whole body rect.
 
 ## Workflow
 
@@ -99,23 +160,30 @@ p.save("out.json")                                 # validates; raises with a fi
    Draw an edge in only in the same step as its later end node, or after. An arrow that draws while one of its ends is still hidden points at empty space.
 14. Edge line width is `width`. `strokeWidth` is for node outlines only.
 15. Colors are hex strings. `fillOpacity` does nothing; to dim, lower `opacity` or pick a darker hex.
-16. Leave out fields openCanviz fills in: `_addedNodeIds`, `_removedNodeIds`, `_addedEdgeIds`, `_removedEdgeIds`, `_animatedProps`, `_selected`, `illuOf`, `imageFailed`, and on narration `audioData`, `audioUrl`, `audioDurationMs`, `words`.
+16. Leave out fields openCanviz fills in: `_addedNodeIds`, `_removedNodeIds`, `_addedEdgeIds`, `_removedEdgeIds`, `_animatedProps` (except `{"highlightedLines": false}` on a code node, see Recipes), `_selected`, `illuOf`, `imageFailed`, and on narration `audioData`, `audioUrl`, `audioDurationMs`, `words`.
 17. Plain JSON only: no comments, no trailing commas, no `NaN`, no functions.
+18. A delta step that changes edges must also list at least one node (an unchanged one is fine). Otherwise openCanviz blanks every node for that step.
+19. Every edge gets `"animationStyle": "none"` unless you want the motion; without it the line runs marching dashes forever.
+20. An `edgeTween` that trims an edge from 0 to 1 needs `"trim": 1` for that edge in the same step's snapshot.
+21. Turn glow off with `"noGlow": true`; `"glow": 0` is ignored.
+22. One-color iconify icons (`mdi:`, `lucide:`, `tabler:` ...) render black unless the node has `"iconStyle": "solid"` and a `fill` hex. Multicolor sets (`logos:`, `skill-icons:`, `devicon:`, `twemoji:`, `noto:`, `flat-color-icons:`) need neither.
+23. Never use `sketchMode`, `kind: "icon"` or `kind: "lottie"`; they render badly or not at all in the export. Icons are `kind: "svg"` with an iconify asset.
+24. Change `typeProgress` only through a `transformTween` from 0 to 1 (the helper's `typewrite`); a bare change jumps.
 
 ## Layout rules
 
 These keep the video readable once captions and arrows are on screen. The helper checks all of them.
 
-18. **Caption band.** Keep every node out of the bottom 20% of the frame in landscape and the bottom 30% in portrait (captions wrap to 3 or 4 lines there). For 16:9 that is `y + h <= 324`; for 9:16, `y + h <= 384`.
-19. **Fill the frame.** At the last step of a scene the diagram should cover about 60 to 75% of the safe area (artboard minus margin and caption band). No thin row with big empty bands: use bigger boxes or a second row.
-20. **Text fits its box.** Width: characters x 0.55 x font size per line, within `w` minus padding. Height: lines x font size x 1.2 plus 16 px padding, within `h`. Shapes have less room inside (a circle about 72%, a diamond about 50%).
-21. **Edge labels are readable.** `labelFontSize` at least 22 in landscape and 28 in portrait, with `"labelBgColor"` set to the background color so the label masks the line behind it.
-22. **Gaps leave a real arrow.** Between two connected nodes leave at least 100 px. For a labeled edge leave the label chip (characters x 0.6 x `labelFontSize` + 24; vertical links: font size x 1.2 + 10) plus 120 px of visible line, so the chip never covers most of the arrow. When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
-23. **No edge crosses a node.** An edge may not pass over any node except its two ends. Join neighbours, and send a skip connection along its own lane: `"fromPort": "S", "toPort": "S", "lineType": "elbowed"` (or `N`/`N`) with nothing in the lane.
-24. **Labels appear after their line.** The engine puts a label at the middle of the drawn part, so it slides with the tip and shows before the arrow. For a labeled edge, add an unlabeled copy (`<id>_line`, same ends, no label fields) listed before it: the copy starts at `"trim": 0, "opacity": 1` and draws in with `{"trim":0}` to `{"trim":1}`. The labeled edge sits at `"trim": 1, "opacity": 0` and fades in once the line is done: `{"type":"edgeTween","from":{"trim":1,"opacity":0},"to":{"trim":1,"opacity":1},"durationMs":300,"offsetMs":<end of the draw>}`. Then fade the copy to opacity 0. The helper's `draw()` writes all of this. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
-25. **Reveal before you draw.** Within a step, an arrow's `edgeTween` starts no earlier than the reveal of the node it points to (same or later `offsetMs`).
-26. **Center what shows.** At every step the visible content's center sits within 15% of the frame height of the safe area's center. Lay the group out centered, or add a step `camera` (`x`, `y` = content center minus safe-area center, `zoom` 1) that pans as the content grows. A lone first node starts centered, not in a corner.
-27. **Cycles close.** For a cycle topic (water cycle, feedback loop, Krebs cycle), join the last node back to the first with an elbowed arrow around the outside of the group (`S`/`S` or `N`/`N`, label below or above the lane), not through the middle. In Python: `s.arrow(last, first, "repeats", route="around")`.
+25. **Caption band.** Keep every node out of the bottom 20% of the frame in landscape and the bottom 30% in portrait (captions wrap to 3 or 4 lines there). For 16:9 that is `y + h <= 324`; for 9:16, `y + h <= 384`.
+26. **Fill the frame.** At the last step of a scene the diagram should cover about 60 to 75% of the safe area (artboard minus margin and caption band). No thin row with big empty bands: use bigger boxes or a second row.
+27. **Text fits its box.** Width: characters x 0.55 x font size per line, within `w` minus padding. Height: lines x font size x 1.2 plus 16 px padding, within `h`. Shapes have less room inside (a circle about 72%, a diamond about 50%).
+28. **Edge labels are readable.** `labelFontSize` at least 22 in landscape and 28 in portrait, with `"labelBgColor"` set to the background color so the label masks the line behind it.
+29. **Gaps leave a real arrow.** Between two connected nodes leave at least 100 px. For a labeled edge leave the label chip (characters x 0.6 x `labelFontSize` + 24; vertical links: font size x 1.2 + 10) plus 120 px of visible line, so the chip never covers most of the arrow. When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
+30. **No edge crosses a node.** An edge may not pass over any node except its two ends. Join neighbours, and send a skip connection along its own lane: `"fromPort": "S", "toPort": "S", "lineType": "elbowed"` (or `N`/`N`) with nothing in the lane.
+31. **Labels appear after their line.** The engine puts a label at the middle of the drawn part, so it slides with the tip and shows before the arrow. For a labeled edge, add an unlabeled copy (`<id>_line`, same ends, no label fields) listed before it: the copy starts at `"trim": 0, "opacity": 1` and draws in with `{"trim":0}` to `{"trim":1}`. The labeled edge sits at `"trim": 1, "opacity": 0` and fades in once the line is done: `{"type":"edgeTween","from":{"trim":1,"opacity":0},"to":{"trim":1,"opacity":1},"durationMs":300,"offsetMs":<end of the draw>}`. Then fade the copy to opacity 0. The helper's `draw()` writes all of this. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
+32. **Reveal before you draw.** Within a step, an arrow's `edgeTween` starts no earlier than the reveal of the node it points to (same or later `offsetMs`).
+33. **Center what shows.** At every step the visible content's center sits within 15% of the frame height of the safe area's center. Lay the group out centered, or add a step `camera` (`x`, `y` = content center minus safe-area center, `zoom` 1) that pans as the content grows. A lone first node starts centered, not in a corner.
+34. **Cycles close.** For a cycle topic (water cycle, feedback loop, Krebs cycle), join the last node back to the first with an elbowed arrow around the outside of the group (`S`/`S` or `N`/`N`, label below or above the lane), not through the middle. In Python: `s.arrow(last, first, "repeats", route="around")`.
 
 ## Timing model
 
@@ -133,7 +201,7 @@ These keep the video readable once captions and arrows are on screen. The helper
 | `transformTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `x`, `y`, `w`, `h`, `scaleX`, `scaleY`, `rotationZ`, `opacity`, `fill`, `stroke`, `strokeWidth`, `typeProgress`, `value`, `blur` |
 | `edgeTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `trim`, `trimStart`, `stroke`, `width`, `opacity` |
 | `positionTween` | `from`, `to` (points), `durationMs` | prefer the snapshot plus `transformTween` |
-| `pathFollow` | `pathId`, `from`, `to` (0..1), `rotateToTangent` | path lives in the scene's `paths` |
+| `pathFollow` | `pathId`, `from`, `to` (0..1), `rotateToTangent` | path lives in the scene's `paths` with `points`, `length` and `cum` |
 
 `target` is `{"kind":"node","id":".."}` or `{"kind":"edge","id":".."}`. Slide directions name the side: `slideInLeft` enters from the left, `slideInUp` enters from above, `slideInDown` from below, `slideOutLeft` exits to the left.
 
@@ -145,7 +213,7 @@ Easings: `linear`, `ease`, `ease-in`, `ease-out`, `spring`, `bounce`, `elastic`,
 - Text: `{"id":"title","kind":"text","x":-700,"y":-460,"w":1400,"h":120,"text":"Title","fontSize":72,"fontWeight":700,"color":"#f8fafc","textAlign":"center"}`. Use `\n` for line breaks. Typewriter: tween `typeProgress` from 0 to 1.
 - Database: `kind: "cylinder"`. Also `circle`, `diamond`, `triangle`, `star`, `callout`, `chevron`, `funnel`.
 - Progress bar: `kind: "progress"` with `value` 0..1 and `progressColor`.
-- Icon: `{"kind":"svg","asset":{"type":"icon","source":"iconify","ref":"mdi:database"}, ...}`. The icon loads when the project opens in the editor.
+- Icon: `{"kind":"svg","asset":{"type":"icon","source":"iconify","ref":"mdi:database"},"iconStyle":"solid","fill":"#38bdf8", ...}`. The icon loads when the project opens in the editor.
 - Edge: `{"id":"a_to_b","from":"a","to":"b","fromPort":"E","toPort":"W","stroke":"#94a3b8","width":4,"arrow":"end"}`. Optional `strokeStyle` (`dashed`), `lineType` (`curved`, `elbowed`), `label`, `animationStyle` (`flow`, `ball`, `pulse`).
 
 Full field lists and enums are in `schema.json`.
@@ -170,6 +238,12 @@ Full field lists and enums are in `schema.json`.
 | Arrow draws, then its end node fades in | It points at empty space | Reveal the node first, then draw |
 | Label chip wider than the gap | A 30 px stub of arrow under a label | Chip width + 120 px of gap |
 | Nodes filled from the top-left | Bottom half of the frame empty | Center the group, or pan the camera to it |
+| Boxes and arrows for a chart, a sort, a timeline or code | A generic diagram that teaches nothing | Pick the visual from the table at the top |
+| `cellShowIndices` left on, or an `algoSwap` action | The array cannot fade; the swap snaps in the export | `scene.array` and `step.swap` |
+| Delta step with edges and no nodes | Every node blanks for that step | List one node too |
+| Edge without `animationStyle` | Marching dashes forever | `"animationStyle": "none"` |
+| `glow: 0`, `sketchMode`, `kind: "icon"`, lottie | Ignored or broken in the export | `noGlow: true`, plain style, `kind: "svg"` |
+| Path without `length` and `cum` | The node never moves in the export | `scene.path` |
 
 ## Checklist before you answer
 
@@ -186,4 +260,6 @@ Full field lists and enums are in `schema.json`.
 - [ ] Edge labels 22 px+ (28 px+ portrait) with `labelBgColor`; gaps fit them; no edge crosses a node.
 - [ ] Labeled edges fade in after an unlabeled copy draws the line; arrows draw after their end nodes appear.
 - [ ] Each step's content is centered in the safe area; 120 px side margins in landscape; every labeled arrow shows 120 px+ of line.
-- [ ] No internal fields, comments or trailing commas.
+- [ ] The visual fits the topic (table at the top); boxes and arrows only for flows and systems.
+- [ ] Every edge has `animationStyle`; no delta step lists edges without a node; no `glow: 0`, `sketchMode`, `kind: "icon"` or lottie.
+- [ ] No internal fields (only the code node's `_animatedProps` flag), comments or trailing commas.

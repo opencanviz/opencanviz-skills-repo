@@ -1,0 +1,1133 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "World population",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Growth"
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_world_population_since_1",
+          "kind": "text",
+          "x": -840,
+          "y": -480,
+          "w": 1680,
+          "h": 110,
+          "text": "World population since 1800",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line",
+          "kind": "algo-chart-line",
+          "x": -762.9,
+          "y": -276,
+          "w": 1562.9,
+          "h": 532,
+          "chartShowAxes": false,
+          "chartGridLines": false,
+          "chartXRange": [
+            1800,
+            2025
+          ],
+          "chartYRange": [
+            0,
+            9
+          ],
+          "labelColor": "#f8fafc",
+          "fill": "transparent",
+          "stroke": "none",
+          "noGlow": true,
+          "chartSeries": [
+            {
+              "id": "s",
+              "color": "#f59e0b",
+              "points": [
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                },
+                {
+                  "x": 1800,
+                  "y": 1
+                }
+              ]
+            }
+          ],
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_y0",
+          "kind": "text",
+          "x": -800,
+          "y": 197.9,
+          "w": 23.1,
+          "h": 50,
+          "text": "0",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "right",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_y2",
+          "kind": "text",
+          "x": -800,
+          "y": 95.3,
+          "w": 23.1,
+          "h": 50,
+          "text": "2",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "right",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_y4",
+          "kind": "text",
+          "x": -800,
+          "y": -7.3,
+          "w": 23.1,
+          "h": 50,
+          "text": "4",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "right",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_y6",
+          "kind": "text",
+          "x": -800,
+          "y": -110,
+          "w": 23.1,
+          "h": 50,
+          "text": "6",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "right",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_y8",
+          "kind": "text",
+          "x": -800,
+          "y": -212.6,
+          "w": 23.1,
+          "h": 50,
+          "text": "8",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "right",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_x1800",
+          "kind": "text",
+          "x": -862.9,
+          "y": 260,
+          "w": 220,
+          "h": 50,
+          "text": "1800",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_x1850",
+          "kind": "text",
+          "x": -520.5,
+          "y": 260,
+          "w": 220,
+          "h": 50,
+          "text": "1850",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_x1900",
+          "kind": "text",
+          "x": -178.1,
+          "y": 260,
+          "w": 220,
+          "h": 50,
+          "text": "1900",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_x1950",
+          "kind": "text",
+          "x": 164.4,
+          "y": 260,
+          "w": 220,
+          "h": 50,
+          "text": "1950",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_x2000",
+          "kind": "text",
+          "x": 506.8,
+          "y": 260,
+          "w": 220,
+          "h": 50,
+          "text": "2000",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_ytitle",
+          "kind": "text",
+          "x": -800,
+          "y": -320,
+          "w": 960,
+          "h": 50,
+          "text": "billions of people",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_note3",
+          "kind": "text",
+          "x": 29.2,
+          "y": 54.3,
+          "w": 175.2,
+          "h": 52,
+          "text": "2 billion",
+          "fontWeight": 700,
+          "color": "#f59e0b",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 28,
+          "opacity": 0
+        },
+        {
+          "id": "s1_line_note10",
+          "kind": "text",
+          "x": 624.8,
+          "y": -253.6,
+          "w": 175.2,
+          "h": 52,
+          "text": "8 billion",
+          "fontWeight": 700,
+          "color": "#f59e0b",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 28,
+          "opacity": 0
+        }
+      ],
+      "edges": [
+        {
+          "id": "s1_line_line",
+          "from": "s1_line",
+          "to": "s1_line",
+          "fromXY": {
+            "x": -752.9,
+            "y": 222.9
+          },
+          "toXY": {
+            "x": 788,
+            "y": 222.9
+          },
+          "lineType": "straight",
+          "arrow": "none",
+          "stroke": "#94a3b8",
+          "width": 3,
+          "animationStyle": "none",
+          "trim": 1,
+          "opacity": 1
+        },
+        {
+          "id": "s1_line_line_2",
+          "from": "s1_line",
+          "to": "s1_line",
+          "fromXY": {
+            "x": -752.9,
+            "y": -238.9
+          },
+          "toXY": {
+            "x": -752.9,
+            "y": 222.9
+          },
+          "lineType": "straight",
+          "arrow": "none",
+          "stroke": "#94a3b8",
+          "width": 3,
+          "animationStyle": "none",
+          "trim": 1,
+          "opacity": 1
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 3700,
+          "caption": "In 1800 there were about one billion people.",
+          "nodes": [
+            {
+              "id": "s1_world_population_since_1",
+              "kind": "text",
+              "x": -840,
+              "y": -480,
+              "w": 1680,
+              "h": 110,
+              "text": "World population since 1800",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line",
+              "kind": "algo-chart-line",
+              "x": -762.9,
+              "y": -276,
+              "w": 1562.9,
+              "h": 532,
+              "chartShowAxes": false,
+              "chartGridLines": false,
+              "chartXRange": [
+                1800,
+                2025
+              ],
+              "chartYRange": [
+                0,
+                9
+              ],
+              "labelColor": "#f8fafc",
+              "fill": "transparent",
+              "stroke": "none",
+              "noGlow": true,
+              "chartSeries": [
+                {
+                  "id": "s",
+                  "color": "#f59e0b",
+                  "points": [
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1800,
+                      "y": 1
+                    }
+                  ]
+                }
+              ],
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_y0",
+              "kind": "text",
+              "x": -800,
+              "y": 197.9,
+              "w": 23.1,
+              "h": 50,
+              "text": "0",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "right",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_y2",
+              "kind": "text",
+              "x": -800,
+              "y": 95.3,
+              "w": 23.1,
+              "h": 50,
+              "text": "2",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "right",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_y4",
+              "kind": "text",
+              "x": -800,
+              "y": -7.3,
+              "w": 23.1,
+              "h": 50,
+              "text": "4",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "right",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_y6",
+              "kind": "text",
+              "x": -800,
+              "y": -110,
+              "w": 23.1,
+              "h": 50,
+              "text": "6",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "right",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_y8",
+              "kind": "text",
+              "x": -800,
+              "y": -212.6,
+              "w": 23.1,
+              "h": 50,
+              "text": "8",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "right",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_x1800",
+              "kind": "text",
+              "x": -862.9,
+              "y": 260,
+              "w": 220,
+              "h": 50,
+              "text": "1800",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_x1850",
+              "kind": "text",
+              "x": -520.5,
+              "y": 260,
+              "w": 220,
+              "h": 50,
+              "text": "1850",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_x1900",
+              "kind": "text",
+              "x": -178.1,
+              "y": 260,
+              "w": 220,
+              "h": 50,
+              "text": "1900",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_x1950",
+              "kind": "text",
+              "x": 164.4,
+              "y": 260,
+              "w": 220,
+              "h": 50,
+              "text": "1950",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_x2000",
+              "kind": "text",
+              "x": 506.8,
+              "y": 260,
+              "w": 220,
+              "h": 50,
+              "text": "2000",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_ytitle",
+              "kind": "text",
+              "x": -800,
+              "y": -320,
+              "w": 960,
+              "h": 50,
+              "text": "billions of people",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_note3",
+              "kind": "text",
+              "x": 29.2,
+              "y": 54.3,
+              "w": 175.2,
+              "h": 52,
+              "text": "2 billion",
+              "fontWeight": 700,
+              "color": "#f59e0b",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 28,
+              "opacity": 0
+            },
+            {
+              "id": "s1_line_note10",
+              "kind": "text",
+              "x": 624.8,
+              "y": -253.6,
+              "w": 175.2,
+              "h": 52,
+              "text": "8 billion",
+              "fontWeight": 700,
+              "color": "#f59e0b",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 28,
+              "opacity": 0
+            }
+          ],
+          "edges": [
+            {
+              "id": "s1_line_line",
+              "from": "s1_line",
+              "to": "s1_line",
+              "fromXY": {
+                "x": -752.9,
+                "y": 222.9
+              },
+              "toXY": {
+                "x": 788,
+                "y": 222.9
+              },
+              "lineType": "straight",
+              "arrow": "none",
+              "stroke": "#94a3b8",
+              "width": 3,
+              "animationStyle": "none",
+              "trim": 1,
+              "opacity": 1
+            },
+            {
+              "id": "s1_line_line_2",
+              "from": "s1_line",
+              "to": "s1_line",
+              "fromXY": {
+                "x": -752.9,
+                "y": -238.9
+              },
+              "toXY": {
+                "x": -752.9,
+                "y": 222.9
+              },
+              "lineType": "straight",
+              "arrow": "none",
+              "stroke": "#94a3b8",
+              "width": 3,
+              "animationStyle": "none",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_line_line"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "durationMs": 300,
+              "ease": "linear"
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_line_line_2"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "durationMs": 300,
+              "ease": "linear"
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_world_population_since_1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_line_line"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_line_line_2"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_y0"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_y2"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_y4"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_y6"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_y8"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_x1800"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_x1850"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_x1900"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_x1950"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_x2000"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_ytitle"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            }
+          ]
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 3700,
+          "caption": "It took until 1927 to reach two billion.",
+          "nodes": [
+            {
+              "id": "s1_line",
+              "chartSeries": [
+                {
+                  "id": "s",
+                  "color": "#f59e0b",
+                  "points": [
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1850,
+                      "y": 1.3
+                    },
+                    {
+                      "x": 1900,
+                      "y": 1.6
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "s1_line_note3",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_note3"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 3050
+            }
+          ]
+        },
+        {
+          "id": "s1_step2",
+          "delta": true,
+          "durationMs": 5000,
+          "caption": "Then growth sped up: eight billion by 2022.",
+          "nodes": [
+            {
+              "id": "s1_line",
+              "chartSeries": [
+                {
+                  "id": "s",
+                  "color": "#f59e0b",
+                  "points": [
+                    {
+                      "x": 1800,
+                      "y": 1
+                    },
+                    {
+                      "x": 1850,
+                      "y": 1.3
+                    },
+                    {
+                      "x": 1900,
+                      "y": 1.6
+                    },
+                    {
+                      "x": 1927,
+                      "y": 2
+                    },
+                    {
+                      "x": 1950,
+                      "y": 2.5
+                    },
+                    {
+                      "x": 1960,
+                      "y": 3
+                    },
+                    {
+                      "x": 1974,
+                      "y": 4
+                    },
+                    {
+                      "x": 1987,
+                      "y": 5
+                    },
+                    {
+                      "x": 1999,
+                      "y": 6
+                    },
+                    {
+                      "x": 2011,
+                      "y": 7
+                    },
+                    {
+                      "x": 2022,
+                      "y": 8
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "s1_line_note10",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_note10"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 4350
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "In 1800 there were about one billion people.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "It took until 1927 to reach two billion.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n2",
+          "text": "Then growth sped up: eight billion by 2022.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

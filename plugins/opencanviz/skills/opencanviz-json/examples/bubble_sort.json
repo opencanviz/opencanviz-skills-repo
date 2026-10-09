@@ -1,0 +1,699 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Bubble sort",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "One pass"
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_bubble_sort_swap_neighbo",
+          "kind": "text",
+          "x": -840,
+          "y": -480,
+          "w": 1680,
+          "h": 110,
+          "text": "Bubble sort: swap neighbours that are out of order",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 54,
+          "opacity": 1
+        },
+        {
+          "id": "s1_array",
+          "kind": "algo-array",
+          "x": -700,
+          "y": -220,
+          "w": 1400,
+          "h": 424,
+          "fill": "#1e293b",
+          "stroke": "#94a3b8",
+          "strokeWidth": 3,
+          "cellValues": [
+            "5",
+            "2",
+            "8",
+            "1",
+            "9"
+          ],
+          "cellColors": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "cellFontSize": 64,
+          "cellShowIndices": false,
+          "labelColor": "#f8fafc",
+          "noGlow": true,
+          "opacity": 1
+        },
+        {
+          "id": "s1_array_i0",
+          "kind": "text",
+          "x": -700,
+          "y": 220,
+          "w": 280,
+          "h": 45,
+          "text": "0",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 22,
+          "opacity": 1
+        },
+        {
+          "id": "s1_array_i1",
+          "kind": "text",
+          "x": -420,
+          "y": 220,
+          "w": 280,
+          "h": 45,
+          "text": "1",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 22,
+          "opacity": 1
+        },
+        {
+          "id": "s1_array_i2",
+          "kind": "text",
+          "x": -140,
+          "y": 220,
+          "w": 280,
+          "h": 45,
+          "text": "2",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 22,
+          "opacity": 1
+        },
+        {
+          "id": "s1_array_i3",
+          "kind": "text",
+          "x": 140,
+          "y": 220,
+          "w": 280,
+          "h": 45,
+          "text": "3",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 22,
+          "opacity": 1
+        },
+        {
+          "id": "s1_array_i4",
+          "kind": "text",
+          "x": 420,
+          "y": 220,
+          "w": 280,
+          "h": 45,
+          "text": "4",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 22,
+          "opacity": 1
+        },
+        {
+          "id": "s1_ptr_j",
+          "kind": "algo-pointer",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "pointerTargetId": "s1_array",
+          "pointerLabel": "j",
+          "pointerColor": "#f59e0b",
+          "labelFontSize": 30,
+          "pointerArrowSize": 20,
+          "pointerSidePosition": "top",
+          "pointerTargetIndex": 0,
+          "opacity": 1
+        },
+        {
+          "id": "s1_ptr_j_1",
+          "kind": "algo-pointer",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "pointerTargetId": "s1_array",
+          "pointerLabel": "j+1",
+          "pointerColor": "#38bdf8",
+          "labelFontSize": 30,
+          "pointerArrowSize": 20,
+          "pointerSidePosition": "top",
+          "pointerTargetIndex": 1,
+          "opacity": 1
+        },
+        {
+          "id": "s1_array_range",
+          "kind": "text",
+          "x": 420,
+          "y": 269,
+          "w": 280,
+          "h": 50,
+          "text": "sorted",
+          "fontWeight": 400,
+          "color": "#22c55e",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 26,
+          "opacity": 0
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 4800,
+          "caption": "Bubble sort walks the list and compares each pair of neighbours.",
+          "nodes": [
+            {
+              "id": "s1_bubble_sort_swap_neighbo",
+              "kind": "text",
+              "x": -840,
+              "y": -480,
+              "w": 1680,
+              "h": 110,
+              "text": "Bubble sort: swap neighbours that are out of order",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 54,
+              "opacity": 1
+            },
+            {
+              "id": "s1_array",
+              "kind": "algo-array",
+              "x": -700,
+              "y": -220,
+              "w": 1400,
+              "h": 424,
+              "fill": "#1e293b",
+              "stroke": "#94a3b8",
+              "strokeWidth": 3,
+              "cellValues": [
+                "5",
+                "2",
+                "8",
+                "1",
+                "9"
+              ],
+              "cellColors": [
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "cellFontSize": 64,
+              "cellShowIndices": false,
+              "labelColor": "#f8fafc",
+              "noGlow": true,
+              "opacity": 1
+            },
+            {
+              "id": "s1_array_i0",
+              "kind": "text",
+              "x": -700,
+              "y": 220,
+              "w": 280,
+              "h": 45,
+              "text": "0",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 22,
+              "opacity": 1
+            },
+            {
+              "id": "s1_array_i1",
+              "kind": "text",
+              "x": -420,
+              "y": 220,
+              "w": 280,
+              "h": 45,
+              "text": "1",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 22,
+              "opacity": 1
+            },
+            {
+              "id": "s1_array_i2",
+              "kind": "text",
+              "x": -140,
+              "y": 220,
+              "w": 280,
+              "h": 45,
+              "text": "2",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 22,
+              "opacity": 1
+            },
+            {
+              "id": "s1_array_i3",
+              "kind": "text",
+              "x": 140,
+              "y": 220,
+              "w": 280,
+              "h": 45,
+              "text": "3",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 22,
+              "opacity": 1
+            },
+            {
+              "id": "s1_array_i4",
+              "kind": "text",
+              "x": 420,
+              "y": 220,
+              "w": 280,
+              "h": 45,
+              "text": "4",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 22,
+              "opacity": 1
+            },
+            {
+              "id": "s1_ptr_j",
+              "kind": "algo-pointer",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "pointerTargetId": "s1_array",
+              "pointerLabel": "j",
+              "pointerColor": "#f59e0b",
+              "labelFontSize": 30,
+              "pointerArrowSize": 20,
+              "pointerSidePosition": "top",
+              "pointerTargetIndex": 0,
+              "opacity": 1
+            },
+            {
+              "id": "s1_ptr_j_1",
+              "kind": "algo-pointer",
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "pointerTargetId": "s1_array",
+              "pointerLabel": "j+1",
+              "pointerColor": "#38bdf8",
+              "labelFontSize": 30,
+              "pointerArrowSize": 20,
+              "pointerSidePosition": "top",
+              "pointerTargetIndex": 1,
+              "opacity": 1
+            },
+            {
+              "id": "s1_array_range",
+              "kind": "text",
+              "x": 420,
+              "y": 269,
+              "w": 280,
+              "h": 50,
+              "text": "sorted",
+              "fontWeight": 400,
+              "color": "#22c55e",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 26,
+              "opacity": 0
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_bubble_sort_swap_neighbo"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_array"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_array_i0"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_array_i1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_array_i2"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_array_i3"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_array_i4"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j_1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            }
+          ]
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 3700,
+          "caption": "5 is bigger than 2, so they swap.",
+          "nodes": [
+            {
+              "id": "s1_array",
+              "cellColors": [
+                "#f59e0b",
+                "#f59e0b",
+                null,
+                null,
+                null
+              ],
+              "cellValues": [
+                "2",
+                "5",
+                "8",
+                "1",
+                "9"
+              ]
+            }
+          ],
+          "edges": []
+        },
+        {
+          "id": "s1_step2",
+          "delta": true,
+          "durationMs": 3700,
+          "caption": "5 and 8 are in order. Move on.",
+          "nodes": [
+            {
+              "id": "s1_array",
+              "cellColors": [
+                "#1e293b",
+                "#1e293b",
+                null,
+                null,
+                null
+              ]
+            },
+            {
+              "id": "s1_ptr_j",
+              "pointerTargetIndex": 1
+            },
+            {
+              "id": "s1_ptr_j_1",
+              "pointerTargetIndex": 2
+            }
+          ],
+          "edges": []
+        },
+        {
+          "id": "s1_step3",
+          "delta": true,
+          "durationMs": 3700,
+          "caption": "8 is bigger than 1, so they swap.",
+          "nodes": [
+            {
+              "id": "s1_array",
+              "cellColors": [
+                null,
+                null,
+                "#f59e0b",
+                "#f59e0b",
+                null
+              ],
+              "cellValues": [
+                "2",
+                "5",
+                "1",
+                "8",
+                "9"
+              ]
+            },
+            {
+              "id": "s1_ptr_j",
+              "pointerTargetIndex": 2
+            },
+            {
+              "id": "s1_ptr_j_1",
+              "pointerTargetIndex": 3
+            }
+          ],
+          "edges": []
+        },
+        {
+          "id": "s1_step4",
+          "delta": true,
+          "durationMs": 2900,
+          "caption": "8 and 9 are in order.",
+          "nodes": [
+            {
+              "id": "s1_array",
+              "cellColors": [
+                null,
+                null,
+                "#1e293b",
+                "#1e293b",
+                null
+              ]
+            },
+            {
+              "id": "s1_ptr_j",
+              "pointerTargetIndex": 3
+            },
+            {
+              "id": "s1_ptr_j_1",
+              "pointerTargetIndex": 4
+            }
+          ],
+          "edges": []
+        },
+        {
+          "id": "s1_step5",
+          "delta": true,
+          "durationMs": 4800,
+          "caption": "After one pass the biggest value has bubbled to the end.",
+          "nodes": [
+            {
+              "id": "s1_array",
+              "cellColors": [
+                null,
+                null,
+                null,
+                null,
+                "#22c55e"
+              ],
+              "rangeStart": 4,
+              "rangeEnd": 4,
+              "rangeColor": "#22c55e",
+              "rangeLabel": ""
+            },
+            {
+              "id": "s1_array_range",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_array_range"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "Bubble sort walks the list and compares each pair of neighbours.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "5 is bigger than 2, so they swap.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n2",
+          "text": "5 and 8 are in order. Move on.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n3",
+          "text": "8 is bigger than 1, so they swap.",
+          "stepIndex": 3,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n4",
+          "text": "8 and 9 are in order.",
+          "stepIndex": 4,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n5",
+          "text": "After one pass the biggest value has bubbled to the end.",
+          "stepIndex": 5,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

@@ -29,6 +29,16 @@ step durations are computed from the actions and narration unless you pass durat
 A follow camera keeps each step's visible content centered in the safe area (follow=False or any
 .camera() turns it off); a labeled edge draws as an unlabeled "<id>_line" copy and its label fades
 in once the line is drawn; gaps leave chip + 120 px of visible line; route="around" closes a cycle.
+
+Recipes (scene.* builds, step.* animates): bar_chart/grow, line_chart/extend, scatter/scatter_to,
+array/swap/color/bracket, pointer/point, tree, linked_list/append, graph, grid/set_cell,
+variable/assign, code/highlight, sequence/message/activate, timeline/event, panels, bullets, counter,
+progress, pie/sweep, path/follow, packet. Each writes only fields openCanviz plays and exports.
+
+check also reports: a delta step that adds edges but no nodes; an edge without animationStyle; an
+edgeTween that trims 0 to 1 without trim 1 in the snapshot; glow 0 (use noGlow); a mono iconify icon
+without iconStyle "solid" and fill; a structure node without its font field; sketchMode, kind "icon"
+and lottie; typeProgress changed without a 0 to 1 tween; pathFollow on a path without length/cum.
 """
 
 import json
@@ -59,17 +69,54 @@ NODE_FIELDS = {
     "typeProgress", "highlightedLines", "syntaxStyle", "rotationZ", "rotationX", "rotationY", "scaleX",
     "scaleY", "pivotX", "pivotY", "parentId", "rough", "roughness", "glow", "pointerSide", "points",
     "innerRadius", "startAngle", "endAngle", "value", "progressColor", "asset", "iconStyle", "cellValues",
-    "cellColors"}
+    "cellColors", "noGlow", "padding", "syntaxColors", "highlightLineColor", "pointerPosition", "topWidth",
+    "bottomWidth", "glyph", "drawStartMs", "drawProgress", "svgPaths", "svgViewBox",
+    # charts
+    "chartBars", "chartMaxValue", "chartShowValues", "chartBarColor", "barColors", "chartSeries", "chartXRange",
+    "chartYRange", "chartXLabel", "chartYLabel", "chartGridLines", "chartPoints", "chartShowAxes", "chartBarSpacing", "cellShowIndices", "nodeSpacing", "levelHeight",
+    # algorithm structures and pointers
+    "cellFontSize", "cellIndexFontSize", "rangeStart", "rangeEnd", "rangeColor", "rangeLabel", "pointerTargetId",
+    "pointerTargetIndex", "pointerLabel", "pointerColor", "pointerSidePosition", "pointerArrowSize",
+    "pointerChartBarId", "pointerTreeNodeId", "pointerLinkedListNodeId", "pointerGraphNodeId", "pointerTargetRow",
+    "pointerTargetCol", "treeNodes", "nodeRadius", "nodeFontSize", "nodeColors", "edgeColors", "linkedListNodes",
+    "linkedListNodeWidth", "linkedListNodeHeight", "graphNodes", "graphEdges", "graphNodeRadius", "graphDirected",
+    "gridValues", "gridColors", "gridCellFontSize", "gridIndexFontSize", "varName", "varValue", "varOrientation",
+    # UML
+    "lifelineLength", "activations", "attributes", "methods", "stereotype",
+    # count-up text
+    "countFrom", "countTo", "countStartMs", "countDurationMs", "countPrefix", "countSuffix", "countIsInt"}
+
+# Kinds that get no theme fill/stroke from Scene.node(): the recipe methods pass exactly the fields the
+# renderer was seen to use.
+NO_THEME_KINDS = {"text", "svg", "icon", "progress", "group", "glyph", "algo-pointer", "algo-tree",
+                  "algo-linked-list", "algo-graph", "algo-grid", "algo-variable", "algo-chart-line",
+                  "algo-chart-scatter", "uml-actor"}
+BROKEN_KINDS = {"icon": "kind 'icon' renders as a white box; use kind 'svg' with asset {type: icon, source: "
+                        "iconify, ref} (the helper's scene.icon())",
+                "lottie": "kind 'lottie' renders nothing in the exported video; use shapes, glyphs or icons"}
+# Iconify sets whose icons carry their own colors; every other set is one color (currentColor), which renders
+# black unless the node has iconStyle 'solid' and a fill.
+MULTICOLOR_ICON_SETS = {"logos", "skill-icons", "devicon", "vscode-icons", "flat-color-icons", "twemoji", "noto",
+                        "noto-v1", "fluent-emoji", "fluent-emoji-flat", "fluent-emoji-high-contrast", "emojione",
+                        "openmoji", "fxemoji", "streamline-emojis", "circle-flags", "flag", "flagpack", "cif",
+                        "token-branded", "material-icon-theme", "catppuccin", "unjs", "devicon-plain"}
+# Font fields each kind needs; without them its text renders at 11-14 px.
+FONT_FIELDS = {"algo-array": "cellFontSize", "algo-tree": "nodeFontSize", "algo-linked-list": "nodeFontSize",
+               "algo-graph": "nodeFontSize", "algo-grid": "gridCellFontSize", "algo-variable": "labelFontSize",
+               "algo-pointer": "labelFontSize"}
+PALETTE = ["#38bdf8", "#f59e0b", "#22c55e", "#a78bfa", "#f472b6", "#f87171", "#2dd4bf", "#94a3b8"]
 
 EDGE_FIELDS = {
     "id", "from", "to", "fromXY", "toXY", "fromPort", "toPort", "stroke", "width", "opacity", "trim",
     "trimStart", "arrow", "endArrowType", "startArrowType", "arrowSize", "strokeStyle", "lineType", "router",
     "cornerRadius", "label", "labelColor", "labelFontSize", "labelPosition", "labelPositionT",
-    "labelBgColor", "animationStyle", "flowSpeed", "waypoints", "zIndex"}
+    "labelBgColor", "animationStyle", "flowSpeed", "waypoints", "zIndex", "labelOffset", "labelOffsetX",
+    "labelOffsetY", "labelBgPadding", "labelFontWeight"}
 
 LABEL_KEYS = {"label", "labelColor", "labelFontSize", "labelPosition", "labelPositionT", "labelBgColor",
-              "animationStyle", "flowSpeed", "opacity"}
-LABEL_FADE = 300       # a labeled arrow's label fades in over this once its line is drawn
+              "opacity", "labelOffset", "labelOffsetX", "labelOffsetY", "labelBgPadding", "labelFontWeight"}
+LABEL_POP = 60         # a labeled arrow's label appears this fast once its line is drawn (an opaque chip)
+TWIN_FADE = 300        # ... while the unlabeled line under it fades out over this
 
 INTERNAL_FIELDS = {"_selected", "_animatedProps", "illuOf", "imageFailed", "_addedNodeIds", "_removedNodeIds",
                    "_addedEdgeIds", "_removedEdgeIds", "audioData", "audioUrl", "audioDurationMs", "words"}
@@ -89,9 +136,11 @@ TWEEN_PROPS = {"x", "y", "w", "h", "scaleX", "scaleY", "rotationX", "rotationY",
 
 THEMES = {
     "dark": {"background": "#0f172a", "fill": "#1e293b", "stroke": "#38bdf8", "text": "#f8fafc",
-             "muted": "#94a3b8", "edge": "#94a3b8"},
+             "muted": "#94a3b8", "edge": "#94a3b8", "line": "#334155", "panel": "#111827", "accent": "#38bdf8",
+             "hi": "#f59e0b", "ok": "#22c55e", "bad": "#ef4444", "code": "#e6edf3"},
     "light": {"background": "#f8fafc", "fill": "#ffffff", "stroke": "#334155", "text": "#0f172a",
-              "muted": "#475569", "edge": "#64748b"},
+              "muted": "#475569", "edge": "#64748b", "line": "#cbd5e1", "panel": "#f1f5f9", "accent": "#2563eb",
+              "hi": "#d97706", "ok": "#16a34a", "bad": "#dc2626", "code": "#1f2937"},
 }
 
 COLOR_RE = re.compile(r"^(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{4}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8}|rgba?\([^)]*\)|transparent|none)$")
@@ -104,6 +153,7 @@ MIN_LINK_GAP = 100     # an unlabeled arrow: 84 px of visible line plus the end 
 LABEL_LINE = 120       # visible line a labeled arrow keeps beside its label chip (60 px each side)
 SIDE_MARGIN = 120      # left/right margin of project.area() in landscape (80 in portrait and square)
 FOLLOW_MS = 800        # follow-camera pan length
+PAN_FIRST_MS = 700     # a step that brings something in pans this long before it arrives
 
 
 def caption_band(width, height):
@@ -407,6 +457,8 @@ class Node:
     def __init__(self, scene, nid, fields):
         self.scene, self.id, self.fields = scene, nid, fields
         self.events = []      # (step_index, "in"|"out"|"remove")
+        self.parts = []       # nodes and lines that appear, hide and go with this one (a chart's axes, a bullet's glyph)
+        self.meta = {}        # recipe state (current values, colors, ...)
 
     @property
     def rect(self):
@@ -423,6 +475,7 @@ class Edge:
     def __init__(self, scene, eid, a, b, fields):
         self.scene, self.id, self.a, self.b, self.fields = scene, eid, a, b, fields
         self.events = []      # (step_index, "draw"|"undraw"|"remove")
+        self.parts = []       # nodes revealed once the line is drawn (a sequence message's text)
         self.twin_steps = set()   # steps that draw a labeled edge through its unlabeled twin line
         self._twin = None
 
@@ -434,12 +487,12 @@ class Edge:
         return bool(self.fields.get("label"))
 
     def _tween(self, drawing):
-        """edgeTween for a draw-in (True) or draw-out. A labeled edge also carries opacity, because a
-        trim-0 edge's label otherwise floats at its start port."""
-        fr, to = ({"trim": 0}, {"trim": 1}) if drawing else ({"trim": 1}, {"trim": 0})
-        if self.labeled:
-            shown = self.fields.get("opacity", 1)
-            fr["opacity"], to["opacity"] = shown, (shown if drawing else 0)
+        """edgeTween for a draw-in (True) or draw-out. It always carries opacity: an edge waits for its
+        draw at trim 0 AND opacity 0, because at trim 0 openCanviz still paints the arrowhead (a stub at
+        the start port) and a label (floating at the start port)."""
+        shown = self.fields.get("opacity", 1)
+        fr, to = ({"trim": 0, "opacity": shown}, {"trim": 1, "opacity": shown}) if drawing else \
+            ({"trim": 1, "opacity": shown}, {"trim": 0, "opacity": 0})
         return {"type": "edgeTween", "target": {"kind": "edge", "id": self.id}, "from": fr, "to": to}
 
     @property
@@ -453,6 +506,113 @@ class Edge:
         f = {k: v for k, v in self.fields.items() if k not in LABEL_KEYS}
         f["id"] = self.twin_id
         return f
+
+
+def _tline(fs, lh=LINE_H):
+    """Height of a one-line text box at font size fs (what text_overflow wants, plus 2 px)."""
+    return int(math.ceil(fs * lh + 2 * TEXT_PAD + 2))
+
+
+def _hold_first_edge_tweens(sd):
+    """Step 0 has no earlier state, so before a delayed edgeTween starts openCanviz shows the edge as
+    the snapshot has it (drawn). Hold each edge at its first tween's start values until that tween runs."""
+    first = {}
+    for a in sd.get("actions") or []:
+        if a.get("type") == "edgeTween" and a.get("from"):
+            eid = a["target"]["id"]
+            if eid not in first or a.get("offsetMs", 0) < first[eid].get("offsetMs", 0):
+                first[eid] = a
+    holds = [{"type": "edgeTween", "target": {"kind": "edge", "id": eid}, "from": dict(a["from"]),
+              "to": dict(a["from"]), "durationMs": a["offsetMs"], "ease": "linear"}
+             for eid, a in first.items() if a.get("offsetMs", 0) > 0]
+    if holds:
+        sd["actions"] = holds + sd["actions"]
+
+
+def _fmt_num(v, decimals=0, prefix="", suffix=""):
+    return "%s%s%s" % (prefix, ("{:,.%df}" % decimals).format(v), suffix)
+
+
+def _affix(prefix, suffix):
+    out = {}
+    if prefix:
+        out["countPrefix"] = prefix
+    if suffix:
+        out["countSuffix"] = suffix
+    return out
+
+
+def _nice_ceil(v):
+    if v <= 0:
+        return 1
+    e = 10 ** math.floor(math.log10(v))
+    for k in (1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10):
+        if k * e >= v - 1e-9:
+            return _clean(k * e)
+    return _clean(10 * e)
+
+
+def _ticks(lo, hi, count=5):
+    """About count round tick values from lo to hi."""
+    span = float(hi - lo)
+    if span <= 0:
+        return [lo]
+    raw = span / count
+    e = 10 ** math.floor(math.log10(raw))
+    step = next(k * e for k in (1, 2, 2.5, 5, 10) if k * e >= raw)
+    start = math.ceil(lo / step) * step
+    out, v = [], start
+    while v <= hi + 1e-9:
+        out.append(_clean(v) if abs(v) >= 1 or v == 0 else round(v, 6))
+        v += step
+    return out
+
+
+def _tick_fmt(v):
+    if float(v) == int(v):
+        return str(int(v)) if abs(v) < 10000 else "{:,}".format(int(v))   # 1800 reads as a year
+    return ("%g" % v)
+
+
+def _series(m, upto):
+    pts = m["points"]
+    shown = [pts[min(i, upto)] for i in range(len(pts))]
+    return {"id": "s", "color": m["color"], "points": [{"x": _clean(x), "y": _clean(y)} for x, y in shown]}
+
+
+def _dots(m):
+    return [{"id": "p%d" % i, "x": _clean(x), "y": _clean(y), "color": c, "size": m["size"]}
+            for i, ((x, y), c) in enumerate(zip(m["points"], m["colors"]))]
+
+
+def _list_nodes(vals):
+    out = []
+    for i, v in enumerate(vals):
+        e = {"id": "l%d" % i, "value": v}
+        if i + 1 < len(vals):
+            e["next"] = "l%d" % (i + 1)
+        out.append(e)
+    return out
+
+
+def _pointer_target(target, at):
+    kind = target.fields.get("kind")
+    m = target.meta.get("struct") or {}
+    if kind == "algo-array":
+        return {"pointerTargetIndex": int(at)}
+    if kind == "algo-grid":
+        return {"pointerTargetRow": int(at[0]), "pointerTargetCol": int(at[1])}
+    if kind == "algo-chart":
+        return {"pointerChartBarId": "b%d" % int(at)}
+    field = {"algo-tree": "pointerTreeNodeId", "algo-linked-list": "pointerLinkedListNodeId",
+             "algo-graph": "pointerGraphNodeId"}.get(kind)
+    if field is None:
+        raise OpenCanvizError("pointer(): %s is a %s; point at an array, tree, linked list, graph, grid or bar chart."
+                              % (target.id, kind))
+    nid = m.get("ids", {}).get(str(at))
+    if nid is None:
+        raise OpenCanvizError("pointer(): %s has no node %r." % (target.id, at))
+    return {field: nid}
 
 
 class Step:
@@ -469,6 +629,9 @@ class Step:
         self.actions, self.remove_nodes, self.remove_edges = [], [], []
         self.camera_spec = None
         self._cursor, self._last_start, self._tail = 0, 0, 0
+        self._shift = None          # (from_ms, by_ms) when the follow camera delayed this step's arrivals
+        self.timed = []             # (node, field, offset_ms): scene-time markers filled at compile time
+        self.hooks = []             # fn(snapshot_by_id, step_start_ms, step_dict, adjust_offset) run at compile time
 
     # timing
     def _place(self, duration, offset):
@@ -497,7 +660,13 @@ class Step:
             raise OpenCanvizError("step %d: expected a %s from this scene, got %r" % (self.index, cls.__name__, item))
 
     def reveal(self, node, style="fadeIn", duration=500, offset=None, ease=None, distance=None):
-        """Show a hidden node: fadeIn, show, slideInLeft/Right/Up/Down. Sets opacity 1 for you."""
+        """Show a hidden node (or a list of nodes, together): fadeIn, show, slideInLeft/Right/Up/Down. Sets
+        opacity 1 for you. The node's parts (a chart's axes and labels, a bullet's glyph) come with it; a
+        glyph draws itself in and a counter starts counting when it is revealed."""
+        if isinstance(node, (list, tuple)):
+            for i, n in enumerate(node):
+                self.reveal(n, style, duration, offset if i == 0 else "with", ease, distance)
+            return self
         self._own(node, Node)
         if style not in VIS_IN:
             raise OpenCanvizError("reveal(%s): style must be one of %s" % (node.id, sorted(VIS_IN)))
@@ -507,11 +676,27 @@ class Step:
             act["ease"] = ease
         if distance is not None:
             act["slideDistance"] = distance
-        self._action(act, duration, offset)
+        start = self._action(act, duration, offset).get("offsetMs", 0)
+        kind = node.fields.get("kind")
+        if kind == "glyph":
+            self.timed.append((node, "drawStartMs", start))
+        if "countTo" in node.fields and not node.meta.get("count_managed"):
+            self.timed.append((node, "countStartMs", start))
+        for part in node.parts:
+            if isinstance(part, Edge):
+                self.draw(part, duration=duration, offset=start)
+            else:
+                self.reveal(part, style, duration, start, ease, distance)
+        self._last_start = start
         return self
 
     def hide(self, item, style="fadeOut", duration=400, offset=None, ease=None):
-        """Hide a node (fadeOut, hide, slideOut*) or undraw an arrow. Arrows of a hidden node are undrawn too."""
+        """Hide a node (fadeOut, hide, slideOut*), a list of nodes, or undraw an arrow. Arrows and parts of a
+        hidden node go with it."""
+        if isinstance(item, (list, tuple)):
+            for i, n in enumerate(item):
+                self.hide(n, style, duration, offset if i == 0 else "with", ease)
+            return self
         if isinstance(item, Edge):
             self._own(item, Edge)
             item.events.append((self.index, "undraw"))
@@ -524,39 +709,47 @@ class Step:
         act = {"type": "visibility", "target": {"kind": "node", "id": item.id}, "mode": style}
         if ease:
             act["ease"] = ease
-        self._action(act, duration, offset)
+        start = self._action(act, duration, offset).get("offsetMs", 0)
+        for part in item.parts:
+            if isinstance(part, Node):
+                self.hide(part, style, duration, start, ease)
+        self._last_start = start
         return self
 
     def draw(self, edge, duration=700, offset=None, ease="ease-out"):
         """Draw an arrow in (trim 0 -> 1). Both end nodes must be visible by the end of this step.
 
         A labeled arrow is drawn by an unlabeled twin line (id <edge>_line); once the line is fully
-        drawn the labeled edge fades in on top of it (300 ms) and the twin fades away. openCanviz puts
-        a label at the middle of the drawn part, so a label drawn with its line slides along with the
-        tip and shows before the arrow does."""
+        drawn the labeled edge appears on top of it at once (60 ms, so its opaque chip masks the line
+        straight away) and the twin fades out under it (300 ms). openCanviz puts a label at the middle
+        of the drawn part, so a label drawn with its line slides along with the tip and shows before the
+        arrow does."""
         self._own(edge, Edge)
         edge.events.append((self.index, "draw"))
         if not edge.labeled:
             act = edge._tween(True)
             if ease:
                 act["ease"] = ease
-            self._action(act, duration, offset)
+            start = self._action(act, duration, offset).get("offsetMs", 0)
+            for part in edge.parts:
+                self.reveal(part, "fadeIn", 300, start + duration)
+            self._last_start = start
             return self
         edge.twin_steps.add(self.index)
+        shown = edge.fields.get("opacity", 1)
         line = {"type": "edgeTween", "target": {"kind": "edge", "id": edge.twin_id},
-                "from": {"trim": 0, "opacity": 1}, "to": {"trim": 1, "opacity": 1}}
+                "from": {"trim": 0, "opacity": shown}, "to": {"trim": 1, "opacity": shown}}
         if ease:
             line["ease"] = ease
         start = self._action(line, duration, offset).get("offsetMs", 0)
         done = start + duration
-        shown = edge.fields.get("opacity", 1)
         self.actions.append({"type": "edgeTween", "target": {"kind": "edge", "id": edge.id},
                              "from": {"trim": 1, "opacity": 0}, "to": {"trim": 1, "opacity": shown},
-                             "durationMs": LABEL_FADE, "offsetMs": done, "ease": "ease-out"})
+                             "durationMs": LABEL_POP, "offsetMs": done, "ease": "linear"})
         self.actions.append({"type": "edgeTween", "target": {"kind": "edge", "id": edge.twin_id},
-                             "from": {"opacity": 1}, "to": {"opacity": 0}, "durationMs": 100,
-                             "offsetMs": done + LABEL_FADE})
-        self._tail = max(self._tail, done + LABEL_FADE + 100)
+                             "from": {"trim": 1, "opacity": shown}, "to": {"trim": 1, "opacity": 0},
+                             "durationMs": TWIN_FADE, "offsetMs": done})
+        self._tail = max(self._tail, done + TWIN_FADE)
         return self
 
     def remove(self, item):
@@ -572,6 +765,9 @@ class Step:
             self._own(item, Node)
             item.events.append((self.index, "remove"))
             self.remove_nodes.append(item.id)
+            for part in item.parts:
+                if isinstance(part, Node):
+                    self.remove(part)
         return self
 
     def set(self, item, **fields):
@@ -639,6 +835,307 @@ class Step:
         self._cursor += ms
         return self
 
+    # recipe steps -------------------------------------------------------------------------------
+    def _recipe(self, node, key, what):
+        self._own(node, Node)
+        m = node.meta.get(key)
+        if m is None:
+            raise OpenCanvizError("%s(%s): this node was not made by scene.%s()." % (what, node.id, key))
+        return m
+
+    def _after_first(self, what, node):
+        if self.index == 0:
+            raise OpenCanvizError("%s(%s) animates from the previous step, and a scene's first step has none. Show %s "
+                                  "in step 0 and call %s() in the next step." % (what, node.id, node.id, what))
+
+    def _patch(self, node, **fields):
+        self.node_patch.setdefault(node.id, {}).update(fields)
+
+    def _count_over_step(self, text):
+        """Fill countStartMs / countDurationMs at compile time so the number counts over the whole step."""
+        def hook(snap, t0, sd, adj, n=text):
+            snap[n.id]["countStartMs"] = int(t0)
+            snap[n.id]["countDurationMs"] = int(sd["durationMs"])
+        self.hooks.append(hook)
+
+    def _late_reveal(self, node, lead=650):
+        """Reveal node so its fade ends just before the step does (the offset is fixed at compile time)."""
+        self.reveal(node, duration=400, offset=0)
+        act = self.actions[-1]
+
+        def hook(snap, t0, sd, adj, a=act):
+            a["offsetMs"] = max(a.get("offsetMs", 0), int(sd["durationMs"]) - lead)
+        self.hooks.append(hook)
+
+    def grow(self, chart, which=None):
+        """Bar chart: grow bars (an index, a list, or None = every bar not grown yet) from 0 to their value
+        over this whole step. Each bar's value counts up while riding on top of the bar."""
+        self._after_first("grow", chart)
+        m = self._recipe(chart, "bars", "grow")
+        n = len(m["values"])
+        idx = [i for i in range(n) if i not in m["grown"]] if which is None else \
+            ([which] if isinstance(which, int) else list(which))
+        for i in idx:
+            if not 0 <= i < n:
+                raise OpenCanvizError("grow(%s): bar %r does not exist (0..%d)." % (chart.id, i, n - 1))
+            if i in m["grown"]:
+                raise OpenCanvizError("grow(%s): bar %d is already grown; grow each bar once." % (chart.id, i))
+            m["grown"].add(i)
+        self._patch(chart, chartBars=[{"id": "b%d" % i, "value": m["values"][i] if i in m["grown"] else 0, "label": ""}
+                                      for i in range(n)])
+        for i in idx:
+            t = m["texts"][i]
+            if t is not None:
+                self.reveal(t, duration=300, offset=0)
+                self._patch(t, y=m["top"][i])
+                self._count_over_step(t)
+        return self
+
+    def extend(self, chart, upto=None):
+        """Line chart: draw the line on to point index upto (default: the last point) over this step.
+        Notes attached to points up to there fade in as the line reaches them."""
+        self._after_first("extend", chart)
+        m = self._recipe(chart, "line", "extend")
+        pts = m["points"]
+        upto = len(pts) - 1 if upto is None else upto
+        if not m["shown"] < upto < len(pts):
+            raise OpenCanvizError("extend(%s): upto must be past the last shown point (%d) and at most %d."
+                                  % (chart.id, m["shown"], len(pts) - 1))
+        m["shown"] = upto
+        self._patch(chart, chartSeries=[_series(m, upto)])
+        for i, t in sorted(m["notes"].items()):
+            if i <= upto and not t.meta.get("shown"):
+                t.meta["shown"] = True
+                self._late_reveal(t)
+        return self
+
+    def scatter_to(self, chart, points, colors=None):
+        """Scatter chart: move the dots to new (x, y) positions (and colors) over this step."""
+        self._after_first("scatter_to", chart)
+        m = self._recipe(chart, "scatter", "scatter_to")
+        if len(points) != len(m["points"]):
+            raise OpenCanvizError("scatter_to(%s): give %d points, one per dot." % (chart.id, len(m["points"])))
+        m["points"] = list(points)
+        if colors is not None:
+            m["colors"] = list(colors)
+        self._patch(chart, chartPoints=_dots(m))
+        return self
+
+    def swap(self, array, i, j):
+        """Array: swap cells i and j; the two values arc past each other over the whole step (with the
+        step's easing). Swap disjoint pairs only within one step. (An algoSwap action is not used: the
+        exported video snaps it.)"""
+        self._after_first("swap", array)
+        m = self._recipe(array, "array", "swap")
+        v = m["values"]
+        if i == j or not (0 <= i < len(v) and 0 <= j < len(v)):
+            raise OpenCanvizError("swap(%s): cells %r and %r must be two different indices in 0..%d."
+                                  % (array.id, i, j, len(v) - 1))
+        used = self.__dict__.setdefault("_swapped", {}).setdefault(array.id, set())
+        if {i, j} & used:
+            raise OpenCanvizError("swap(%s): cell %d or %d already swaps in this step; one swap per cell per step."
+                                  % (array.id, i, j))
+        if v[i] == v[j]:
+            raise OpenCanvizError("swap(%s): cells %d and %d hold the same value, so nothing would move." % (array.id, i, j))
+        used |= {i, j}
+        v[i], v[j] = v[j], v[i]
+        self._patch(array, cellValues=list(v))
+        return self
+
+    def color(self, struct, colors=None, edges=None, reset=False):
+        """Color parts of a structure from this step on (cleared with None, or all with reset=True):
+        array {index: color}, tree / linked list / graph {value: color} (graph edges={(a, b): color}),
+        grid {(row, col): color}. The colors switch at the start of the step."""
+        self._own(struct, Node)
+        kind = struct.fields.get("kind")
+        m = struct.meta.get("struct")
+        if m is None:
+            raise OpenCanvizError("color(%s): use it on a node from scene.array/tree/linked_list/graph/grid()."
+                                  % struct.id)
+        colors = colors or {}
+        if kind == "algo-array":
+            old = list(m["colors"])
+            if reset:
+                m["colors"] = [None] * len(m["colors"])
+            for i, c in colors.items():
+                m["colors"][i] = c
+            # openCanviz keeps a cleared (null) cell in its old color for the whole step, so a cell cleared
+            # here gets the plain fill color instead, which fades back over the step
+            fill = struct.fields.get("fill")
+            self._patch(struct, cellColors=[fill if (c is None and o is not None) else c
+                                            for c, o in zip(m["colors"], old)])
+        elif kind == "algo-grid":
+            old = [list(r) for r in m["colors"]]
+            if reset:
+                m["colors"] = [[None] * len(r) for r in m["colors"]]
+            for (r, c), col in colors.items():
+                m["colors"][r][c] = col
+            fill = struct.fields.get("fill")
+            self._patch(struct, gridColors=[[fill if (c is None and o is not None) else c for c, o in zip(r, ro)]
+                                            for r, ro in zip(m["colors"], old)])
+        else:
+            cleared = {}
+            if reset:
+                cleared = {nid: struct.fields.get("fill") or struct.scene.project.colors["fill"] for nid in m["colors"]}
+                m["colors"], m["edge_colors"] = {}, {}
+            for k, c in colors.items():
+                nid = m["ids"].get(str(k))
+                if nid is None:
+                    raise OpenCanvizError("color(%s): no node %r." % (struct.id, k))
+                if c is None:
+                    if nid in m["colors"]:
+                        cleared[nid] = struct.fields.get("fill") or struct.scene.project.colors["fill"]
+                    m["colors"].pop(nid, None)
+                else:
+                    m["colors"][nid] = c
+                    cleared.pop(nid, None)
+            self._patch(struct, nodeColors=dict(m["colors"], **cleared))
+            if edges:
+                for (a, b), c in edges.items():
+                    eid = m["edge_ids"].get((str(a), str(b))) or m["edge_ids"].get((str(b), str(a)))
+                    if eid is None:
+                        raise OpenCanvizError("color(%s): no edge %r-%r." % (struct.id, a, b))
+                    m["edge_colors"][eid] = c
+                self._patch(struct, edgeColors=dict(m["edge_colors"]))
+        return self
+
+    def point(self, pointer, at):
+        """Move a pointer: an array index, a tree / list / graph value, or a grid (row, col). It glides."""
+        self._own(pointer, Node)
+        m = pointer.meta.get("pointer")
+        if m is None:
+            raise OpenCanvizError("point(%s): use it on a node from scene.pointer()." % pointer.id)
+        self._patch(pointer, **_pointer_target(m["target"], at))
+        return self
+
+    def bracket(self, array, start, end, label=None, color=None):
+        """Array: draw a bracket under cells start..end (inclusive) with a readable label under it."""
+        m = self._recipe(array, "array", "bracket")
+        th = self.scene.project.colors
+        col = color or th["muted"]
+        self._patch(array, rangeStart=start, rangeEnd=end, rangeColor=col, rangeLabel="")
+        t = m.get("range_text")
+        if label:
+            f = array.fields
+            cw = f["w"] / float(len(m["values"]))
+            x0, x1 = f["x"] + start * cw, f["x"] + (end + 1) * cw
+            fs = m["label_font"]
+            if t is None:
+                t = self.scene.text(label, x=x0, y=m["label_y"], w=x1 - x0, h=_tline(fs), fontSize=fs,
+                                    color=col, id=array.id + "_range")
+                m["range_text"] = t
+                self.reveal(t, duration=400, offset=0)
+            else:
+                if t.meta.get("hidden"):
+                    t.meta["hidden"] = False
+                    self.reveal(t, duration=400, offset=0)
+                self._patch(t, text=label, x=_clean(x0), w=_clean(x1 - x0), color=col)
+        elif t is not None and not t.meta.get("hidden"):
+            t.meta["hidden"] = True
+            self.hide(t, offset=0)
+        return self
+
+    def assign(self, var, value):
+        """Variable box: show a new value (it switches at the start of the step)."""
+        self._recipe(var, "var", "assign")
+        self._patch(var, varValue=str(value))
+        return self
+
+    def set_cell(self, grid, row, col, value):
+        """Grid: change one cell's value (switches at the start of the step)."""
+        m = self._recipe(grid, "grid", "set_cell")
+        m["values"][row][col] = str(value)
+        self._patch(grid, gridValues=[list(r) for r in m["values"]])
+        return self
+
+    def append(self, lst, value):
+        """Linked list: add a node at the tail (it appears at the start of the step)."""
+        m = self._recipe(lst, "list", "append")
+        if len(m["values"]) >= m["capacity"]:
+            raise OpenCanvizError("append(%s): the list was sized for %d nodes; pass capacity= to linked_list()."
+                                  % (lst.id, m["capacity"]))
+        m["values"].append(str(value))
+        m["ids"][str(value)] = "l%d" % (len(m["values"]) - 1)
+        self._patch(lst, linkedListNodes=_list_nodes(m["values"]))
+        return self
+
+    def highlight(self, code, *lines):
+        """Code panel: highlight these lines (1-based, as an editor numbers them); none clears it."""
+        m = self._recipe(code, "code", "highlight")
+        flat = []
+        for ln in lines:
+            flat.extend(ln if isinstance(ln, (list, tuple, range)) else [ln])
+        for ln in flat:
+            if not 1 <= ln <= m["lines"]:
+                raise OpenCanvizError("highlight(%s): line %r is outside 1..%d." % (code.id, ln, m["lines"]))
+        self._patch(code, highlightedLines=[ln - 1 for ln in flat])
+        return self
+
+    def activate(self, lifeline, start, end):
+        """Sequence diagram: show an activation bar on a lifeline from message start to message end
+        (the messages returned by scene.message(), or world y values)."""
+        m = self._recipe(lifeline, "lifeline", "activate")
+        ys = [s.meta_y if isinstance(s, Edge) else s for s in (start, end)]
+        top = lifeline.fields["y"] + 50
+        m["acts"].append({"startY": _clean(ys[0] - top - 12), "endY": _clean(ys[1] - top + 12)})
+        self._patch(lifeline, activations=list(m["acts"]))
+        return self
+
+    def event(self, timeline, i=None):
+        """Timeline: bring in the next event (or event i): its dot, year and text appear and the line grows
+        to it over the step."""
+        m = self._recipe(timeline, "timeline", "event")
+        i = m["shown"] + 1 if i is None else i
+        if not m["shown"] < i < len(m["events"]):
+            raise OpenCanvizError("event(%s): event %r is not after the last shown one (%d)." % (timeline.id, i, m["shown"]))
+        if m["shown"] < 0:
+            self.reveal(timeline, duration=400, offset=0)
+        if self.index == 0 and i > 0:
+            self._after_first("event", timeline)
+        m["shown"] = i
+        ev = m["events"][i]
+        self.reveal(ev, duration=500, offset=0)
+        f = timeline.fields
+        if m["vertical"]:
+            self.move(timeline, h=max(10, m["pos"][i] - f["y"] + 5))
+        else:
+            self.move(timeline, w=max(10, m["pos"][i] - f["x"] + 5))
+        return self
+
+    def sweep(self, pie):
+        """Pie / donut: reveal it and sweep every slice open from 12 o'clock over this step."""
+        self._after_first("sweep", pie)
+        m = self._recipe(pie, "pie", "sweep")
+        self.reveal(pie, duration=400, offset=0)
+        for w, (a0, a1) in zip(m["wedges"], m["angles"]):
+            self._patch(w, startAngle=a0, endAngle=a1)
+        return self
+
+    def follow(self, node, path, duration=2000, offset=None, ease=None):
+        """Move node along a path from scene.path(); it ends at the path's last point."""
+        self._after_first("follow", node)
+        self._own(node, Node)
+        pts = self.scene.paths.get(path, {}).get("points")
+        if not pts:
+            raise OpenCanvizError("follow(%s): unknown path %r; make it with scene.path()." % (node.id, path))
+        act = {"type": "pathFollow", "target": {"kind": "node", "id": node.id}, "pathId": path, "from": 0, "to": 1}
+        if ease:
+            act["ease"] = ease
+        self._action(act, duration, offset)
+        end = pts[-1]
+        f = node.fields
+        self._patch(node, x=_clean(end["x"] - f["w"] / 2.0), y=_clean(end["y"] - f["h"] / 2.0))
+        return self
+
+    def packet(self, edge, color=None, size=36, duration=1500, offset=None):
+        """Send a dot along a drawn arrow (a request, a message, a packet)."""
+        self._own(edge, Edge)
+        col = color or self.scene.project.colors["hi"]
+        self._action({"type": "pathAnimate", "target": {"kind": "edge", "id": edge.id}, "scale": 1, "opacity": 1,
+                      "nodeSnapshot": {"id": self.scene._id(edge.id + "_pkt"), "kind": "circle", "w": size, "h": size,
+                                       "fill": col, "stroke": "none"}}, duration, offset)
+        return self
+
 
 class Scene:
     """A scene: add nodes and arrows, then steps. Node ids are prefixed with s<N>_."""
@@ -648,6 +1145,7 @@ class Scene:
         self.prefix = "s%d_" % (index + 1)
         self.transition, self.background = transition, background
         self.nodes, self.edges, self.steps, self._ids = [], [], [], set()
+        self.paths = {}
 
     def _id(self, want):
         base = want if want.startswith(self.prefix) else self.prefix + _slug(want)
@@ -672,16 +1170,23 @@ class Scene:
         """Any node kind from schema.json (rect, circle, diamond, cylinder, star, callout, ...)."""
         if kind not in NODE_KINDS:
             raise OpenCanvizError("node kind '%s' is not in the schema. Use one of: %s" % (kind, ", ".join(sorted(NODE_KINDS))))
+        if kind in BROKEN_KINDS:
+            raise OpenCanvizError(BROKEN_KINDS[kind])
         what = "%s %r" % (kind, label or id or "")
         _check_fields(fields, NODE_FIELDS - {"id", "kind", "x", "y", "w", "h"}, what)
+        if fields.get("glow") == 0:
+            raise OpenCanvizError("%s: glow=0 is ignored by openCanviz; pass noGlow=True." % what)
         nid = self._id(id or label or fields.get("text") or kind)
         f = {"id": nid, "kind": kind}
-        f.update(self._geom(at, x, y, w, h, what))
+        if kind == "algo-pointer":
+            f.update({"x": 0, "y": 0, "w": 0, "h": 0})   # a pointer places itself on its target
+        else:
+            f.update(self._geom(at, x, y, w, h, what))
         th = self.project.colors
         if label is not None:
             f["label"] = label
             f.setdefault("labelColor", th["text"])
-        if kind not in ("text", "svg", "icon", "progress", "group"):
+        if kind not in NO_THEME_KINDS:
             f.update({"fill": th["fill"], "stroke": th["stroke"], "strokeWidth": 3})
             if kind == "rect":
                 f["cornerRadius"] = 16
@@ -762,16 +1267,9 @@ class Scene:
                 f["fromPort"], f["toPort"] = ("S", "N") if dy >= 0 else ("N", "S")
             if ra.cy == rb.cy or ra.cx == rb.cx:
                 f["lineType"] = "straight"
-        f.update({"stroke": self.project.colors["edge"], "width": 4, "arrow": "end"})
+        f.update({"stroke": self.project.colors["edge"], "width": 4, "arrow": "end", "animationStyle": "none"})
         if label is not None:
-            pos = {"below": "below", "above": "above"}.get(route, "above")
-            # At 22 px and up the renderer's label overlaps its own line whatever labelPosition says,
-            # so the label gets a pill in the background color that masks the line behind it.
-            f.update({"label": label, "labelColor": self.project.colors["muted"],
-                      "labelFontSize": self.project.edge_label_font, "labelPosition": pos,
-                      "labelBgColor": self.scene_background()})
-            if not route and f.get("fromPort") in ("N", "S"):
-                f["labelPosition"] = "center"
+            f.update(self.label_fields(label))
         f.update(fields)
         e = Edge(self, eid, a, b, f)
         e.user_fields = dict(fields)
@@ -779,9 +1277,19 @@ class Scene:
         self.edges.append(e)
         return e
 
+    def label_fields(self, label, font_size=None):
+        """Edge-label fields that center the label chip ON the line, whatever its direction: a chip in the
+        background color masks the line behind it. (openCanviz's own placement puts it labelOffset px,
+        default 12, off the line along the normal, which floats it beside vertical and leftward lines.)"""
+        fs = font_size or self.project.edge_label_font
+        return {"label": label, "labelColor": self.project.colors["muted"], "labelFontSize": fs,
+                "labelPosition": "center", "labelOffset": 0.01, "labelOffsetY": _clean(fs * 0.6),
+                "labelBgPadding": 8, "labelBgColor": self.scene_background()}
+
     def _route_around(self, e):
         """Pick the side for a route="around" arrow: the first of below, above, right, left whose lane
-        clears every other node and stays in the safe area; the lane runs 48 px outside the diagram."""
+        clears every other node and stays in the safe area (label chip included); the lane runs 48 px
+        outside the diagram, or far enough that a label chip centered on it clears the diagram by 16 px."""
         A = self.project.area()
         others = [n.fields for n in self.nodes if n is not e.a and n is not e.b and n.fields.get("kind") != "group"]
         fa, fb = e.a.fields, e.b.fields
@@ -790,21 +1298,31 @@ class Scene:
         gy0 = min(n["y"] for n in allf)
         gx1 = max(n["x"] + n["w"] for n in allf)
         gy1 = max(n["y"] + n["h"] for n in allf)
-        pos = {"S": "below", "N": "above", "E": "center", "W": "center"}
         best = None
+        lab = e.fields.get("label")
+        lfs = e.fields.get("labelFontSize", 12)
         for side in ("S", "N", "E", "W"):
             f = dict(e.fields, fromPort=side, toPort=side, lineType="elbowed")
             f.pop("waypoints", None)
             pts = edge_path(f, fa, fb)
             if any(path_hits(pts, n) for n in others):
                 pa, pb = _side_point(fa, side), _side_point(fb, side)
-                lane = {"S": gy1 + 48, "N": gy0 - 48, "E": gx1 + 48, "W": gx0 - 48}[side]
+                half = 0
+                if lab:
+                    half = (label_height(lfs) if side in "NS" else label_width(lab, lfs)) / 2 + 16
+                d = max(48, half)
+                lane = {"S": gy1 + d, "N": gy0 - d, "E": gx1 + d, "W": gx0 - d}[side]
                 wp = ([(pa[0], lane), (pb[0], lane)] if side in "NS" else [(lane, pa[1]), (lane, pb[1])])
                 f["waypoints"] = [{"x": _clean(x), "y": _clean(y)} for x, y in wp]
                 pts = edge_path(f, fa, fb)
                 if any(path_hits(pts, n) for n in others):
                     continue
             inside = all(A.x - 1 <= x <= A.x + A.w + 1 and A.y - 1 <= y <= A.y + A.h + 1 for x, y in pts)
+            if inside and lab:
+                cx, cy = _path_mid(pts)
+                lw, lh = label_width(lab, lfs), label_height(lfs)
+                inside = A.x - 1 <= cx - lw / 2 and cx + lw / 2 <= A.x + A.w + 1 and \
+                    A.y - 1 <= cy - lh / 2 and cy + lh / 2 <= A.y + A.h + 1
             if inside:
                 best = f
                 break
@@ -813,9 +1331,549 @@ class Scene:
         if best is None:
             raise OpenCanvizError("edge %s (route='around'): no side has a clear lane around the diagram; leave "
                                   "room below or above the nodes." % e.id)
-        if best.get("label") and "labelPosition" not in e.user_fields:
-            best["labelPosition"] = pos[best["fromPort"]]
         e.fields = best
+
+    # recipes ------------------------------------------------------------------------------------
+    @property
+    def _portrait(self):
+        return self.project.height > self.project.width
+
+    def _small_font(self):
+        return 30 if self._portrait else 26
+
+    def line(self, p0, p1, a, b=None, arrow="none", color=None, width=3, dashed=False, id=None):
+        """A straight line from world point p0 to p1 (an axis, a baseline, a sequence message). It is an
+        edge pinned to node a (and b): it shows while they do and is drawn in with them."""
+        for end in (a, b or a):
+            if not isinstance(end, Node) or end.scene is not self:
+                raise OpenCanvizError("line(): a and b must be nodes of this scene.")
+        b = b or a
+        eid = self._id(id or "%s_line" % a.id[len(self.prefix):])
+        f = {"id": eid, "from": a.id, "to": b.id, "fromXY": {"x": _clean(p0[0]), "y": _clean(p0[1])},
+             "toXY": {"x": _clean(p1[0]), "y": _clean(p1[1])}, "lineType": "straight", "arrow": arrow,
+             "stroke": color or self.project.colors["muted"], "width": width, "animationStyle": "none"}
+        if dashed:
+            f["strokeStyle"] = "dashed"
+        e = Edge(self, eid, a, b, f)
+        e.user_fields, e.around = {}, False
+        self.edges.append(e)
+        return e
+
+    def bar_chart(self, data, at, max_value=None, color=None, prefix="", suffix="", decimals=0, font=None,
+                  values=True, id="bars"):
+        """Bars that grow from zero. data = [(label, value), ...]. Category labels sit under the bars in a
+        readable size and each value counts up on top of its bar while it grows. Reveal the chart (its
+        labels and baseline come with it), then step.grow(chart) or step.grow(chart, i) per bar."""
+        if not data:
+            raise OpenCanvizError("bar_chart(): give at least one (label, value).")
+        if decimals not in (0, 1):
+            raise OpenCanvizError("bar_chart(): decimals must be 0 or 1 (openCanviz counts in whole numbers or "
+                                  "one decimal).")
+        th = self.project.colors
+        n = len(data)
+        lf = font or self._small_font()
+        labels_h = (_tline(lf))
+        x, y, w = at.x, at.y, at.w
+        h = at.h - labels_h + 10
+        bar_w = w / (n + 0.4 * (n - 1))
+        gap = 0.4 * bar_w
+        texts_fmt = [_fmt_num(v, decimals, prefix, suffix) for _, v in data]
+        vf = min([fit_font(t, self.project.base_font, bar_w + 0.8 * gap, self.project.base_font * 1.4, bold=True)
+                  or 14 for t in texts_fmt])
+        vh = (_tline(vf))
+        area_h = h - 18
+        top_v = max_value if max_value is not None else max(v for _, v in data)
+        if top_v <= 0:
+            raise OpenCanvizError("bar_chart(): values must be > 0.")
+        scale = top_v * area_h / float(area_h - (vh + 8 if values else 0))
+        chart = self.node("algo-chart", None, x=x, y=y, w=w, h=h, id=id, noGlow=True, fill="transparent",
+                          stroke="none", chartBars=[{"id": "b%d" % i, "value": 0, "label": ""} for i in range(n)],
+                          chartMaxValue=_clean(scale), chartShowValues=False, chartBarSpacing=_clean(gap),
+                          chartBarColor=color or th["accent"], labelColor=th["text"])
+        base = y + area_h
+        m = {"values": [v for _, v in data], "grown": set(), "texts": [], "top": []}
+        for i, (lab, v) in enumerate(data):
+            bx = x + i * (bar_w + gap)
+            t = self.text(str(lab), x=bx - gap / 2, y=base + 6, w=bar_w + gap, h=labels_h, fontSize=lf,
+                          color=th["muted"], id="%s_lbl%d" % (id, i))
+            chart.parts.append(t)
+            if values:
+                vt = self.text(texts_fmt[i], x=bx - gap * 0.4, y=base - vh, w=bar_w + gap * 0.8, h=vh, fontSize=vf,
+                               fontWeight=700, color=th["text"], id="%s_val%d" % (id, i), countFrom=0,
+                               countTo=v, countIsInt=decimals == 0, **_affix(prefix, suffix))
+                vt.meta["count_managed"] = True
+                m["texts"].append(vt)
+                m["top"].append(_clean(base - v / scale * area_h - vh - 4))
+            else:
+                m["texts"].append(None)
+                m["top"].append(None)
+        chart.parts.append(self.line((x - 10, base), (x + w + 10, base), chart, color=th["muted"], width=3))
+        chart.meta["bars"] = m
+        return chart
+
+    def _plot(self, kind, at, x_range, y_range, x_ticks, y_ticks, x_title, y_title, font, fmt, id, extra):
+        th = self.project.colors
+        tf = font or self._small_font()
+        fmt = fmt or _tick_fmt
+        yt = _ticks(*y_range) if y_ticks is None else list(y_ticks)
+        xt = _ticks(*x_range) if x_ticks is None else list(x_ticks)
+        ylab = [fmt(v) for v in yt]
+        gl = max(len(s) for s in ylab) * 0.58 * tf + 22
+        top = int(tf * 1.7) if y_title else 10
+        bottom = (_tline(tf)) + 8 + ((_tline(tf)) if x_title else 0)
+        cx, cy, cw, ch = at.x + gl, at.y + top, at.w - gl, at.h - top - bottom
+        if cw < 200 or ch < 160:
+            raise OpenCanvizError("%s: the area is too small for a chart; give it at least 420 x 300 px." % kind)
+        chart = self.node(kind, None, x=cx, y=cy, w=cw, h=ch, id=id, chartShowAxes=False, chartGridLines=False,
+                          chartXRange=list(x_range), chartYRange=list(y_range), labelColor=th["text"],
+                          fill="transparent", stroke="none", noGlow=True, **extra)
+        X0, X1, Y0, Y1 = cx + 10, cx + cw - 12, cy + 14, cy + ch - 10
+        span = float(y_range[1] - y_range[0]) or 1.0
+        ylo, yhi = y_range[0] - 0.05 * span, y_range[1] + 0.05 * span
+        xs = float(x_range[1] - x_range[0]) or 1.0
+
+        def px(xv, yv):
+            return X0 + (xv - x_range[0]) / xs * (X1 - X0), Y1 - (yv - ylo) / (yhi - ylo) * (Y1 - Y0)
+        ax_y = px(0, y_range[0])[1]
+        chart.parts.append(self.line((X0, ax_y), (X1, ax_y), chart, color=th["muted"], width=3))
+        chart.parts.append(self.line((X0, px(0, y_range[1])[1]), (X0, ax_y), chart, color=th["muted"], width=3))
+        th_ = _tline(tf)
+        for v, s in zip(yt, ylab):
+            chart.parts.append(self.text(s, x=at.x, y=px(0, v)[1] - th_ / 2, w=gl - 14, h=th_, fontSize=tf,
+                                         textAlign="right", color=th["muted"], id="%s_y%s" % (id, _slug(s))))
+        tw = min(220.0, (X1 - X0) / max(1, len(xt) - 1) if len(xt) > 1 else 220.0)
+        for v in xt:
+            s = fmt(v)
+            chart.parts.append(self.text(s, x=px(v, 0)[0] - tw / 2, y=cy + ch + 4, w=tw, h=th_, fontSize=tf,
+                                         color=th["muted"], id="%s_x%s" % (id, _slug(s))))
+        if x_title:
+            chart.parts.append(self.text(x_title, x=cx, y=cy + ch + 8 + th_, w=cw, h=_tline(tf), fontSize=tf,
+                                         color=th["muted"], id="%s_xtitle" % id))
+        if y_title:
+            chart.parts.append(self.text(y_title, x=at.x, y=at.y, w=at.w * 0.6, h=_tline(tf), fontSize=tf,
+                                         textAlign="left", color=th["muted"], id="%s_ytitle" % id))
+        return chart, px
+
+    def line_chart(self, points, at, x_range=None, y_range=None, color=None, x_ticks=None, y_ticks=None,
+                   x_title=None, y_title=None, notes=None, font=None, fmt=None, id="line"):
+        """A line that draws itself left to right. points = [(x, y), ...] in data units, sorted by x.
+        Axes, tick labels and titles are readable text nodes. notes = {point index: "text"} labels a point
+        when the line reaches it. Reveal the chart, then step.extend(chart, upto) one or more times."""
+        if len(points) < 2:
+            raise OpenCanvizError("line_chart(): give at least two points.")
+        xs, ys = [p[0] for p in points], [p[1] for p in points]
+        x_range = list(x_range or (min(xs), max(xs)))
+        y_range = list(y_range or (min(0, min(ys)), _nice_ceil(max(ys))))
+        th = self.project.colors
+        col = color or th["hi"]
+        m = {"points": [tuple(p) for p in points], "shown": 0, "color": col, "notes": {}}
+        chart, px = self._plot("algo-chart-line", at, x_range, y_range, x_ticks, y_ticks, x_title, y_title, font,
+                               fmt, id, {"chartSeries": [_series(m, 0)]})
+        tf = font or self._small_font()
+        for i, txt in sorted((notes or {}).items()):
+            X, Y = px(*points[i])
+            w = len(str(txt)) * 0.6 * (tf + 2) + 24
+            nx = min(max(X - w / 2, chart.fields["x"]), chart.fields["x"] + chart.fields["w"] - w)
+            nh = _tline(tf + 2)
+            ny = Y - nh - 14 if Y - nh - 14 > chart.fields["y"] else Y + 14
+            t = self.text(str(txt), x=nx, y=ny, w=w, h=nh, fontSize=tf + 2, fontWeight=700, color=col,
+                          id="%s_note%d" % (id, i))
+            m["notes"][i] = t
+        chart.meta["line"] = m
+        return chart
+
+    def scatter(self, points, at, x_range=None, y_range=None, colors=None, size=14, x_ticks=None, y_ticks=None,
+                x_title=None, y_title=None, font=None, fmt=None, id="scatter"):
+        """Dots at (x, y) in data units; step.scatter_to(chart, new_points, colors) moves them over a step."""
+        xs, ys = [p[0] for p in points], [p[1] for p in points]
+        x_range = list(x_range or (min(0, min(xs)), _nice_ceil(max(xs))))
+        y_range = list(y_range or (min(0, min(ys)), _nice_ceil(max(ys))))
+        th = self.project.colors
+        m = {"points": list(points), "colors": list(colors or [th["accent"]] * len(points)), "size": size}
+        chart, _ = self._plot("algo-chart-scatter", at, x_range, y_range, x_ticks, y_ticks, x_title, y_title, font,
+                              fmt, id, {"chartPoints": _dots(m)})
+        chart.meta["scatter"] = m
+        return chart
+
+    def array(self, values, at, font=None, indices=True, id="array"):
+        """A row of cells (sorting, searching, two pointers). The rect also keeps 70 px on top for pointers
+        and 80 px below for the index row and a bracket label. Use step.swap / color / bracket and
+        scene.pointer(). The index numbers are text nodes that come and go with the array."""
+        n = len(values)
+        th = self.project.colors
+        y, h = at.y + 70, at.h - 150
+        if h < 80 or n == 0:
+            raise OpenCanvizError("array(): give a rect at least 230 px tall and one or more values.")
+        cell_w = at.w / float(n)
+        fs = font or int(min(64, cell_w * 0.45, (h - 30) * 0.5))
+        # openCanviz's own index row resets the canvas alpha, so with it on the array ignores opacity and
+        # cannot fade in or out; draw the indices as text nodes instead
+        node = self.node("algo-array", None, x=at.x, y=y, w=at.w, h=h, id=id, cellValues=[str(v) for v in values],
+                         cellColors=[None] * n, cellFontSize=fs, cellShowIndices=False, fill=th["fill"],
+                         stroke=th["muted"], labelColor=th["text"], noGlow=True)
+        sf = self._small_font()
+        if indices:
+            for i in range(n):
+                node.parts.append(self.text(str(i), x=at.x + i * cell_w, y=y + h + 16, w=cell_w, h=_tline(sf - 4),
+                                            fontSize=sf - 4, color=th["muted"], id="%s_i%d" % (id, i)))
+        m = {"values": [str(v) for v in values], "colors": [None] * n, "label_font": sf,
+             "label_y": y + h + 16 + (_tline(sf - 4) if indices else 0) + 4, "indices": indices}
+        node.meta["array"] = node.meta["struct"] = m
+        return node
+
+    def pointer(self, target, at, label="", color=None, side="top", font=None, id=None):
+        """A labeled arrow on a cell of a structure: an array index, a tree / linked list / graph value, a
+        grid (row, col) or a bar index of a bar chart. It shows with its target; move it with step.point."""
+        self._own_node(target)
+        f = {"pointerTargetId": target.id, "pointerLabel": str(label), "pointerColor": color or self.project.colors["hi"],
+             "labelFontSize": font or 30, "pointerArrowSize": 20}
+        if target.fields.get("kind") == "algo-array":
+            if side == "bottom" and target.meta["array"]["indices"]:
+                raise OpenCanvizError("pointer(%s): a bottom pointer sits right under the cells, over the index row "
+                                      "and the bracket; use side=\"top\" or array(..., indices=False)." % label)
+            f["pointerSidePosition"] = side
+        f.update(_pointer_target(target, at))
+        n = self.node("algo-pointer", None, id=id or "ptr_%s" % (label or "p"), **f)
+        n.meta["pointer"] = {"target": target}
+        target.parts.append(n)
+        return n
+
+    def _own_node(self, n):
+        if not isinstance(n, Node) or n.scene is not self:
+            raise OpenCanvizError("expected a node of this scene, got %r" % (n,))
+
+    def tree(self, spec, at, font=None, radius=None, id="tree"):
+        """A tree inside at. spec = {value: [left, right], ...}, root first; use "" for an empty child slot,
+        e.g. {"5": ["3", "8"], "3": ["1", "4"], "8": ["", "9"]}. openCanviz scales a tree to fill its box,
+        so the node is sized to the tree (centered in at) to keep circles from overlapping or ballooning."""
+        spec = {str(k): [("" if c is None else str(c)) for c in v] for k, v in spec.items()}
+        root = next(iter(spec))
+        ids = {}
+        order = [root] + [c for v in spec.values() for c in v if c]
+        for v in order:
+            ids.setdefault(v, "n_" + _slug(v))
+
+        def slots(v, seen=()):
+            kids = spec.get(v) or []
+            if not kids or v in seen:
+                return 1
+            return max(1, sum(1 if not c else slots(c, seen + (v,)) for c in kids))
+
+        def depth(v, seen=()):
+            kids = [c for c in spec.get(v, []) if c and c not in seen]
+            return 1 + max([depth(c, seen + (v,)) for c in kids] or [0])
+        cols, rows = slots(root), depth(root)
+        sp_k, lv_k = 2.6, 2.8           # spacing and level height in radii
+
+        def natural(r):                  # openCanviz: leaves sit spacing apart, levels levelHeight apart
+            return ((cols - 1) * sp_k * r + 2 * (r + 8), (rows - 1) * lv_k * r + 2 * (r + 8))
+        r = float(radius or 64)
+        while r > 14 and (natural(r)[0] > at.w or natural(r)[1] > at.h):
+            r -= 1
+        nw, nh = natural(r)
+        nodes = []
+        for v in dict.fromkeys(order):
+            e = {"id": ids[v], "value": v}
+            if spec.get(v):
+                e["children"] = [ids[c] if c else "" for c in spec[v]]
+            nodes.append(e)
+        box = Rect(at.cx - nw / 2, at.cy - nh / 2, nw, nh)
+        node = self.node("algo-tree", None, at=box, id=id, treeNodes=nodes, nodeRadius=_clean(r),
+                         nodeSpacing=_clean(sp_k * r), levelHeight=_clean(lv_k * r), nodeFontSize=font or int(r * 0.9),
+                         fill=self.project.colors["fill"], labelColor=self.project.colors["text"])
+        node.meta["struct"] = {"ids": ids, "colors": {}, "edge_colors": {}, "edge_ids": {}}
+        return node
+
+    def linked_list(self, values, at, capacity=None, font=None, id="list"):
+        """A linked list (boxes joined by next arrows, ending in null). capacity = most nodes it will hold
+        after step.append(); the boxes are sized for that many."""
+        cap = max(capacity or 0, len(values))
+        nw = min(150.0, (at.w - 120) / (cap * 1.4))
+        nh = min(100.0, at.h, nw * 0.7)
+        fs = font or int(max(20, min(nw, nh) * 0.45))
+        vals = [str(v) for v in values]
+        node = self.node("algo-linked-list", None, at=at, id=id, linkedListNodes=_list_nodes(vals),
+                         linkedListNodeWidth=_clean(nw), linkedListNodeHeight=_clean(nh), nodeFontSize=fs,
+                         fill=self.project.colors["fill"], labelColor=self.project.colors["text"])
+        m = {"values": vals, "capacity": cap, "ids": {v: "l%d" % i for i, v in enumerate(vals)}, "colors": {},
+             "edge_colors": {}, "edge_ids": {}}
+        node.meta["list"] = node.meta["struct"] = m
+        return node
+
+    def graph(self, nodes, edges, at, directed=False, font=None, radius=None, id="graph"):
+        """A graph. nodes = {name: (fx, fy)} with fx, fy in 0..1 across the rect; edges = [(a, b) or
+        (a, b, weight)]. Color nodes and edges with step.color(g, {name: c}, edges={(a, b): c})."""
+        r = radius or int(max(24, min(44, at.h / 8.0, at.w / 12.0)))
+        sw, sh = at.w - 2 * r - 20, at.h - 2 * r - 20
+        gn = [{"id": "g_" + _slug(k), "value": str(k), "x": _clean(fx * sw), "y": _clean(fy * sh)}
+              for k, (fx, fy) in nodes.items()]
+        ids = {str(k): "g_" + _slug(k) for k in nodes}
+        ge, eids = [], {}
+        for e in edges:
+            a, b = str(e[0]), str(e[1])
+            if a not in ids or b not in ids:
+                raise OpenCanvizError("graph(): edge %r-%r joins an unknown node." % (a, b))
+            eid = "e_%s_%s" % (_slug(a), _slug(b))
+            g = {"id": eid, "source": ids[a], "target": ids[b]}
+            if len(e) > 2:
+                g["weight"] = e[2]
+            ge.append(g)
+            eids[(a, b)] = eid
+        node = self.node("algo-graph", None, at=at, id=id, graphNodes=gn, graphEdges=ge, graphNodeRadius=r,
+                         graphDirected=bool(directed), nodeFontSize=font or int(r * 0.8), labelFontSize=24,
+                         labelColor=self.project.colors["text"])
+        node.meta["struct"] = {"ids": ids, "colors": {}, "edge_colors": {}, "edge_ids": eids}
+        return node
+
+    def grid(self, rows, at, font=None, id="grid"):
+        """A table of cells (dynamic programming, a matrix, a board). rows = [[v, ...], ...]."""
+        vals = [[str(v) for v in r] for r in rows]
+        nr, nc = len(vals), max(len(r) for r in vals)
+        fs = font or int(max(20, min(44, at.h / nr * 0.45, at.w / nc * 0.35)))
+        node = self.node("algo-grid", None, at=at, id=id, gridValues=[list(r) for r in vals],
+                         gridColors=[[None] * nc for _ in vals], gridCellFontSize=fs,
+                         gridIndexFontSize=max(18, int(fs * 0.5)), fill=self.project.colors["fill"],
+                         labelColor=self.project.colors["text"])
+        m = {"values": vals, "colors": [[None] * nc for _ in vals]}
+        node.meta["grid"] = node.meta["struct"] = m
+        return node
+
+    def variable(self, name, value, at, font=None, id=None):
+        """A named value box ("min = 3"); step.assign(var, v) changes it."""
+        node = self.node("algo-variable", None, at=at, id=id or "var_" + _slug(name), varName=str(name),
+                         varValue=str(value), labelFontSize=font or int(min(40, at.h * 0.4)),
+                         labelColor=self.project.colors["text"])
+        node.meta["var"] = {}
+        return node
+
+    def code(self, source, at, language="python", font=None, id="code"):
+        """A code panel with syntax colors (python, javascript or pseudo). step.highlight(code, 3) marks
+        line 3 (1-based); the mark jumps from line to line."""
+        if language not in ("python", "javascript", "pseudo"):
+            raise OpenCanvizError("code(): language must be python, javascript or pseudo.")
+        th = self.project.colors
+        lines = source.rstrip("\n").split("\n")
+        longest = max(len(l) for l in lines)
+        fs = font or int(min(44, (at.h - 48) / (len(lines) * 1.4), (at.w - 48) / (longest * 0.62)))
+        if fs < 18:
+            raise OpenCanvizError("code(): %d lines of up to %d characters need a bigger rect (font would be %d px); "
+                                  "show fewer lines." % (len(lines), longest, fs))
+        ch = min(at.h, int(math.ceil(len(lines) * fs * 1.4 + 2 * 20 + 12)))
+        at = Rect(at.x, at.y + (at.h - ch) / 2.0, at.w, ch)
+        node = self.node("text", None, at=at, id=id, text="\n".join(lines), fontFamily="monospace", fontSize=fs,
+                         lineHeight=1.4, textAlign="left", verticalAlign="top", wrap="clip", syntaxStyle=language,
+                         highlightedLines=[], color=th["code"], fill=th["panel"], stroke=th["line"],
+                         strokeWidth=2, padding=20, noGlow=True)
+        # openCanviz shows the old and new highlighted lines together until the step ends; this flag makes
+        # the mark jump at the start of the step instead (seen working in the export renderer)
+        node.fields["_animatedProps"] = {"highlightedLines": False}
+        node.meta["code"] = {"lines": len(lines)}
+        return node
+
+    def sequence(self, names, at, font=None):
+        """Lifelines for a sequence diagram, one per name, spread across at. Then scene.message(a, b, text)
+        for each call and step.draw(msg) to send it (its text appears once the arrow lands)."""
+        n = len(names)
+        col = at.w / float(n)
+        w = min(260.0, col - 40)
+        th = self.project.colors
+        out = []
+        for i, name in enumerate(names):
+            x = at.x + col * i + (col - w) / 2
+            lf = font or (32 if self._portrait else 30)   # the header box is a fixed 50 px
+            ln = self.node("uml-lifeline", str(name), x=x, y=at.y, w=w, h=at.h, id="life_" + _slug(name),
+                           lifelineLength=_clean(at.h - 50), fill=th["fill"], stroke=th["muted"], labelColor=th["text"],
+                           labelFontSize=lf, noGlow=True)
+            ln.meta["lifeline"] = {"acts": []}
+            out.append(ln)
+        self._seq_y = at.y + 50 + 80
+        return out
+
+    def message(self, a, b, text, y=None, reply=False, font=None):
+        """An arrow from lifeline a to lifeline b at height y (default: below the previous message), with
+        its text above it. reply=True draws it dashed with an open head. Send it with step.draw(msg)."""
+        if a is b:
+            raise OpenCanvizError("message(): a and b must be different lifelines.")
+        th = self.project.colors
+        y = getattr(self, "_seq_y", a.fields["y"] + 130) if y is None else y
+        self._seq_y = y + 100
+        ax, bx = a.rect.cx, b.rect.cx
+        e = self.line((ax, y), (bx, y), a, b, arrow="end", color=th["muted"] if reply else th["text"], width=3,
+                      dashed=reply, id="msg_" + _slug(text))
+        e.fields["endArrowType"] = "open-triangle" if reply else "triangle"
+        e.fields["strokeStyle"] = "dashed" if reply else "solid"
+        fs = font or (30 if self._portrait else 28)
+        t = self.text(str(text), x=min(ax, bx) + 16, y=y - _tline(fs) - 8, w=abs(bx - ax) - 32, h=_tline(fs), fontSize=fs,
+                      color=th["text"], id="msg_" + _slug(text) + "_text")
+        e.parts.append(t)
+        e.meta_y = y
+        return e
+
+    def timeline(self, events, at, font=None, color=None, id="timeline"):
+        """Events [(year, text), ...] on a line that grows from one to the next: across in landscape, down in
+        portrait. step.event(tl) brings in the next one (call it once per event)."""
+        th = self.project.colors
+        acc = color or th["accent"]
+        n = len(events)
+        if n < 2:
+            raise OpenCanvizError("timeline(): give at least two events.")
+        vertical = at.h > at.w
+        fs = font or (34 if self._portrait else 30)
+        yf = int(fs * 1.3)
+        handles, pos = [], []
+        if not vertical:
+            slot = at.w / float(n)
+            body_h = min(int(math.ceil(3 * fs * LINE_H + 18)), at.h - _tline(yf) - 74)
+            block = _tline(yf) + 40 + 34 + body_h
+            cy = at.y + max(0, (at.h - block) / 2.0) + _tline(yf) + 40
+            for i, (yr, txt) in enumerate(events):
+                xi = at.x + slot * (i + 0.5)
+                pos.append(xi)
+            line = self.node("rect", None, x=pos[0] - 5, y=cy - 5, w=10, h=10, id=id, fill=th["muted"],
+                             stroke="none", cornerRadius=5, noGlow=True)
+            for i, (yr, txt) in enumerate(events):
+                xi = pos[i]
+                dot = self.node("circle", None, x=xi - 18, y=cy - 18, w=36, h=36, id="%s_dot%d" % (id, i),
+                                fill=acc, stroke=self.scene_background(), strokeWidth=4, noGlow=True)
+                year = self.text(str(yr), x=xi - slot / 2 + 6, y=cy - 18 - 14 - _tline(yf), w=slot - 12, h=_tline(yf),
+                                 fontSize=yf, fontWeight=700, color=acc, id="%s_year%d" % (id, i))
+                tf = fit_font(str(txt), fs, slot - 16, body_h) or 16
+                body = self.text(str(txt), x=xi - slot / 2 + 8, y=cy + 34, w=slot - 16, h=body_h,
+                                 fontSize=tf, color=th["text"], verticalAlign="top", id="%s_text%d" % (id, i))
+                dot.parts += [year, body]
+                handles.append(dot)
+        else:
+            slot = at.h / float(n)
+            lx = at.x + yf * 3.2 + 30
+            for i in range(n):
+                pos.append(at.y + slot * (i + 0.5))
+            line = self.node("rect", None, x=lx - 5, y=pos[0] - 5, w=10, h=10, id=id, fill=th["muted"],
+                             stroke="none", cornerRadius=5, noGlow=True)
+            for i, (yr, txt) in enumerate(events):
+                yi = pos[i]
+                dot = self.node("circle", None, x=lx - 18, y=yi - 18, w=36, h=36, id="%s_dot%d" % (id, i),
+                                fill=acc, stroke=self.scene_background(), strokeWidth=4, noGlow=True)
+                year = self.text(str(yr), x=at.x, y=yi - _tline(yf) / 2.0, w=lx - 30 - at.x, h=_tline(yf), fontSize=yf,
+                                 fontWeight=700, color=acc, textAlign="right", id="%s_year%d" % (id, i))
+                bw = at.x + at.w - (lx + 34)
+                tf = fit_font(str(txt), fs, bw, slot - 12) or 16
+                body = self.text(str(txt), x=lx + 34, y=yi - (slot - 12) / 2, w=bw, h=slot - 12, fontSize=tf,
+                                 color=th["text"], textAlign="left", id="%s_text%d" % (id, i))
+                dot.parts += [year, body]
+                handles.append(dot)
+        line.meta["timeline"] = {"events": handles, "pos": pos, "shown": -1, "vertical": vertical}
+        return line
+
+    def panels(self, titles, at, colors=None, font=None):
+        """Side-by-side panels (stacked in portrait) for before / after or A vs B. Returns the panel nodes;
+        each has .content, the Rect to lay its own nodes out in. Reveal a panel to show it with its title."""
+        th = self.project.colors
+        cols = list(colors or [th["bad"], th["ok"], th["accent"], th["hi"]])
+        rects = at.column(len(titles), gap=40) if self._portrait else at.row(len(titles), gap=60)
+        fs = font or int(self.project.base_font * 0.9)
+        out = []
+        for i, (title, r) in enumerate(zip(titles, rects)):
+            c = cols[i % len(cols)]
+            p = self.node("rect", None, at=r, id="panel_" + _slug(title), fill=th["panel"], stroke=c, strokeWidth=3,
+                          cornerRadius=20, noGlow=True)
+            head = self.text(str(title), x=r.x + 20, y=r.y + 16, w=r.w - 40, h=_tline(fs), fontSize=fs, fontWeight=700,
+                             color=c, id="panel_" + _slug(title) + "_title")
+            p.parts.append(head)
+            top = 16 + _tline(fs) + 16
+            p.content = Rect(r.x + 28, r.y + top, r.w - 56, r.h - top - 28, at.label_size)
+            out.append(p)
+        return out
+
+    def bullets(self, items, at, glyph="check", color=None, font=None, id="point"):
+        """A list of points, each with a check (or x, dot, arrow) that draws itself in when the point is
+        revealed. Returns the text nodes; reveal them one per step, or together."""
+        th = self.project.colors
+        n = len(items)
+        gap = 24
+        rh = min((at.h - gap * (n - 1)) / float(n), self.project.base_font * 3.2)
+        rows = at.column(n, gap=gap, h=rh)
+        g = min(rh, self.project.base_font * 1.3)
+        tw = at.w - g - 28
+        fs = font or min([fit_font(str(t), self.project.base_font, tw, rh) or 14 for t in items])
+        out = []
+        for i, (txt, r) in enumerate(zip(items, rows)):
+            gl = self.node("glyph", None, x=r.x, y=r.cy - g / 2, w=g, h=g, id="%s%d_glyph" % (id, i + 1), glyph=glyph,
+                           color=color or th["ok"])
+            t = self.text(str(txt), x=r.x + g + 28, y=r.y, w=tw, h=r.h, fontSize=fs, textAlign="left",
+                          id="%s%d" % (id, i + 1))
+            t.parts.append(gl)
+            out.append(t)
+        return out
+
+    def counter(self, value, at, start=0, prefix="", suffix="", decimals=0, font=None, color=None, duration=1500,
+                id=None):
+        """A big number that counts up from start to value when it is revealed (over duration ms)."""
+        if decimals not in (0, 1):
+            raise OpenCanvizError("counter(): decimals must be 0 or 1.")
+        txt = _fmt_num(value, decimals, prefix, suffix)
+        fs = font or fit_font(txt, self.project.base_font * 2.4, at.w, at.h, bold=True) or 14
+        return self.text(txt, at=at, fontSize=fs, fontWeight=800, color=color or self.project.colors["accent"],
+                         id=id or "count_" + _slug(txt), countFrom=start, countTo=value, countDurationMs=duration,
+                         countIsInt=decimals == 0, **_affix(prefix, suffix))
+
+    def pie(self, data, at, donut=0.0, colors=None, font=None, decimals=0, id="pie"):
+        """A pie (donut=0.55 for a ring) with a legend. data = [(label, value), ...]. step.sweep(pie)
+        reveals it and sweeps the slices open; do not reveal it yourself."""
+        th = self.project.colors
+        cols = list(colors or PALETTE)
+        total = float(sum(v for _, v in data))
+        if total <= 0:
+            raise OpenCanvizError("pie(): values must add up to more than 0.")
+        if self._portrait:
+            side = min(at.w * 0.8, at.h * 0.55)
+            pr = Rect(at.cx - side / 2, at.y, side, side)
+            legend = Rect(at.x, at.y + side + 40, at.w, at.h - side - 40)
+        else:
+            side = min(at.h, at.w * 0.48)
+            pr = Rect(at.x + (at.w * 0.5 - side) / 2, at.cy - side / 2, side, side)
+            legend = Rect(at.x + at.w * 0.55, at.y, at.w * 0.45, at.h)
+        wedges, angles, acc = [], [], 0.0
+        for i, (lab, v) in enumerate(data):
+            a0 = -90 + 360 * acc / total
+            acc += v
+            a1 = -90 + 360 * acc / total
+            f = dict(startAngle=-90, endAngle=-90, fill=cols[i % len(cols)], stroke=self.scene_background(),
+                     strokeWidth=4, noGlow=True)
+            if donut:
+                f["innerRadius"] = donut
+            wedges.append(self.node("wedge", None, at=pr, id="%s_%s" % (id, _slug(lab)), **f))
+            angles.append((_clean(a0), _clean(a1)))
+        n = len(data)
+        rh = min(self.project.base_font * 1.6, (legend.h - 16 * (n - 1)) / float(n))
+        rows = legend.column(n, gap=16, h=rh)
+        fs = font or int(min(self.project.base_font * 0.9, (rh - 2 * TEXT_PAD - 2) / LINE_H))
+        parts = wedges[1:]
+        for i, ((lab, v), r) in enumerate(zip(data, rows)):
+            sw = min(rh * 0.8, 40)
+            parts.append(self.node("rect", None, x=r.x, y=r.cy - sw / 2, w=sw, h=sw, id="%s_key%d" % (id, i),
+                                   fill=cols[i % len(cols)], stroke="none", cornerRadius=6, noGlow=True))
+            pct = ("%." + str(decimals) + "f%%") % (100.0 * v / total)
+            parts.append(self.text("%s  %s" % (lab, pct), x=r.x + sw + 20, y=r.y, w=r.w - sw - 20, h=r.h,
+                                   fontSize=fs, textAlign="left", id="%s_keytext%d" % (id, i)))
+        wedges[0].parts += parts
+        wedges[0].meta["pie"] = {"wedges": wedges, "angles": angles}
+        return wedges[0]
+
+    def path(self, points, closed=False, id="path"):
+        """A motion path through world points [(x, y), ...] for step.follow(node, path). Returns its id."""
+        if len(points) < 2:
+            raise OpenCanvizError("path(): give at least two points.")
+        pts = [{"x": _clean(x), "y": _clean(y)} for x, y in points]
+        if closed and pts[0] != pts[-1]:
+            pts.append(dict(pts[0]))
+        pid = self._id(id)
+        # the export renderer reads length and cum (cumulative length at each point) straight from the file and
+        # leaves the node where it is when they are missing, so fill them in here
+        cum = [0]
+        for p, q in zip(pts, pts[1:]):
+            cum.append(_clean(cum[-1] + math.hypot(q["x"] - p["x"], q["y"] - p["y"])))
+        self.paths[pid] = {"id": pid, "points": pts, "closed": bool(closed), "length": cum[-1], "cum": cum}
+        return pid
 
     def scene_background(self):
         return self.background or self.project.colors["background"]
@@ -909,7 +1967,7 @@ class Scene:
         vis, evis = self._timelines()
         snap_nodes = []
         for n in self.nodes:
-            f = {k: v for k, v in n.fields.items() if not k.startswith("_")}
+            f = {k: v for k, v in n.fields.items() if not k.startswith("_") or k == "_animatedProps"}
             shown = f.pop("opacity", 1)
             f["opacity"] = shown if n.initial_visible else 0
             if n.fields.get("_type_step", -1) > 0:
@@ -923,12 +1981,11 @@ class Scene:
             f = dict(e.fields)
             later = e.first_draw is not None and e.first_draw > 0
             f["trim"] = 0 if later else 1
-            if e.labeled:
-                f["opacity"] = 0 if later else f.get("opacity", 1)
+            f["opacity"] = 0 if later else f.get("opacity", 1)
             if e.twin_steps:
                 t = e.twin_fields()
-                # end of step 0: drawn and faded if step 0 draws it, else waiting at trim 0
-                t["trim"], t["opacity"] = (1, 0) if 0 in e.twin_steps else (0, 1)
+                # end of step 0: drawn and faded if step 0 draws it, else waiting at trim 0 opacity 0
+                t["trim"], t["opacity"] = (1, 0) if 0 in e.twin_steps else (0, 0)
                 snap_edges.append(t)
             snap_edges.append(f)
         twins = {e.id: e.twin_id for e in self.edges if e.twin_steps}
@@ -944,8 +2001,7 @@ class Scene:
                 for e in self.edges:
                     if evis[e.id][k] != evis[e.id][k - 1] and e.id not in st.remove_edges:
                         epatch.setdefault(e.id, {})["trim"] = 1 if evis[e.id][k] else 0
-                        if e.labeled:
-                            epatch[e.id]["opacity"] = e.fields.get("opacity", 1) if evis[e.id][k] else 0
+                        epatch[e.id]["opacity"] = e.fields.get("opacity", 1) if evis[e.id][k] else 0
                     if k in e.twin_steps:
                         epatch[e.twin_id] = {"trim": 1, "opacity": 0}
             for eid in list(st.remove_edges):
@@ -978,6 +2034,14 @@ class Scene:
             else:
                 sd["nodes"] = [dict({"id": nid}, **p) for nid, p in npatch.items()]
                 sd["edges"] = [dict({"id": eid}, **p) for eid, p in epatch.items()]
+                if sd["edges"] and not sd["nodes"]:
+                    # openCanviz blanks every node in a delta step that lists edges but no nodes, so
+                    # restate one node's current opacity
+                    gone = {n.id for n in self.nodes if any(j <= k and kind == "remove" for j, kind in n.events)}
+                    live = [n for n in self.nodes if n.id not in gone]
+                    pick = next((n for n in live if vis[n.id][k]), live[0] if live else None)
+                    if pick is not None:
+                        sd["nodes"] = [{"id": pick.id, "opacity": shown_opacity[pick.id] if vis[pick.id][k] else 0}]
             if st.remove_nodes:
                 sd["removeNodeIds"] = list(dict.fromkeys(st.remove_nodes))
             if st.remove_edges:
@@ -992,10 +2056,23 @@ class Scene:
                 narration.append({"id": "%sn%d" % (self.prefix, k), "text": str(st.narration), "stepIndex": k,
                                   "voice": {"provider": "openai", "voiceId": v, "voiceName": v.capitalize()}})
         self._follow(steps)
+        _hold_first_edge_tweens(steps[0])
+        snap = {n["id"]: n for n in steps[0]["nodes"]}
+        t0 = 0
+        for st, sd in zip(self.steps, steps):
+            def adj(off, sh=st._shift):
+                return off + sh[1] if sh and off >= sh[0] else off
+            for node, field, off in st.timed:
+                snap[node.id][field] = int(t0 + adj(off))
+            for fn in st.hooks:
+                fn(snap, t0, sd, adj)
+            t0 += sd["durationMs"]
         scene = {"nodes": [dict(x) for x in steps[0]["nodes"]], "edges": [dict(x) for x in steps[0]["edges"]],
                  "steps": steps}
         if narration:
             scene["narration"] = narration
+        if self.paths:
+            scene["paths"] = dict(self.paths)
         if self.background:
             scene["background"] = self.background
         return scene
@@ -1034,17 +2111,37 @@ class Scene:
             if k == 0:
                 cam["cameraDurationMs"] = 0
             else:
-                ins = [a.get("offsetMs", 0) for a in sd.get("actions") or [] if a.get("type") == "visibility"
-                       and a.get("mode") in VIS_IN]
-                off = min(ins) if ins else 0
-                room = sd["durationMs"] - off
-                if room < 400:
-                    off, room = 0, sd["durationMs"]
-                cam.update({"cameraDurationMs": int(min(FOLLOW_MS, room)), "cameraEasing": "ease"})
+                # pan first, then let the new things arrive: everything that starts at or after the first
+                # arrival waits for the pan, so nothing appears while the frame is still moving (where it
+                # would sit under the caption or off center for a moment)
+                acts = sd.get("actions") or []
+                ins = [a.get("offsetMs", 0) for a in acts if _arrives(a)]
+                if ins:
+                    off, pan = min(ins), PAN_FIRST_MS
+                    for a in acts:
+                        if a.get("offsetMs", 0) >= off:
+                            a["offsetMs"] = a.get("offsetMs", 0) + pan
+                    self.steps[k]._shift = (off, pan)
+                    end = max([a.get("offsetMs", 0) + a.get("durationMs", 0) for a in acts] + [off + pan])
+                    sd["durationMs"] = max(sd["durationMs"], int(math.ceil((end + 600) / 100.0) * 100))
+                    cam.update({"cameraDurationMs": pan, "cameraEasing": "ease"})
+                else:
+                    off = 0
+                    cam.update({"cameraDurationMs": int(min(FOLLOW_MS, sd["durationMs"])), "cameraEasing": "ease"})
                 if off:
                     cam["cameraOffsetMs"] = off
             sd.update(cam)
             cur = target
+
+
+def _arrives(a):
+    """True for an action that brings something onto the screen (a reveal or an edge draw-in)."""
+    if a.get("type") == "visibility":
+        return a.get("mode") in VIS_IN
+    if a.get("type") == "edgeTween":
+        fr, to = a.get("from") or {}, a.get("to") or {}
+        return _num(fr.get("trim")) and _num(to.get("trim")) and to["trim"] > fr["trim"]
+    return False
 
 
 class Project:
@@ -1171,8 +2268,12 @@ def _num(v):
 def _walk_fields(obj, where, errors):
     if isinstance(obj, dict):
         for k, v in obj.items():
-            if k in INTERNAL_FIELDS:
+            if k == "_animatedProps" and v == {"highlightedLines": False}:
+                pass   # the one internal flag that is safe to set: code highlights jump instead of blending
+            elif k in INTERNAL_FIELDS:
                 errors.append("%s: remove '%s'; openCanviz sets it." % (where, k))
+            if k == "sketchMode":
+                errors.append("%s: remove sketchMode; it renders badly in the exported video." % where)
             if k == "fillOpacity":
                 errors.append("%s: fillOpacity does nothing; dim with opacity or a darker hex." % where)
             if _num(v) and (math.isnan(v) or math.isinf(v)):
@@ -1253,6 +2354,8 @@ def _facing_sides(a, b):
 def edge_path(e, a, b):
     """Approximate polyline of an edge between nodes a and b, following openCanviz routing
     (default lineType is elbowed; curved bulges 25% of the length to the left of travel)."""
+    if isinstance(e.get("fromXY"), dict) and isinstance(e.get("toXY"), dict):
+        return [(e["fromXY"]["x"], e["fromXY"]["y"]), (e["toXY"]["x"], e["toXY"]["y"])]
     auto = _facing_sides(a, b)
     fp, tp = e.get("fromPort") or auto[0], e.get("toPort") or auto[1]
     pa, pb = _side_point(a, fp), _side_point(b, tp)
@@ -1289,6 +2392,18 @@ def edge_path(e, a, b):
     return [pa, (pa[0], pb[1]), pb]
 
 
+def _path_mid(pts):
+    """Point halfway along a polyline (where openCanviz centers an edge label)."""
+    segs = [(p, q, math.hypot(q[0] - p[0], q[1] - p[1])) for p, q in zip(pts, pts[1:])]
+    half, acc = sum(s[2] for s in segs) / 2.0, 0.0
+    for p, q, l in segs:
+        if acc + l >= half and l > 0:
+            t = (half - acc) / l
+            return p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t
+        acc += l
+    return pts[0]
+
+
 def _ink_x(n):
     """Left and right x of what a node draws. A text node's box is often the full width of the frame,
     so its ink (the longest line, placed by textAlign) is used instead."""
@@ -1310,7 +2425,7 @@ def _ink_x(n):
 def _visible_bbox(nodes, edges):
     """(x0, y0, x1, y1) of the visible nodes and drawn arrows, or None when nothing shows."""
     vis = {i: n for i, n in nodes.items() if (n.get("opacity", 1) or 0) > 0.01
-           and all(_num(n.get(k)) for k in ("x", "y", "w", "h")) and n.get("kind") != "group"}
+           and all(_num(n.get(k)) for k in ("x", "y", "w", "h")) and n.get("kind") not in ("group", "algo-pointer")}
     if not vis:
         return None
     xs, ys = [], []
@@ -1398,6 +2513,40 @@ def _contains(a, b):
             and a["y"] + a["h"] >= b["y"] + b["h"] - 1)
 
 
+def _node_field_checks(n, where, E, W):
+    """Fields seen to break the render: glow 0, sketchMode, one-color icons with no fill, missing font sizes."""
+    nid, kind = n.get("id"), n.get("kind")
+    if n.get("glow") == 0:
+        E("%s: %s has glow 0, which openCanviz ignores; use \"noGlow\": true." % (where, nid))
+    asset = n.get("asset")
+    if isinstance(asset, dict) and asset.get("source") == "iconify":
+        prefix = str(asset.get("ref", "")).split(":")[0]
+        if prefix not in MULTICOLOR_ICON_SETS and not (n.get("iconStyle") == "solid" and n.get("fill")):
+            W("%s: icon %s (%s) is one color and renders black; add \"iconStyle\": \"solid\" and a \"fill\" hex."
+              % (where, nid, asset.get("ref")))
+    ff = FONT_FIELDS.get(kind)
+    if ff and ff not in n:
+        W("%s: %s (%s) has no %s, so its text renders at 11-14 px; set it (the helper's recipes do)."
+          % (where, nid, kind, ff))
+
+
+def _overlap_ok(a, b):
+    """Pairs that are meant to overlap: text over a chart, a lifeline or a progress bar, a glyph on a progress
+    bar, pie wedges sharing a center, and any pair where one node is a thin line (12 px or less)."""
+    ka, kb = a.get("kind"), b.get("kind")
+    kinds = {ka, kb}
+    if min(a["w"], a["h"], b["w"], b["h"]) <= 12:
+        return True
+    if ka == kb == "wedge":
+        return True
+    under = {"algo-chart", "algo-chart-line", "algo-chart-scatter", "progress", "uml-lifeline"}
+    if "text" in kinds and (ka in under or kb in under):
+        return True
+    if kinds == {"glyph", "progress"}:
+        return True
+    return False
+
+
 def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
     S = "scene %d" % (si + 1)
     if not isinstance(sc, dict):
@@ -1437,6 +2586,9 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             return
         if n["kind"] not in NODE_KINDS:
             E("%s: node %s kind '%s' is not in the schema." % (where, n["id"], n["kind"]))
+        if n["kind"] in BROKEN_KINDS:
+            E("%s: node %s: %s." % (where, n["id"], BROKEN_KINDS[n["kind"]]))
+        _node_field_checks(n, where, E, W)
         if n["id"] in seen_ids:
             E("%s: id %s is used twice; ids must be unique within a scene." % (where, n["id"]))
         seen_ids.add(n["id"])
@@ -1449,6 +2601,9 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             return
         if "strokeWidth" in e:
             E("%s: edge %s uses strokeWidth; edges take width." % (where, e["id"]))
+        if "animationStyle" not in e:
+            W("%s: edge %s has no animationStyle; openCanviz then runs marching dashes along it forever. Set "
+              "\"animationStyle\": \"none\" (or \"flow\" on purpose)." % (where, e["id"]))
         if e["id"] in seen_ids:
             E("%s: id %s is used twice; ids must be unique within a scene." % (where, e["id"]))
         seen_ids.add(e["id"])
@@ -1519,6 +2674,10 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
         if k > 0:
             if not st.get("delta"):
                 E("%s: add \"delta\": true and list only id plus changed fields (or it replaces the whole scene)." % P)
+            elif (st.get("edges") or st.get("addEdges")) and not (st.get("nodes") or st.get("addNodes")):
+                E("%s: this delta step changes edges but lists no nodes, and openCanviz then blanks every node for "
+                  "the step. List at least one node with an unchanged field (for example {\"id\": <any visible "
+                  "node>, \"opacity\": 1}); the Python helper does this." % P)
             for nid in st.get("removeNodeIds") or []:
                 if nid not in nodes:
                     E("%s: removeNodeIds has unknown id %s." % (P, nid))
@@ -1544,6 +2703,8 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                     continue
                 if st.get("delta") and len(p) > 8 and all(x in p for x in ("kind", "x", "y", "w", "h")):
                     W("%s: node %s is relisted in full; a delta lists only id plus changed fields." % (P, p["id"]))
+                if "glow" in p and p["glow"] == 0:
+                    E("%s: %s sets glow 0, which openCanviz ignores; use \"noGlow\": true." % (P, p["id"]))
                 nodes[p["id"]].update(p)
                 changed = changed or len(p) > 1
             for p in st.get("edges") or []:
@@ -1562,6 +2723,20 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                   "into the previous step." % P)
         # actions
         acts = st.get("actions") or []
+        tp_tweened = {(a.get("target") or {}).get("id") for a in acts if isinstance(a, dict)
+                      and a.get("type") == "transformTween" and "typeProgress" in (a.get("to") or {})}
+        for p in (st.get("nodes") or []) if k > 0 else []:
+            if isinstance(p, dict) and "typeProgress" in p and p.get("id") not in tp_tweened:
+                W("%s: %s changes typeProgress with no transformTween, so the text jumps instead of typing. Tween "
+                  "it: {\"type\":\"transformTween\",\"from\":{\"typeProgress\":0},\"to\":{\"typeProgress\":1}}."
+                  % (P, p.get("id")))
+        last_et = {}
+        for a in acts:
+            if isinstance(a, dict) and a.get("type") == "edgeTween":
+                eid_ = (a.get("target") or {}).get("id")
+                end_ = (a.get("offsetMs") or 0) + (a.get("durationMs") or 0)
+                if eid_ not in last_et or end_ >= (last_et[eid_].get("offsetMs") or 0) + (last_et[eid_].get("durationMs") or 0):
+                    last_et[eid_] = a
         for a in acts:
             if not isinstance(a, dict):
                 E("%s: actions must be objects." % P)
@@ -1617,12 +2792,18 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                       "{\"trim\":1,\"opacity\":0} to {\"trim\":1,\"opacity\":1}, offsetMs = the end of the draw); "
                       "the Python helper's draw() does this." % (P, tid))
                 cur = edges[tid].get("trim", 1)
-                if "trim" in to and abs(to["trim"] - cur) > 0.01:
+                if "trim" in to and abs(to["trim"] - cur) > 0.01 and last_et.get(tid) is a:
                     E("%s: edgeTween on %s ends at trim %g but the step leaves it at %g; set \"trim\": %g for it in "
                       "this step's edges." % (P, tid, to["trim"], cur, to["trim"]))
             elif t == "pathFollow":
-                if a.get("pathId") not in (sc.get("paths") or {}):
+                pth = (sc.get("paths") or {}).get(a.get("pathId"))
+                if not isinstance(pth, dict):
                     E("%s: pathFollow uses unknown path %s." % (P, a.get("pathId")))
+                elif not (_num(pth.get("length")) and isinstance(pth.get("cum"), list)
+                          and len(pth["cum"]) == len(pth.get("points") or [])):
+                    E("%s: path %s needs \"length\" (total px) and \"cum\" (length so far at each point, starting "
+                      "at 0); without them the exported video leaves the node where it is. scene.path() fills them."
+                      % (P, a.get("pathId")))
             elif t not in ("positionTween", "pathAnimate", "algoSwap", "containerTransform", "voiceOver"):
                 E("%s: unknown action type %r." % (P, t))
             if t in ("visibility", "transformTween", "positionTween", "pathFollow") and tgt.get("kind") != "node":
@@ -1700,11 +2881,14 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             for key in ("fill", "stroke", "color", "labelColor", "progressColor"):
                 if key in n and (not isinstance(n[key], str) or not COLOR_RE.match(n[key].strip())):
                     W("%s: %s.%s=%r is not a hex color." % (P, nid, key, n[key]))
-        vis = [nodes[i] for i in sorted(vis_nodes) if nodes[i].get("kind") != "group" and not nodes[i].get("parentId")
+        vis = [nodes[i] for i in sorted(vis_nodes) if nodes[i].get("kind") not in ("group", "algo-pointer")
+               and not nodes[i].get("parentId")
                and all(_num(nodes[i].get(x)) for x in ("x", "y", "w", "h"))]
         for i in range(len(vis)):
             for j in range(i + 1, len(vis)):
                 a, b = vis[i], vis[j]
+                if _overlap_ok(a, b):
+                    continue
                 inside = _contains(a, b) or _contains(b, a)
                 if inside and _overlap(a, b) and min(a["w"] * a["h"], b["w"] * b["h"]) > 0.8 * max(
                         a["w"] * a["h"], b["w"] * b["h"]) and once(("same", a["id"], b["id"])):
@@ -1741,9 +2925,11 @@ def _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once):
     for eid, e in edges.items():
         a, b = nodes.get(e.get("from")), nodes.get(e.get("to"))
         trim, op = e.get("trim", 1), e.get("opacity", 1)
-        if e.get("label") and trim <= 0.01 and op > 0.01 and once(("lbl0", eid)):
-            W("%s: edge %s has a label and trim 0 but opacity %g; its label shows at the start port before the line "
-              "draws. Give it \"opacity\": 0 until its draw step, then opacity 1 with trim 1." % (P, eid, op))
+        head = e.get("arrow", "end") not in ("none", None)
+        if (e.get("label") or head) and trim <= 0.01 and op > 0.01 and once(("lbl0", eid)):
+            W("%s: edge %s has %s and trim 0 but opacity %g; it shows at the start port before the line draws. "
+              "Give it \"opacity\": 0 until its draw step, then opacity 1 with trim 1."
+              % (P, eid, "a label" if e.get("label") else "an arrowhead", op))
         if e.get("label") and e.get("labelFontSize", 12) < lmin and once(("lfs", eid)):
             W("%s: edge %s label font is %g px; set labelFontSize to at least %d so it reads at 1080p."
               % (P, eid, e.get("labelFontSize", 12), lmin))
@@ -1751,6 +2937,8 @@ def _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once):
             continue
         if not all(_num(x.get(k)) for x in (a, b) for k in ("x", "y", "w", "h")):
             continue
+        if "fromXY" in e and "toXY" in e:
+            continue   # a pinned straight line (axis, baseline, message): no gap or crossing rules
         why = link_gap_problem(e, a, b)
         if why and once(("gap", eid)):
             W("%s: edge %s: %s. Move %s and %s apart (row/column/stack/flow size the gaps when you "
@@ -1772,6 +2960,8 @@ def _arrow_length_checks(P, nodes, edges, vis, W, once):
         if (e.get("trim", 1) or 0) <= 0.01 or (e.get("opacity", 1) or 0) <= 0.01:
             continue
         if e.get("from") not in vids or e.get("to") not in vids or eid.endswith("_line") and eid[:-5] in edges:
+            continue
+        if "fromXY" in e and "toXY" in e:
             continue
         pts = edge_path(e, nodes[e["from"]], nodes[e["to"]])
         segs = [(p, q, math.hypot(q[0] - p[0], q[1] - p[1])) for p, q in zip(pts, pts[1:])]

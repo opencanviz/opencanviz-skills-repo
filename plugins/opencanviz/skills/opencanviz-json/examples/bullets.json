@@ -1,0 +1,437 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Good passwords",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Tips"
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_three_rules_for_a_good_p",
+          "kind": "text",
+          "x": -840,
+          "y": -480,
+          "w": 1680,
+          "h": 110,
+          "text": "Three rules for a good password",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s1_point1_glyph",
+          "kind": "glyph",
+          "x": -680,
+          "y": -181,
+          "w": 52,
+          "h": 52,
+          "glyph": "check",
+          "color": "#22c55e",
+          "opacity": 0,
+          "drawStartMs": 4400
+        },
+        {
+          "id": "s1_point1",
+          "kind": "text",
+          "x": -600,
+          "y": -219,
+          "w": 1280,
+          "h": 128,
+          "text": "Make it long: 14 characters or more",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 40,
+          "opacity": 0
+        },
+        {
+          "id": "s1_point2_glyph",
+          "kind": "glyph",
+          "x": -680,
+          "y": -29,
+          "w": 52,
+          "h": 52,
+          "glyph": "check",
+          "color": "#22c55e",
+          "opacity": 0,
+          "drawStartMs": 6400
+        },
+        {
+          "id": "s1_point2",
+          "kind": "text",
+          "x": -600,
+          "y": -67,
+          "w": 1280,
+          "h": 128,
+          "text": "Never reuse it on another site",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 40,
+          "opacity": 0
+        },
+        {
+          "id": "s1_point3_glyph",
+          "kind": "glyph",
+          "x": -680,
+          "y": 123,
+          "w": 52,
+          "h": 52,
+          "glyph": "check",
+          "color": "#22c55e",
+          "opacity": 0,
+          "drawStartMs": 9300
+        },
+        {
+          "id": "s1_point3",
+          "kind": "text",
+          "x": -600,
+          "y": 85,
+          "w": 1280,
+          "h": 128,
+          "text": "Keep it in a password manager",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "left",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 40,
+          "opacity": 0
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 3700,
+          "caption": "Three rules make a password hard to crack.",
+          "nodes": [
+            {
+              "id": "s1_three_rules_for_a_good_p",
+              "kind": "text",
+              "x": -840,
+              "y": -480,
+              "w": 1680,
+              "h": 110,
+              "text": "Three rules for a good password",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s1_point1_glyph",
+              "kind": "glyph",
+              "x": -680,
+              "y": -181,
+              "w": 52,
+              "h": 52,
+              "glyph": "check",
+              "color": "#22c55e",
+              "opacity": 0,
+              "drawStartMs": 4400
+            },
+            {
+              "id": "s1_point1",
+              "kind": "text",
+              "x": -600,
+              "y": -219,
+              "w": 1280,
+              "h": 128,
+              "text": "Make it long: 14 characters or more",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 40,
+              "opacity": 0
+            },
+            {
+              "id": "s1_point2_glyph",
+              "kind": "glyph",
+              "x": -680,
+              "y": -29,
+              "w": 52,
+              "h": 52,
+              "glyph": "check",
+              "color": "#22c55e",
+              "opacity": 0,
+              "drawStartMs": 6400
+            },
+            {
+              "id": "s1_point2",
+              "kind": "text",
+              "x": -600,
+              "y": -67,
+              "w": 1280,
+              "h": 128,
+              "text": "Never reuse it on another site",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 40,
+              "opacity": 0
+            },
+            {
+              "id": "s1_point3_glyph",
+              "kind": "glyph",
+              "x": -680,
+              "y": 123,
+              "w": 52,
+              "h": 52,
+              "glyph": "check",
+              "color": "#22c55e",
+              "opacity": 0,
+              "drawStartMs": 9300
+            },
+            {
+              "id": "s1_point3",
+              "kind": "text",
+              "x": -600,
+              "y": 85,
+              "w": 1280,
+              "h": 128,
+              "text": "Keep it in a password manager",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "left",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 40,
+              "opacity": 0
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_three_rules_for_a_good_p"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            }
+          ],
+          "camera": {
+            "x": 0,
+            "y": -347,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 2000,
+          "caption": "Length matters most.",
+          "nodes": [
+            {
+              "id": "s1_point1_glyph",
+              "opacity": 1
+            },
+            {
+              "id": "s1_point1",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_point1"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_point1_glyph"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            }
+          ],
+          "camera": {
+            "x": -61,
+            "y": -207.5,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
+        },
+        {
+          "id": "s1_step2",
+          "delta": true,
+          "durationMs": 2900,
+          "caption": "Reuse turns one leak into many.",
+          "nodes": [
+            {
+              "id": "s1_point2_glyph",
+              "opacity": 1
+            },
+            {
+              "id": "s1_point2",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_point2"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_point2_glyph"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            }
+          ],
+          "camera": {
+            "x": -61,
+            "y": -131.5,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
+        },
+        {
+          "id": "s1_step3",
+          "delta": true,
+          "durationMs": 2900,
+          "caption": "A manager remembers them for you.",
+          "nodes": [
+            {
+              "id": "s1_point3_glyph",
+              "opacity": 1
+            },
+            {
+              "id": "s1_point3",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_point3"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_point3_glyph"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            }
+          ],
+          "camera": {
+            "x": -61,
+            "y": -55.5,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "Three rules make a password hard to crack.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "Length matters most.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n2",
+          "text": "Reuse turns one leak into many.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n3",
+          "text": "A manager remembers them for you.",
+          "stepIndex": 3,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

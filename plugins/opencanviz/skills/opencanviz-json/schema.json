@@ -896,10 +896,15 @@
             "type": "boolean"
           },
           "length": {
-            "description": "Set by openCanviz, leave out."
+            "type": "number",
+            "description": "Total length of the path in px. Required for pathFollow in the exported video."
           },
           "cum": {
-            "description": "Set by openCanviz, leave out."
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Length so far at each point, starting at 0 (one entry per point). Required for pathFollow in the exported video."
           }
         }
       }

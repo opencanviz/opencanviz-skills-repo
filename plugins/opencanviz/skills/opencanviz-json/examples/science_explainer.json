@@ -176,7 +176,8 @@
                 "id": "s1_sunlight_air_and_a_littl"
               },
               "mode": "slideInUp",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             }
           ],
           "camera": {
@@ -184,7 +185,7 @@
             "y": -73,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         }
       ],
@@ -272,8 +273,9 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "trim": 0,
-          "opacity": 1
+          "opacity": 0
         },
         {
           "id": "s2_sunlight_to_air_molecule",
@@ -285,10 +287,14 @@
           "stroke": "#94a3b8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "label": "all colors",
           "labelColor": "#94a3b8",
           "labelFontSize": 24,
-          "labelPosition": "above",
+          "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 14.4,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 0,
           "opacity": 0
@@ -303,8 +309,9 @@
           "stroke": "#38bdf8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "trim": 0,
-          "opacity": 1
+          "opacity": 0
         },
         {
           "id": "s2_air_molecules_to_your_ey",
@@ -316,10 +323,14 @@
           "stroke": "#38bdf8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "label": "blue scatters most",
           "labelColor": "#94a3b8",
           "labelFontSize": 24,
           "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 14.4,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 0,
           "opacity": 0
@@ -390,8 +401,9 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "trim": 0,
-              "opacity": 1
+              "opacity": 0
             },
             {
               "id": "s2_sunlight_to_air_molecule",
@@ -403,10 +415,14 @@
               "stroke": "#94a3b8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "label": "all colors",
               "labelColor": "#94a3b8",
               "labelFontSize": 24,
-              "labelPosition": "above",
+              "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 14.4,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 0,
               "opacity": 0
@@ -421,8 +437,9 @@
               "stroke": "#38bdf8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "trim": 0,
-              "opacity": 1
+              "opacity": 0
             },
             {
               "id": "s2_air_molecules_to_your_ey",
@@ -434,10 +451,14 @@
               "stroke": "#38bdf8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "label": "blue scatters most",
               "labelColor": "#94a3b8",
               "labelFontSize": 24,
               "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 14.4,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 0,
               "opacity": 0
@@ -492,7 +513,8 @@
                 "id": "s2_air_molecules"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -510,7 +532,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 500
+              "offsetMs": 1200
             },
             {
               "type": "edgeTween",
@@ -526,9 +548,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
-              "offsetMs": 1200,
-              "ease": "ease-out"
+              "durationMs": 60,
+              "offsetMs": 1900,
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -537,13 +559,15 @@
                 "id": "s2_sunlight_to_air_molecule_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 1500
+              "durationMs": 300,
+              "offsetMs": 1900
             }
           ],
           "camera": {
@@ -551,7 +575,7 @@
             "y": -244.3,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         },
         {
@@ -589,7 +613,8 @@
                 "id": "s2_your_eye"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "edgeTween",
@@ -607,7 +632,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 500
+              "offsetMs": 1200
             },
             {
               "type": "edgeTween",
@@ -623,9 +648,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
-              "offsetMs": 1200,
-              "ease": "ease-out"
+              "durationMs": 60,
+              "offsetMs": 1900,
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -634,13 +659,15 @@
                 "id": "s2_air_molecules_to_your_ey_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 1500
+              "durationMs": 300,
+              "offsetMs": 1900
             }
           ],
           "camera": {
@@ -648,7 +675,7 @@
             "y": 0,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         }
       ],
@@ -763,6 +790,7 @@
           "stroke": "#38bdf8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "trim": 1,
           "opacity": 0
         },
@@ -776,10 +804,14 @@
           "stroke": "#38bdf8",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "label": "short path",
           "labelColor": "#94a3b8",
           "labelFontSize": 24,
-          "labelPosition": "above",
+          "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 14.4,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 1,
           "opacity": 1
@@ -794,8 +826,9 @@
           "stroke": "#f97316",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "trim": 0,
-          "opacity": 1
+          "opacity": 0
         },
         {
           "id": "s3_sunset_to_red_sky",
@@ -807,10 +840,14 @@
           "stroke": "#f97316",
           "width": 4,
           "arrow": "end",
+          "animationStyle": "none",
           "label": "long path",
           "labelColor": "#94a3b8",
           "labelFontSize": 24,
-          "labelPosition": "above",
+          "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 14.4,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 0,
           "opacity": 0
@@ -898,6 +935,7 @@
               "stroke": "#38bdf8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "trim": 1,
               "opacity": 0
             },
@@ -911,10 +949,14 @@
               "stroke": "#38bdf8",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "label": "short path",
               "labelColor": "#94a3b8",
               "labelFontSize": 24,
-              "labelPosition": "above",
+              "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 14.4,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 1,
               "opacity": 1
@@ -929,8 +971,9 @@
               "stroke": "#f97316",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "trim": 0,
-              "opacity": 1
+              "opacity": 0
             },
             {
               "id": "s3_sunset_to_red_sky",
@@ -942,16 +985,54 @@
               "stroke": "#f97316",
               "width": 4,
               "arrow": "end",
+              "animationStyle": "none",
               "label": "long path",
               "labelColor": "#94a3b8",
               "labelFontSize": 24,
-              "labelPosition": "above",
+              "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 14.4,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 0,
               "opacity": 0
             }
           ],
           "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s3_noon_to_blue_sky_line"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "durationMs": 1000,
+              "ease": "linear"
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s3_noon_to_blue_sky"
+              },
+              "from": {
+                "trim": 1,
+                "opacity": 0
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 0
+              },
+              "durationMs": 1700,
+              "ease": "linear"
+            },
             {
               "type": "visibility",
               "target": {
@@ -1003,9 +1084,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
+              "durationMs": 60,
               "offsetMs": 1700,
-              "ease": "ease-out"
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -1014,13 +1095,15 @@
                 "id": "s3_noon_to_blue_sky_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 2000
+              "durationMs": 300,
+              "offsetMs": 1700
             }
           ],
           "camera": {
@@ -1066,7 +1149,8 @@
                 "id": "s3_sunset"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "visibility",
@@ -1076,7 +1160,7 @@
               },
               "mode": "fadeIn",
               "durationMs": 500,
-              "offsetMs": 500
+              "offsetMs": 1200
             },
             {
               "type": "edgeTween",
@@ -1094,7 +1178,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 1000
+              "offsetMs": 1700
             },
             {
               "type": "edgeTween",
@@ -1110,9 +1194,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
-              "offsetMs": 1700,
-              "ease": "ease-out"
+              "durationMs": 60,
+              "offsetMs": 2400,
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -1121,13 +1205,15 @@
                 "id": "s3_sunset_to_red_sky_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 2000
+              "durationMs": 300,
+              "offsetMs": 2400
             }
           ],
           "camera": {
@@ -1135,7 +1221,7 @@
             "y": 0,
             "zoom": 1
           },
-          "cameraDurationMs": 800,
+          "cameraDurationMs": 700,
           "cameraEasing": "ease"
         }
       ],

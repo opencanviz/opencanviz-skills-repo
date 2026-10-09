@@ -205,6 +205,7 @@
           "stroke": "#f59e0b",
           "width": 4,
           "arrow": "both",
+          "animationStyle": "none",
           "strokeStyle": "dashed",
           "trim": 1,
           "opacity": 0
@@ -219,10 +220,14 @@
           "stroke": "#f59e0b",
           "width": 4,
           "arrow": "both",
+          "animationStyle": "none",
           "label": "200 ms",
           "labelColor": "#94a3b8",
           "labelFontSize": 24,
-          "labelPosition": "below",
+          "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 14.4,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "strokeStyle": "dashed",
           "trim": 1,
@@ -238,8 +243,9 @@
           "stroke": "#c084fc",
           "width": 4,
           "arrow": "both",
+          "animationStyle": "none",
           "trim": 0,
-          "opacity": 1
+          "opacity": 0
         },
         {
           "id": "s2_app_to_cache",
@@ -251,10 +257,14 @@
           "stroke": "#c084fc",
           "width": 4,
           "arrow": "both",
+          "animationStyle": "none",
           "label": "2 ms",
           "labelColor": "#94a3b8",
           "labelFontSize": 24,
-          "labelPosition": "above",
+          "labelPosition": "center",
+          "labelOffset": 0.01,
+          "labelOffsetY": 14.4,
+          "labelBgPadding": 8,
           "labelBgColor": "#0f172a",
           "trim": 0,
           "opacity": 0
@@ -325,6 +335,7 @@
               "stroke": "#f59e0b",
               "width": 4,
               "arrow": "both",
+              "animationStyle": "none",
               "strokeStyle": "dashed",
               "trim": 1,
               "opacity": 0
@@ -339,10 +350,14 @@
               "stroke": "#f59e0b",
               "width": 4,
               "arrow": "both",
+              "animationStyle": "none",
               "label": "200 ms",
               "labelColor": "#94a3b8",
               "labelFontSize": 24,
-              "labelPosition": "below",
+              "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 14.4,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "strokeStyle": "dashed",
               "trim": 1,
@@ -358,8 +373,9 @@
               "stroke": "#c084fc",
               "width": 4,
               "arrow": "both",
+              "animationStyle": "none",
               "trim": 0,
-              "opacity": 1
+              "opacity": 0
             },
             {
               "id": "s2_app_to_cache",
@@ -371,16 +387,54 @@
               "stroke": "#c084fc",
               "width": 4,
               "arrow": "both",
+              "animationStyle": "none",
               "label": "2 ms",
               "labelColor": "#94a3b8",
               "labelFontSize": 24,
-              "labelPosition": "above",
+              "labelPosition": "center",
+              "labelOffset": 0.01,
+              "labelOffsetY": 14.4,
+              "labelBgPadding": 8,
               "labelBgColor": "#0f172a",
               "trim": 0,
               "opacity": 0
             }
           ],
           "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_app_to_database_line"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "durationMs": 800,
+              "ease": "linear"
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_app_to_database"
+              },
+              "from": {
+                "trim": 1,
+                "opacity": 0
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 0
+              },
+              "durationMs": 1500,
+              "ease": "linear"
+            },
             {
               "type": "visibility",
               "target": {
@@ -432,9 +486,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
+              "durationMs": 60,
               "offsetMs": 1500,
-              "ease": "ease-out"
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -443,13 +497,15 @@
                 "id": "s2_app_to_database_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 1800
+              "durationMs": 300,
+              "offsetMs": 1500
             }
           ]
         },
@@ -518,9 +574,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 300,
+              "durationMs": 60,
               "offsetMs": 1200,
-              "ease": "ease-out"
+              "ease": "linear"
             },
             {
               "type": "edgeTween",
@@ -529,13 +585,15 @@
                 "id": "s2_app_to_cache_line"
               },
               "from": {
+                "trim": 1,
                 "opacity": 1
               },
               "to": {
+                "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 100,
-              "offsetMs": 1500
+              "durationMs": 300,
+              "offsetMs": 1200
             }
           ]
         },
@@ -544,7 +602,12 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "The next request is answered in two milliseconds.",
-          "nodes": [],
+          "nodes": [
+            {
+              "id": "s2_app",
+              "opacity": 1
+            }
+          ],
           "edges": [
             {
               "id": "s2_app_to_database",

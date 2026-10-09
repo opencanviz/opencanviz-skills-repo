@@ -1,0 +1,427 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Before and after caching",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Compare"
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_adding_a_cache",
+          "kind": "text",
+          "x": -840,
+          "y": -480,
+          "w": 1680,
+          "h": 110,
+          "text": "Adding a cache",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s1_panel_before",
+          "kind": "rect",
+          "x": -840,
+          "y": -330,
+          "w": 810,
+          "h": 654,
+          "fill": "#111827",
+          "stroke": "#ef4444",
+          "strokeWidth": 3,
+          "cornerRadius": 20,
+          "noGlow": true,
+          "opacity": 0
+        },
+        {
+          "id": "s1_panel_before_title",
+          "kind": "text",
+          "x": -820,
+          "y": -314,
+          "w": 770,
+          "h": 62,
+          "text": "Before",
+          "fontWeight": 700,
+          "color": "#ef4444",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 36,
+          "opacity": 0
+        },
+        {
+          "id": "s1_panel_after",
+          "kind": "rect",
+          "x": 30,
+          "y": -330,
+          "w": 810,
+          "h": 654,
+          "fill": "#111827",
+          "stroke": "#22c55e",
+          "strokeWidth": 3,
+          "cornerRadius": 20,
+          "noGlow": true,
+          "opacity": 0
+        },
+        {
+          "id": "s1_panel_after_title",
+          "kind": "text",
+          "x": 50,
+          "y": -314,
+          "w": 770,
+          "h": 62,
+          "text": "After",
+          "fontWeight": 700,
+          "color": "#22c55e",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 36,
+          "opacity": 0
+        },
+        {
+          "id": "s1_every_request_goes_to_th",
+          "kind": "text",
+          "x": -812,
+          "y": -236,
+          "w": 754,
+          "h": 532,
+          "text": "Every request goes to the database: 120 ms",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 0
+        },
+        {
+          "id": "s1_most_requests_hit_the_ca",
+          "kind": "text",
+          "x": 58,
+          "y": -236,
+          "w": 754,
+          "h": 532,
+          "text": "Most requests hit the cache: 8 ms",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 0
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 4400,
+          "caption": "Here is the same page before and after a cache.",
+          "nodes": [
+            {
+              "id": "s1_adding_a_cache",
+              "kind": "text",
+              "x": -840,
+              "y": -480,
+              "w": 1680,
+              "h": 110,
+              "text": "Adding a cache",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s1_panel_before",
+              "kind": "rect",
+              "x": -840,
+              "y": -330,
+              "w": 810,
+              "h": 654,
+              "fill": "#111827",
+              "stroke": "#ef4444",
+              "strokeWidth": 3,
+              "cornerRadius": 20,
+              "noGlow": true,
+              "opacity": 0
+            },
+            {
+              "id": "s1_panel_before_title",
+              "kind": "text",
+              "x": -820,
+              "y": -314,
+              "w": 770,
+              "h": 62,
+              "text": "Before",
+              "fontWeight": 700,
+              "color": "#ef4444",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 36,
+              "opacity": 0
+            },
+            {
+              "id": "s1_panel_after",
+              "kind": "rect",
+              "x": 30,
+              "y": -330,
+              "w": 810,
+              "h": 654,
+              "fill": "#111827",
+              "stroke": "#22c55e",
+              "strokeWidth": 3,
+              "cornerRadius": 20,
+              "noGlow": true,
+              "opacity": 0
+            },
+            {
+              "id": "s1_panel_after_title",
+              "kind": "text",
+              "x": 50,
+              "y": -314,
+              "w": 770,
+              "h": 62,
+              "text": "After",
+              "fontWeight": 700,
+              "color": "#22c55e",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 36,
+              "opacity": 0
+            },
+            {
+              "id": "s1_every_request_goes_to_th",
+              "kind": "text",
+              "x": -812,
+              "y": -236,
+              "w": 754,
+              "h": 532,
+              "text": "Every request goes to the database: 120 ms",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 0
+            },
+            {
+              "id": "s1_most_requests_hit_the_ca",
+              "kind": "text",
+              "x": 58,
+              "y": -236,
+              "w": 754,
+              "h": 532,
+              "text": "Most requests hit the cache: 8 ms",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 0
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_adding_a_cache"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            }
+          ],
+          "camera": {
+            "x": 0,
+            "y": -347,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 4400,
+          "caption": "Before, every request went all the way to the database.",
+          "nodes": [
+            {
+              "id": "s1_panel_before",
+              "opacity": 1
+            },
+            {
+              "id": "s1_panel_before_title",
+              "opacity": 1
+            },
+            {
+              "id": "s1_every_request_goes_to_th",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_panel_before"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_panel_before_title"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_every_request_goes_to_th"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 1000
+            }
+          ],
+          "camera": {
+            "x": -294,
+            "y": 0,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
+        },
+        {
+          "id": "s1_step2",
+          "delta": true,
+          "durationMs": 3300,
+          "caption": "After, most requests are answered from memory.",
+          "nodes": [
+            {
+              "id": "s1_panel_after",
+              "opacity": 1
+            },
+            {
+              "id": "s1_panel_after_title",
+              "opacity": 1
+            },
+            {
+              "id": "s1_most_requests_hit_the_ca",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_panel_after"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_panel_after_title"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_most_requests_hit_the_ca"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 1000
+            }
+          ],
+          "camera": {
+            "x": 0,
+            "y": 0,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "Here is the same page before and after a cache.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "Before, every request went all the way to the database.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n2",
+          "text": "After, most requests are answered from memory.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}
