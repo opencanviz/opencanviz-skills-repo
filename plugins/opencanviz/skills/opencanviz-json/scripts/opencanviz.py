@@ -26,6 +26,9 @@ plus a visibility action; draws set trim 1 plus an edgeTween; an arrow may only 
 both of its end nodes are visible (otherwise save() raises and tells you which step to draw it in);
 hiding or removing a node also hides or removes its arrows; ids are unique and prefixed per scene;
 step durations are computed from the actions and narration unless you pass duration=.
+A follow camera keeps each step's visible content centered in the safe area (follow=False or any
+.camera() turns it off); a labeled edge draws as an unlabeled "<id>_line" copy and its label fades
+in once the line is drawn; gaps leave chip + 120 px of visible line; route="around" closes a cycle.
 """
 
 import json
@@ -64,6 +67,10 @@ EDGE_FIELDS = {
     "cornerRadius", "label", "labelColor", "labelFontSize", "labelPosition", "labelPositionT",
     "labelBgColor", "animationStyle", "flowSpeed", "waypoints", "zIndex"}
 
+LABEL_KEYS = {"label", "labelColor", "labelFontSize", "labelPosition", "labelPositionT", "labelBgColor",
+              "animationStyle", "flowSpeed", "opacity"}
+LABEL_FADE = 300       # a labeled arrow's label fades in over this once its line is drawn
+
 INTERNAL_FIELDS = {"_selected", "_animatedProps", "illuOf", "imageFailed", "_addedNodeIds", "_removedNodeIds",
                    "_addedEdgeIds", "_removedEdgeIds", "audioData", "audioUrl", "audioDurationMs", "words"}
 
@@ -93,7 +100,10 @@ LINE_H = 1.2           # line height used to size text boxes
 TEXT_PAD = 8           # breathing room inside a text node, top and bottom
 LABEL_PAD = 10         # openCanviz default label padding
 EDGE_GAP = 8           # an edge starts this far from its node
-MIN_LINK_GAP = 60      # room for an arrowhead between two connected nodes
+MIN_LINK_GAP = 100     # an unlabeled arrow: 84 px of visible line plus the end gaps
+LABEL_LINE = 120       # visible line a labeled arrow keeps beside its label chip (60 px each side)
+SIDE_MARGIN = 120      # left/right margin of project.area() in landscape (80 in portrait and square)
+FOLLOW_MS = 800        # follow-camera pan length
 
 
 def caption_band(width, height):
@@ -107,17 +117,22 @@ def edge_label_min(width, height):
 
 
 def label_width(label, font_size):
-    """Estimated width of an edge label pill."""
+    """Estimated width of an edge label chip."""
     return len(str(label)) * 0.6 * font_size + 24
 
 
+def label_height(font_size):
+    """Estimated height of an edge label chip."""
+    return font_size * 1.2 + 10
+
+
 def link_gap(label=None, font_size=24, vertical=False):
-    """Gap two connected nodes need: arrowhead room, plus the label if there is one."""
+    """Gap two connected nodes need so the viewer sees a real arrow: 100 px unlabeled, else the label
+    chip plus 120 px of visible line (along the arrow, so a vertical arrow counts the chip's height)."""
     if not label:
         return MIN_LINK_GAP
-    if vertical:
-        return max(MIN_LINK_GAP, font_size * 1.2 + 8 + 48)
-    return max(MIN_LINK_GAP, label_width(label, font_size) + 2 * EDGE_GAP + 24)
+    chip = label_height(font_size) if vertical else label_width(label, font_size)
+    return max(MIN_LINK_GAP, chip + 2 * EDGE_GAP + LABEL_LINE)
 
 
 class OpenCanvizError(ValueError):
@@ -408,6 +423,8 @@ class Edge:
     def __init__(self, scene, eid, a, b, fields):
         self.scene, self.id, self.a, self.b, self.fields = scene, eid, a, b, fields
         self.events = []      # (step_index, "draw"|"undraw"|"remove")
+        self.twin_steps = set()   # steps that draw a labeled edge through its unlabeled twin line
+        self._twin = None
 
     def __repr__(self):
         return "Edge(%s)" % self.id
@@ -425,6 +442,18 @@ class Edge:
             fr["opacity"], to["opacity"] = shown, (shown if drawing else 0)
         return {"type": "edgeTween", "target": {"kind": "edge", "id": self.id}, "from": fr, "to": to}
 
+    @property
+    def twin_id(self):
+        """Id of the unlabeled line that draws a labeled edge in (the label then fades in on the drawn line)."""
+        if self._twin is None:
+            self._twin = self.scene._id(self.id + "_line")
+        return self._twin
+
+    def twin_fields(self):
+        f = {k: v for k, v in self.fields.items() if k not in LABEL_KEYS}
+        f["id"] = self.twin_id
+        return f
+
 
 class Step:
     """One beat of a scene. Methods return the step, so calls chain.
@@ -439,7 +468,7 @@ class Step:
         self.node_patch, self.edge_patch = {}, {}
         self.actions, self.remove_nodes, self.remove_edges = [], [], []
         self.camera_spec = None
-        self._cursor, self._last_start = 0, 0
+        self._cursor, self._last_start, self._tail = 0, 0, 0
 
     # timing
     def _place(self, duration, offset):
@@ -499,13 +528,35 @@ class Step:
         return self
 
     def draw(self, edge, duration=700, offset=None, ease="ease-out"):
-        """Draw an arrow in (trim 0 -> 1). Both end nodes must be visible by the end of this step."""
+        """Draw an arrow in (trim 0 -> 1). Both end nodes must be visible by the end of this step.
+
+        A labeled arrow is drawn by an unlabeled twin line (id <edge>_line); once the line is fully
+        drawn the labeled edge fades in on top of it (300 ms) and the twin fades away. openCanviz puts
+        a label at the middle of the drawn part, so a label drawn with its line slides along with the
+        tip and shows before the arrow does."""
         self._own(edge, Edge)
         edge.events.append((self.index, "draw"))
-        act = edge._tween(True)
+        if not edge.labeled:
+            act = edge._tween(True)
+            if ease:
+                act["ease"] = ease
+            self._action(act, duration, offset)
+            return self
+        edge.twin_steps.add(self.index)
+        line = {"type": "edgeTween", "target": {"kind": "edge", "id": edge.twin_id},
+                "from": {"trim": 0, "opacity": 1}, "to": {"trim": 1, "opacity": 1}}
         if ease:
-            act["ease"] = ease
-        self._action(act, duration, offset)
+            line["ease"] = ease
+        start = self._action(line, duration, offset).get("offsetMs", 0)
+        done = start + duration
+        shown = edge.fields.get("opacity", 1)
+        self.actions.append({"type": "edgeTween", "target": {"kind": "edge", "id": edge.id},
+                             "from": {"trim": 1, "opacity": 0}, "to": {"trim": 1, "opacity": shown},
+                             "durationMs": LABEL_FADE, "offsetMs": done, "ease": "ease-out"})
+        self.actions.append({"type": "edgeTween", "target": {"kind": "edge", "id": edge.twin_id},
+                             "from": {"opacity": 1}, "to": {"opacity": 0}, "durationMs": 100,
+                             "offsetMs": done + LABEL_FADE})
+        self._tail = max(self._tail, done + LABEL_FADE + 100)
         return self
 
     def remove(self, item):
@@ -684,18 +735,22 @@ class Scene:
 
         Ports face each other unless you pass fromPort/toPort. route="below" or "above" sends a skip
         connection along its own lane under or over the row, so it does not cross the boxes between.
-        Labels get a readable font (24 px landscape, 30 px portrait) and sit beside the line.
+        route="around" closes a cycle (last node back to the first): the arrow leaves and enters on the
+        same side and runs outside the whole diagram, on whichever side (below, above, right, left) has
+        room in the safe area. Labels get a readable font (24 px landscape, 30 px portrait).
         """
         for end in (a, b):
             if not isinstance(end, Node) or end.scene is not self:
                 raise OpenCanvizError("arrow(): both ends must be nodes of this scene, got %r" % (end,))
         what = "edge %s->%s" % (a.id, b.id)
         _check_fields(fields, EDGE_FIELDS - {"id", "from", "to"}, what)
-        if route not in (None, "below", "above", "left", "right"):
-            raise OpenCanvizError("%s: route must be None, 'below', 'above', 'left' or 'right'." % what)
+        if route not in (None, "below", "above", "left", "right", "around"):
+            raise OpenCanvizError("%s: route must be None, 'below', 'above', 'left', 'right' or 'around'." % what)
         eid = self._id(id or "%s_to_%s" % (a.id[len(self.prefix):], b.id[len(self.prefix):]))
         f = {"id": eid, "from": a.id, "to": b.id}
-        if route:
+        if route == "around":
+            f.update({"fromPort": "S", "toPort": "S", "lineType": "elbowed"})   # side picked at save time
+        elif route:
             side = {"below": "S", "above": "N", "left": "W", "right": "E"}[route]
             f.update({"fromPort": side, "toPort": side, "lineType": "elbowed"})
         elif "fromPort" not in fields and "toPort" not in fields:
@@ -719,8 +774,48 @@ class Scene:
                 f["labelPosition"] = "center"
         f.update(fields)
         e = Edge(self, eid, a, b, f)
+        e.user_fields = dict(fields)
+        e.around = route == "around" and not ({"fromPort", "toPort", "waypoints"} & set(fields))
         self.edges.append(e)
         return e
+
+    def _route_around(self, e):
+        """Pick the side for a route="around" arrow: the first of below, above, right, left whose lane
+        clears every other node and stays in the safe area; the lane runs 48 px outside the diagram."""
+        A = self.project.area()
+        others = [n.fields for n in self.nodes if n is not e.a and n is not e.b and n.fields.get("kind") != "group"]
+        fa, fb = e.a.fields, e.b.fields
+        allf = [n.fields for n in self.nodes if n.fields.get("kind") != "group"]
+        gx0 = min(n["x"] for n in allf)
+        gy0 = min(n["y"] for n in allf)
+        gx1 = max(n["x"] + n["w"] for n in allf)
+        gy1 = max(n["y"] + n["h"] for n in allf)
+        pos = {"S": "below", "N": "above", "E": "center", "W": "center"}
+        best = None
+        for side in ("S", "N", "E", "W"):
+            f = dict(e.fields, fromPort=side, toPort=side, lineType="elbowed")
+            f.pop("waypoints", None)
+            pts = edge_path(f, fa, fb)
+            if any(path_hits(pts, n) for n in others):
+                pa, pb = _side_point(fa, side), _side_point(fb, side)
+                lane = {"S": gy1 + 48, "N": gy0 - 48, "E": gx1 + 48, "W": gx0 - 48}[side]
+                wp = ([(pa[0], lane), (pb[0], lane)] if side in "NS" else [(lane, pa[1]), (lane, pb[1])])
+                f["waypoints"] = [{"x": _clean(x), "y": _clean(y)} for x, y in wp]
+                pts = edge_path(f, fa, fb)
+                if any(path_hits(pts, n) for n in others):
+                    continue
+            inside = all(A.x - 1 <= x <= A.x + A.w + 1 and A.y - 1 <= y <= A.y + A.h + 1 for x, y in pts)
+            if inside:
+                best = f
+                break
+            if best is None:
+                best = f
+        if best is None:
+            raise OpenCanvizError("edge %s (route='around'): no side has a clear lane around the diagram; leave "
+                                  "room below or above the nodes." % e.id)
+        if best.get("label") and "labelPosition" not in e.user_fields:
+            best["labelPosition"] = pos[best["fromPort"]]
+        e.fields = best
 
     def scene_background(self):
         return self.background or self.project.colors["background"]
@@ -808,6 +903,9 @@ class Scene:
         if not self.steps:
             raise OpenCanvizError("scene %d (%s) has no steps; add at least one with scene.step(caption)."
                                   % (self.index + 1, self.name))
+        for e in self.edges:
+            if e.around:
+                self._route_around(e)
         vis, evis = self._timelines()
         snap_nodes = []
         for n in self.nodes:
@@ -827,7 +925,13 @@ class Scene:
             f["trim"] = 0 if later else 1
             if e.labeled:
                 f["opacity"] = 0 if later else f.get("opacity", 1)
+            if e.twin_steps:
+                t = e.twin_fields()
+                # end of step 0: drawn and faded if step 0 draws it, else waiting at trim 0
+                t["trim"], t["opacity"] = (1, 0) if 0 in e.twin_steps else (0, 1)
+                snap_edges.append(t)
             snap_edges.append(f)
+        twins = {e.id: e.twin_id for e in self.edges if e.twin_steps}
         steps, narration = [], []
         for st in self.steps:
             k = st.index
@@ -842,9 +946,14 @@ class Scene:
                         epatch.setdefault(e.id, {})["trim"] = 1 if evis[e.id][k] else 0
                         if e.labeled:
                             epatch[e.id]["opacity"] = e.fields.get("opacity", 1) if evis[e.id][k] else 0
+                    if k in e.twin_steps:
+                        epatch[e.twin_id] = {"trim": 1, "opacity": 0}
+            for eid in list(st.remove_edges):
+                if eid in twins:
+                    st.remove_edges.append(twins[eid])
             dur = st.duration
             words = len(str(st.narration or st.caption).split())
-            need = st._cursor
+            need = max(st._cursor, st._tail)
             if dur is None:
                 dur = int(math.ceil(max(2000, need + 600, words * 380 + 600) / 100.0) * 100)
             elif dur < need:
@@ -882,6 +991,7 @@ class Scene:
                 v = self.project.voice
                 narration.append({"id": "%sn%d" % (self.prefix, k), "text": str(st.narration), "stepIndex": k,
                                   "voice": {"provider": "openai", "voiceId": v, "voiceName": v.capitalize()}})
+        self._follow(steps)
         scene = {"nodes": [dict(x) for x in steps[0]["nodes"]], "edges": [dict(x) for x in steps[0]["edges"]],
                  "steps": steps}
         if narration:
@@ -891,11 +1001,57 @@ class Scene:
         return scene
 
 
+    def _follow(self, steps):
+        """Follow camera: at the end of every step, center what is on screen in the safe area, so a
+        lone first node or a half-built diagram sits in the middle instead of where the finished layout
+        puts it. Off when the project has follow=False or any step of the scene sets its own camera."""
+        P = self.project
+        if not P.follow or any(st.camera_spec for st in self.steps):
+            return
+        A = P.area()
+        nodes, edges = {}, {}
+        cur = (0.0, 0.0)
+        for k, sd in enumerate(steps):
+            if k == 0:
+                nodes = {n["id"]: dict(n) for n in sd["nodes"]}
+                edges = {e["id"]: dict(e) for e in sd["edges"]}
+            else:
+                for nid in sd.get("removeNodeIds") or []:
+                    nodes.pop(nid, None)
+                for eid in sd.get("removeEdgeIds") or []:
+                    edges.pop(eid, None)
+                for p in sd["nodes"]:
+                    nodes.setdefault(p["id"], {}).update(p)
+                for p in sd["edges"]:
+                    edges.setdefault(p["id"], {}).update(p)
+            box = _visible_bbox(nodes, edges)
+            if box is None:
+                continue
+            target = _center_camera(box, (A.x, A.y, A.x + A.w, A.y + A.h))
+            if math.hypot(target[0] - cur[0], target[1] - cur[1]) < 40:
+                continue
+            cam = {"camera": {"x": _clean(target[0]), "y": _clean(target[1]), "zoom": 1}}
+            if k == 0:
+                cam["cameraDurationMs"] = 0
+            else:
+                ins = [a.get("offsetMs", 0) for a in sd.get("actions") or [] if a.get("type") == "visibility"
+                       and a.get("mode") in VIS_IN]
+                off = min(ins) if ins else 0
+                room = sd["durationMs"] - off
+                if room < 400:
+                    off, room = 0, sd["durationMs"]
+                cam.update({"cameraDurationMs": int(min(FOLLOW_MS, room)), "cameraEasing": "ease"})
+                if off:
+                    cam["cameraOffsetMs"] = off
+            sd.update(cam)
+            cur = target
+
+
 class Project:
     """An openCanviz project. aspect: "16:9" (1920x1080), "9:16" (1080x1920) or "1:1" (1080x1080)."""
 
     def __init__(self, title, aspect="16:9", background=None, theme="dark", voice="alloy", captions=True,
-                 caption_style=None, margin=60):
+                 caption_style=None, margin=60, side_margin=None, follow=True):
         if aspect not in ASPECTS:
             raise OpenCanvizError("aspect must be one of %s" % sorted(ASPECTS))
         if theme not in THEMES:
@@ -905,6 +1061,10 @@ class Project:
         self.title, self.aspect, self.voice, self.captions = title, aspect, voice, captions
         self.caption_style, self.margin = caption_style, margin
         self.width, self.height = ASPECTS[aspect]
+        if side_margin is None:
+            side_margin = SIDE_MARGIN if self.width > self.height else 80
+        self.side_margin = max(side_margin, margin)
+        self.follow = follow
         self.colors = dict(THEMES[theme])
         if background:
             self.colors["background"] = background
@@ -917,18 +1077,25 @@ class Project:
         return {"x": -self.width // 2, "y": -self.height // 2, "width": self.width, "height": self.height,
                 "background": self.colors["background"]}
 
-    def area(self, margin=None, caption_space=None):
-        """The safe layout area: the artboard minus the margin, and minus the caption band at the bottom
-        (20% of the height in landscape, 30% in portrait, where captions wrap to 3-4 lines)."""
+    def area(self, margin=None, caption_space=None, side_margin=None):
+        """The safe layout area: the artboard minus the margins (60 px top, 120 px left/right in landscape,
+        80 in portrait and square), and minus the caption band at the bottom (20% of the height in
+        landscape, 30% in portrait, where captions wrap to 3-4 lines)."""
         m = self.margin if margin is None else margin
         if m < 60:
             raise OpenCanvizError("area(): keep a margin of at least 60 px.")
+        side = max(m, self.side_margin if side_margin is None else side_margin)
         if caption_space is None:
             cap = caption_band(self.width, self.height) * self.height if self.captions else m
         else:
             cap = max(caption_space, m)
-        return Rect(-self.width / 2 + m, -self.height / 2 + m, self.width - 2 * m, self.height - m - cap,
+        return Rect(-self.width / 2 + side, -self.height / 2 + m, self.width - 2 * side, self.height - m - cap,
                     self.edge_label_font)
+
+    def safe_center(self):
+        """Center of the default area() in world px; the follow camera centers each step's content here."""
+        a = self.area()
+        return a.cx, a.cy
 
     def scene(self, name=None, transition="crossfade", transition_ms=600, background=None):
         """Add a scene. transition joins the previous scene to this one (None = hard cut)."""
@@ -1122,6 +1289,39 @@ def edge_path(e, a, b):
     return [pa, (pa[0], pb[1]), pb]
 
 
+def _visible_bbox(nodes, edges):
+    """(x0, y0, x1, y1) of the visible nodes and drawn arrows, or None when nothing shows."""
+    vis = {i: n for i, n in nodes.items() if (n.get("opacity", 1) or 0) > 0.01
+           and all(_num(n.get(k)) for k in ("x", "y", "w", "h")) and n.get("kind") != "group"}
+    if not vis:
+        return None
+    xs, ys = [], []
+    for n in vis.values():
+        xs += [n["x"], n["x"] + n["w"]]
+        ys += [n["y"], n["y"] + n["h"]]
+    for e in edges.values():
+        a, b = vis.get(e.get("from")), vis.get(e.get("to"))
+        if not a or not b or (e.get("trim", 1) or 0) <= 0.01 or (e.get("opacity", 1) or 0) <= 0.01:
+            continue
+        for x, y in edge_path(e, a, b):
+            xs.append(x)
+            ys.append(y)
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def _center_camera(box, area):
+    """Camera (x, y) at zoom 1 that puts box's center on area's center, kept so the box stays inside
+    the area on each axis where it fits (else that axis keeps the authored position)."""
+    out = []
+    for lo_b, hi_b, lo_a, hi_a in ((box[0], box[2], area[0], area[2]), (box[1], box[3], area[1], area[3])):
+        if hi_b - lo_b > hi_a - lo_a:
+            out.append(0.0)
+            continue
+        ideal = (lo_b + hi_b) / 2 - (lo_a + hi_a) / 2
+        out.append(round(min(max(ideal, hi_b - hi_a), lo_b - lo_a), 1))
+    return out[0], out[1]
+
+
 def _seg_hits_box(p, q, n, inset=4):
     """Liang-Barsky: does segment p-q pass through node n's box (shrunk by inset)?"""
     x0, y0 = n["x"] + inset, n["y"] + inset
@@ -1273,6 +1473,7 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
 
     prev_vis_nodes = None
     prev_edge_trim = {}
+    view = (ab["x"] + ab["width"] / 2.0, ab["y"] + ab["height"] / 2.0, 1.0) if ab else None
     any_caption = any(isinstance(st, dict) and str(st.get("caption", "")).strip() for st in steps)
     seen_msgs = set()
 
@@ -1389,7 +1590,14 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                 if tid not in edges:
                     E("%s: edgeTween targets unknown edge %s." % (P, tid))
                     continue
-                to = a.get("to") or {}
+                to, fr = a.get("to") or {}, a.get("from") or {}
+                if edges[tid].get("label") and _num(fr.get("trim")) and _num(to.get("trim")) and \
+                        to["trim"] > fr["trim"] + 0.3 and (to.get("opacity", 1) or 0) > 0.01 and once(("slide", tid)):
+                    W("%s: edge %s draws in with its label showing; openCanviz puts the label at the middle of the "
+                      "drawn part, so it slides along with the tip and shows before the arrow. Draw an unlabeled "
+                      "copy of the line (trim 0 -> 1), then fade the labeled edge in on it (edgeTween from "
+                      "{\"trim\":1,\"opacity\":0} to {\"trim\":1,\"opacity\":1}, offsetMs = the end of the draw); "
+                      "the Python helper's draw() does this." % (P, tid))
                 cur = edges[tid].get("trim", 1)
                 if "trim" in to and abs(to["trim"] - cur) > 0.01:
                     E("%s: edgeTween on %s ends at trim %g but the step leaves it at %g; set \"trim\": %g for it in "
@@ -1488,6 +1696,11 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                 elif _overlap(a, b) and not inside and once(("ov", a["id"], b["id"])):
                     W("%s: %s and %s overlap; move them apart or put one fully inside the other."
                       % (P, a["id"], b["id"]))
+        c = st.get("camera")
+        if ab and isinstance(c, dict) and all(_num(c.get(x)) for x in ("x", "y", "zoom")):
+            view = (c["x"], c["y"], c["zoom"])
+        if ab and view:
+            _screen_checks(P, ab, captions, nodes, edges, vis, view, W, once)
         _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once)
         if k == len(steps) - 1 and ab:
             _fill_check(P, ab, captions, vis, W)
@@ -1531,6 +1744,35 @@ def _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once):
                 W("%s: edge %s from %s to %s passes over %s. Connect neighbours instead, or send the skip along its "
                   "own lane (fromPort and toPort both \"S\" with lineType \"elbowed\", and nothing in the lane below)."
                   % (P, eid, a["id"], b["id"], n["id"]))
+
+
+def _screen_checks(P, ab, captions, nodes, edges, vis, cam, W, once):
+    """Where the step's content lands on screen (after the camera pan): centered in the safe area,
+    and clear of the side edges. Skipped while the camera zooms."""
+    if abs(cam[2] - 1) > 0.05:
+        return
+    W_, H_ = ab["width"], ab["height"]
+    sx, sy = cam[0] - (ab["x"] + W_ / 2.0), cam[1] - (ab["y"] + H_ / 2.0)
+    box = _visible_bbox({n["id"]: n for n in vis}, edges)
+    if box is None:
+        return
+    band = caption_band(W_, H_) * H_ if captions else 60
+    acx, acy = ab["x"] + W_ / 2.0, ab["y"] + 60 + (H_ - 60 - band) / 2.0
+    bcx, bcy = (box[0] + box[2]) / 2.0 - sx, (box[1] + box[3]) / 2.0 - sy
+    off = math.hypot(bcx - acx, bcy - acy)
+    if off > 0.15 * H_ and once(("center", P)):
+        W("%s: what shows sits %d px off the center of the safe area (%s); center it, or pan the camera to it "
+          "(the Python helper's follow camera does this per step)." % (P, off, "%s%s" % (
+              "high" if bcy < acy - 0.1 * H_ else "low" if bcy > acy + 0.1 * H_ else "",
+              " left" if bcx < acx - 0.1 * H_ else " right" if bcx > acx + 0.1 * H_ else "")))
+    side = 100 if W_ > H_ else 60
+    for n in vis:
+        if n.get("kind") == "text":
+            continue
+        x0, x1 = n["x"] - sx, n["x"] + n["w"] - sx
+        if (x0 < ab["x"] + side - 1 or x1 > ab["x"] + W_ - side + 1) and once(("side", n["id"])):
+            W("%s: %s comes within %d px of the side of the frame; keep %d px side margins (project.area() does)."
+              % (P, n["id"], min(x0 - ab["x"], ab["x"] + W_ - x1), side))
 
 
 def _fill_check(P, ab, captions, vis, W):

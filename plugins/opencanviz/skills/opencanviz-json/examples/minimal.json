@@ -124,7 +124,13 @@
               "mode": "fadeIn",
               "durationMs": 500
             }
-          ]
+          ],
+          "camera": {
+            "x": -410,
+            "y": 0,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
         },
         {
           "id": "s1_step1",
@@ -169,7 +175,14 @@
               "durationMs": 700,
               "offsetMs": 400
             }
-          ]
+          ],
+          "camera": {
+            "x": 0,
+            "y": 0,
+            "zoom": 1
+          },
+          "cameraDurationMs": 800,
+          "cameraEasing": "ease"
         }
       ],
       "narration": [

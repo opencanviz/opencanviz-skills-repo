@@ -22,7 +22,7 @@ subtitle = s1.text("Why the second request is faster", at=rest.cut_top(90)[0], f
 
 # Scene 2: slow path, then a cache in front of the database.
 s2 = p.scene("Why caches help", transition="crossfade")
-app_r, cache_r, db_r = area.row(3, w=500, h=400, labels=["2 ms"])
+app_r, cache_r, db_r = area.row(3, w=400, h=400, labels=["2 ms"])
 app = s2.box("App", at=app_r, stroke="#38bdf8")
 cache = s2.box("Cache", at=cache_r, fill="#3b0764", stroke="#c084fc")
 db = s2.node("cylinder", "Database", at=db_r.inset(40, 0), stroke="#f59e0b")

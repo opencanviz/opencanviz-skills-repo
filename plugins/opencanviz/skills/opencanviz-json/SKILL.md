@@ -34,18 +34,18 @@ p = Project("Title", aspect="16:9")              # or "9:16", "1:1"; theme="ligh
 s = p.scene("Scene name")                          # transition="crossfade" joins it to the previous scene
 cells = p.area().flow(3, labels=["asks", "reads"]) # also row/column/stack/grid/cut_top; gaps fit the labels
 a, b = s.box("Client", at=cells[0]), s.node("cylinder", "DB", at=cells[1])
-link = s.arrow(a, b, "asks")                       # route="below" sends a skip arrow along its own lane
+link = s.arrow(a, b, "asks")                       # route="below": skip arrow on its own lane; route="around": closes a cycle
 s.step("Caption, also the narration.").reveal(a)   # .hide .move .set .typewrite .camera .focus .remove .wait
 s.step("Next beat.").reveal(b).draw(link)          # reveal a node before drawing an arrow to it
 p.save("out.json")                                 # validates; raises with a fix hint and writes nothing on error
 ```
 
-`p.area()` is the artboard minus the margin and the caption band. `rect.cut_top(h)` returns `(band, rest)` but `rect.cut_bottom(h)` returns `(rest, band)`; two visible nodes on the same rect are refused. Fonts are fitted to their boxes. Ids get the `s1_` prefix. Step durations follow the narration length. To check a file written by hand, run `python3 scripts/opencanviz.py check out.json`.
+`p.area()` is the artboard minus the margin and the caption band. `rect.cut_top(h)` returns `(band, rest)` but `rect.cut_bottom(h)` returns `(rest, band)`; two visible nodes on the same rect are refused. Fonts are fitted to their boxes. Ids get the `s1_` prefix. Step durations follow the narration length. The camera follows what is visible so each step's content sits centered in the safe area, a lone first node included (`Project(..., follow=False)` turns this off, as does any explicit `.camera`). `draw()` on a labeled edge draws an unlabeled copy (`<id>_line`) and fades the label in once the line is drawn. Rows keep 120 px side margins in landscape. To check a file written by hand, run `python3 scripts/opencanviz.py check out.json`.
 
 ## Workflow
 
 1. **Plan.** Pick the aspect ratio (16:9 = 1920 x 1080, 9:16 = 1080 x 1920, 1:1 = 1080 x 1080). Split the topic into scenes, and each scene into 2 to 6 steps. Write one caption line per step, about 8 to 20 words.
-2. **Lay out.** Center the artboard on the origin (`x = -width/2`, `y = -height/2`). Place every node inside it with a margin of at least 60 px, above the caption band, following the layout rules below. A node's `x`, `y` is its top-left corner.
+2. **Lay out.** Center the artboard on the origin (`x = -width/2`, `y = -height/2`). Place every node inside it with a margin of at least 60 px (120 px at the sides in landscape), above the caption band, centered in that safe area, following the layout rules below. A node's `x`, `y` is its top-left corner.
 3. **Write step 0** of each scene as a full snapshot: every node and edge the scene will ever show, with nodes that appear later at `"opacity": 0` and edges that draw in later at `"trim": 0`. Copy the same nodes and edges into the scene's `nodes` and `edges`.
 4. **Write later steps** as deltas: `"delta": true`, then only `id` plus the changed fields. Add actions for timing.
 5. **Add narration**: one clip per step, `text` equal to the caption, `stepIndex` matching the step.
@@ -110,10 +110,12 @@ These keep the video readable once captions and arrows are on screen. The helper
 19. **Fill the frame.** At the last step of a scene the diagram should cover about 60 to 75% of the safe area (artboard minus margin and caption band). No thin row with big empty bands: use bigger boxes or a second row.
 20. **Text fits its box.** Width: characters x 0.55 x font size per line, within `w` minus padding. Height: lines x font size x 1.2 plus 16 px padding, within `h`. Shapes have less room inside (a circle about 72%, a diamond about 50%).
 21. **Edge labels are readable.** `labelFontSize` at least 22 in landscape and 28 in portrait, with `"labelBgColor"` set to the background color so the label masks the line behind it.
-22. **Gaps fit arrows.** Between two connected nodes leave at least 60 px, and for a labeled edge at least characters x 0.6 x `labelFontSize` + 24 for the label plus 40 for the arrowhead (vertical links: font size x 1.2 + 56). When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
+22. **Gaps leave a real arrow.** Between two connected nodes leave at least 100 px. For a labeled edge leave the label chip (characters x 0.6 x `labelFontSize` + 24; vertical links: font size x 1.2 + 10) plus 120 px of visible line, so the chip never covers most of the arrow. When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
 23. **No edge crosses a node.** An edge may not pass over any node except its two ends. Join neighbours, and send a skip connection along its own lane: `"fromPort": "S", "toPort": "S", "lineType": "elbowed"` (or `N`/`N`) with nothing in the lane.
-24. **Labeled edges stay invisible until drawn.** A labeled edge at `"trim": 0` also gets `"opacity": 0`, and its draw-in `edgeTween` sets `opacity` to 1 with the trim (`"from":{"trim":0,"opacity":1},"to":{"trim":1,"opacity":1}`, and `"opacity": 1` in the snapshot). Otherwise its label floats at the start port before the line arrives. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
+24. **Labels appear after their line.** The engine puts a label at the middle of the drawn part, so it slides with the tip and shows before the arrow. For a labeled edge, add an unlabeled copy (`<id>_line`, same ends, no label fields) listed before it: the copy starts at `"trim": 0, "opacity": 1` and draws in with `{"trim":0}` to `{"trim":1}`. The labeled edge sits at `"trim": 1, "opacity": 0` and fades in once the line is done: `{"type":"edgeTween","from":{"trim":1,"opacity":0},"to":{"trim":1,"opacity":1},"durationMs":300,"offsetMs":<end of the draw>}`. Then fade the copy to opacity 0. The helper's `draw()` writes all of this. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
 25. **Reveal before you draw.** Within a step, an arrow's `edgeTween` starts no earlier than the reveal of the node it points to (same or later `offsetMs`).
+26. **Center what shows.** At every step the visible content's center sits within 15% of the frame height of the safe area's center. Lay the group out centered, or add a step `camera` (`x`, `y` = content center minus safe-area center, `zoom` 1) that pans as the content grows. A lone first node starts centered, not in a corner.
+27. **Cycles close.** For a cycle topic (water cycle, feedback loop, Krebs cycle), join the last node back to the first with an elbowed arrow around the outside of the group (`S`/`S` or `N`/`N`, label below or above the lane), not through the middle. In Python: `s.arrow(last, first, "repeats", route="around")`.
 
 ## Timing model
 
@@ -166,6 +168,8 @@ Full field lists and enums are in `schema.json`.
 | Arrow from box 1 to box 3 in a row | It runs over box 2 | Same-side ports and `elbowed`, on a lane below or above |
 | Nodes in the bottom fifth of the frame | Captions cover them | Keep the caption band clear |
 | Arrow draws, then its end node fades in | It points at empty space | Reveal the node first, then draw |
+| Label chip wider than the gap | A 30 px stub of arrow under a label | Chip width + 120 px of gap |
+| Nodes filled from the top-left | Bottom half of the frame empty | Center the group, or pan the camera to it |
 
 ## Checklist before you answer
 
@@ -180,5 +184,6 @@ Full field lists and enums are in `schema.json`.
 - [ ] One narration clip per step; `transitions` has one entry fewer than there are scenes.
 - [ ] Caption band clear; diagram fills about 60 to 75% of the safe area; text fits its boxes.
 - [ ] Edge labels 22 px+ (28 px+ portrait) with `labelBgColor`; gaps fit them; no edge crosses a node.
-- [ ] Labeled edges sit at `trim` 0 and `opacity` 0 until their draw step; arrows draw after their end nodes appear.
+- [ ] Labeled edges fade in after an unlabeled copy draws the line; arrows draw after their end nodes appear.
+- [ ] Each step's content is centered in the safe area; 120 px side margins in landscape; every labeled arrow shows 120 px+ of line.
 - [ ] No internal fields, comments or trailing commas.

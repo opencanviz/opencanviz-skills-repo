@@ -24,9 +24,9 @@
         {
           "id": "s1_caching_in_two_minutes",
           "kind": "text",
-          "x": -800,
+          "x": -740,
           "y": -207.8,
-          "w": 1600,
+          "w": 1480,
           "h": 170,
           "text": "Caching in two minutes",
           "fontWeight": 800,
@@ -42,9 +42,9 @@
         {
           "id": "s1_why_the_second_request_i",
           "kind": "text",
-          "x": -800,
+          "x": -740,
           "y": -17.8,
-          "w": 1600,
+          "w": 1480,
           "h": 90,
           "text": "Why the second request is faster",
           "fontWeight": 400,
@@ -67,9 +67,9 @@
             {
               "id": "s1_caching_in_two_minutes",
               "kind": "text",
-              "x": -800,
+              "x": -740,
               "y": -207.8,
-              "w": 1600,
+              "w": 1480,
               "h": 170,
               "text": "Caching in two minutes",
               "fontWeight": 800,
@@ -85,9 +85,9 @@
             {
               "id": "s1_why_the_second_request_i",
               "kind": "text",
-              "x": -800,
+              "x": -740,
               "y": -17.8,
-              "w": 1600,
+              "w": 1480,
               "h": 90,
               "text": "Why the second request is faster",
               "fontWeight": 400,
@@ -149,9 +149,9 @@
         {
           "id": "s2_app",
           "kind": "rect",
-          "x": -871.6,
+          "x": -817.6,
           "y": -278,
-          "w": 500,
+          "w": 400,
           "h": 400,
           "label": "App",
           "labelColor": "#f8fafc",
@@ -165,9 +165,9 @@
         {
           "id": "s2_cache",
           "kind": "rect",
-          "x": -250,
+          "x": -200,
           "y": -278,
-          "w": 500,
+          "w": 400,
           "h": 400,
           "label": "Cache",
           "labelColor": "#f8fafc",
@@ -181,9 +181,9 @@
         {
           "id": "s2_database",
           "kind": "cylinder",
-          "x": 411.6,
+          "x": 457.6,
           "y": -278,
-          "w": 420,
+          "w": 320,
           "h": 400,
           "label": "Database",
           "labelColor": "#f8fafc",
@@ -195,6 +195,20 @@
         }
       ],
       "edges": [
+        {
+          "id": "s2_app_to_database_line",
+          "from": "s2_app",
+          "to": "s2_database",
+          "fromPort": "S",
+          "toPort": "S",
+          "lineType": "elbowed",
+          "stroke": "#f59e0b",
+          "width": 4,
+          "arrow": "both",
+          "strokeStyle": "dashed",
+          "trim": 1,
+          "opacity": 0
+        },
         {
           "id": "s2_app_to_database",
           "from": "s2_app",
@@ -212,6 +226,19 @@
           "labelBgColor": "#0f172a",
           "strokeStyle": "dashed",
           "trim": 1,
+          "opacity": 1
+        },
+        {
+          "id": "s2_app_to_cache_line",
+          "from": "s2_app",
+          "to": "s2_cache",
+          "fromPort": "E",
+          "toPort": "W",
+          "lineType": "straight",
+          "stroke": "#c084fc",
+          "width": 4,
+          "arrow": "both",
+          "trim": 0,
           "opacity": 1
         },
         {
@@ -242,9 +269,9 @@
             {
               "id": "s2_app",
               "kind": "rect",
-              "x": -871.6,
+              "x": -817.6,
               "y": -278,
-              "w": 500,
+              "w": 400,
               "h": 400,
               "label": "App",
               "labelColor": "#f8fafc",
@@ -258,9 +285,9 @@
             {
               "id": "s2_cache",
               "kind": "rect",
-              "x": -250,
+              "x": -200,
               "y": -278,
-              "w": 500,
+              "w": 400,
               "h": 400,
               "label": "Cache",
               "labelColor": "#f8fafc",
@@ -274,9 +301,9 @@
             {
               "id": "s2_database",
               "kind": "cylinder",
-              "x": 411.6,
+              "x": 457.6,
               "y": -278,
-              "w": 420,
+              "w": 320,
               "h": 400,
               "label": "Database",
               "labelColor": "#f8fafc",
@@ -288,6 +315,20 @@
             }
           ],
           "edges": [
+            {
+              "id": "s2_app_to_database_line",
+              "from": "s2_app",
+              "to": "s2_database",
+              "fromPort": "S",
+              "toPort": "S",
+              "lineType": "elbowed",
+              "stroke": "#f59e0b",
+              "width": 4,
+              "arrow": "both",
+              "strokeStyle": "dashed",
+              "trim": 1,
+              "opacity": 0
+            },
             {
               "id": "s2_app_to_database",
               "from": "s2_app",
@@ -305,6 +346,19 @@
               "labelBgColor": "#0f172a",
               "strokeStyle": "dashed",
               "trim": 1,
+              "opacity": 1
+            },
+            {
+              "id": "s2_app_to_cache_line",
+              "from": "s2_app",
+              "to": "s2_cache",
+              "fromPort": "E",
+              "toPort": "W",
+              "lineType": "straight",
+              "stroke": "#c084fc",
+              "width": 4,
+              "arrow": "both",
+              "trim": 0,
               "opacity": 1
             },
             {
@@ -350,7 +404,7 @@
               "type": "edgeTween",
               "target": {
                 "kind": "edge",
-                "id": "s2_app_to_database"
+                "id": "s2_app_to_database_line"
               },
               "from": {
                 "trim": 0,
@@ -363,6 +417,39 @@
               "ease": "ease-out",
               "durationMs": 700,
               "offsetMs": 800
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_app_to_database"
+              },
+              "from": {
+                "trim": 1,
+                "opacity": 0
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "durationMs": 300,
+              "offsetMs": 1500,
+              "ease": "ease-out"
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_app_to_database_line"
+              },
+              "from": {
+                "opacity": 1
+              },
+              "to": {
+                "opacity": 0
+              },
+              "durationMs": 100,
+              "offsetMs": 1800
             }
           ]
         },
@@ -382,6 +469,11 @@
               "id": "s2_app_to_cache",
               "trim": 1,
               "opacity": 1
+            },
+            {
+              "id": "s2_app_to_cache_line",
+              "trim": 1,
+              "opacity": 0
             }
           ],
           "actions": [
@@ -398,7 +490,7 @@
               "type": "edgeTween",
               "target": {
                 "kind": "edge",
-                "id": "s2_app_to_cache"
+                "id": "s2_app_to_cache_line"
               },
               "from": {
                 "trim": 0,
@@ -411,6 +503,39 @@
               "ease": "ease-out",
               "durationMs": 700,
               "offsetMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_app_to_cache"
+              },
+              "from": {
+                "trim": 1,
+                "opacity": 0
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "durationMs": 300,
+              "offsetMs": 1200,
+              "ease": "ease-out"
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_app_to_cache_line"
+              },
+              "from": {
+                "opacity": 1
+              },
+              "to": {
+                "opacity": 0
+              },
+              "durationMs": 100,
+              "offsetMs": 1500
             }
           ]
         },
@@ -446,7 +571,7 @@
             }
           ],
           "camera": {
-            "x": -310.8,
+            "x": -308.8,
             "y": -78.0,
             "zoom": 1.4
           },
