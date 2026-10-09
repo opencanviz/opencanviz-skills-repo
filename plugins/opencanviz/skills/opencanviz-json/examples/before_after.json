@@ -51,7 +51,7 @@
           "x": -820,
           "y": -314,
           "w": 770,
-          "h": 62,
+          "h": 63,
           "text": "Before",
           "fontWeight": 700,
           "color": "#ef4444",
@@ -59,7 +59,7 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 36,
+          "fontSize": 37,
           "opacity": 0
         },
         {
@@ -82,7 +82,7 @@
           "x": 50,
           "y": -314,
           "w": 770,
-          "h": 62,
+          "h": 63,
           "text": "After",
           "fontWeight": 700,
           "color": "#22c55e",
@@ -90,16 +90,16 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 36,
+          "fontSize": 37,
           "opacity": 0
         },
         {
           "id": "s1_every_request_goes_to_th",
           "kind": "text",
           "x": -812,
-          "y": -236,
+          "y": -235,
           "w": 754,
-          "h": 532,
+          "h": 531,
           "text": "Every request goes to the database: 120 ms",
           "fontWeight": 400,
           "color": "#f8fafc",
@@ -114,9 +114,9 @@
           "id": "s1_most_requests_hit_the_ca",
           "kind": "text",
           "x": 58,
-          "y": -236,
+          "y": -235,
           "w": 754,
-          "h": 532,
+          "h": 531,
           "text": "Most requests hit the cache: 8 ms",
           "fontWeight": 400,
           "color": "#f8fafc",
@@ -172,7 +172,7 @@
               "x": -820,
               "y": -314,
               "w": 770,
-              "h": 62,
+              "h": 63,
               "text": "Before",
               "fontWeight": 700,
               "color": "#ef4444",
@@ -180,7 +180,7 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 36,
+              "fontSize": 37,
               "opacity": 0
             },
             {
@@ -203,7 +203,7 @@
               "x": 50,
               "y": -314,
               "w": 770,
-              "h": 62,
+              "h": 63,
               "text": "After",
               "fontWeight": 700,
               "color": "#22c55e",
@@ -211,16 +211,16 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 36,
+              "fontSize": 37,
               "opacity": 0
             },
             {
               "id": "s1_every_request_goes_to_th",
               "kind": "text",
               "x": -812,
-              "y": -236,
+              "y": -235,
               "w": 754,
-              "h": 532,
+              "h": 531,
               "text": "Every request goes to the database: 120 ms",
               "fontWeight": 400,
               "color": "#f8fafc",
@@ -235,9 +235,9 @@
               "id": "s1_most_requests_hit_the_ca",
               "kind": "text",
               "x": 58,
-              "y": -236,
+              "y": -235,
               "w": 754,
-              "h": 532,
+              "h": 531,
               "text": "Most requests hit the cache: 8 ms",
               "fontWeight": 400,
               "color": "#f8fafc",
@@ -260,13 +260,7 @@
               "mode": "fadeIn",
               "durationMs": 500
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": -347,
-            "zoom": 1
-          },
-          "cameraDurationMs": 0
+          ]
         },
         {
           "id": "s1_step1",
@@ -296,8 +290,7 @@
                 "id": "s1_panel_before"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "visibility",
@@ -306,8 +299,7 @@
                 "id": "s1_panel_before_title"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "visibility",
@@ -317,16 +309,9 @@
               },
               "mode": "fadeIn",
               "durationMs": 500,
-              "offsetMs": 1000
+              "offsetMs": 300
             }
-          ],
-          "camera": {
-            "x": -294,
-            "y": 0,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step2",
@@ -356,8 +341,7 @@
                 "id": "s1_panel_after"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "visibility",
@@ -366,8 +350,7 @@
                 "id": "s1_panel_after_title"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "visibility",
@@ -377,16 +360,9 @@
               },
               "mode": "fadeIn",
               "durationMs": 500,
-              "offsetMs": 1000
+              "offsetMs": 300
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": 0,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         }
       ],
       "narration": [

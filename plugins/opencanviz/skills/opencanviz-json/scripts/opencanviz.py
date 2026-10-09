@@ -34,6 +34,9 @@ Recipes (scene.* builds, step.* animates): bar_chart/grow, line_chart/extend, sc
 array/swap/color/bracket, pointer/point, tree, linked_list/append, graph, grid/set_cell,
 variable/assign, code/highlight, sequence/message/activate, timeline/event, panels, bullets, counter,
 progress, pie/sweep, path/follow, packet. Each writes only fields openCanviz plays and exports.
+Recipes keep text at the readable floor (font_floor: body 34, code 30, ticks 28, variables 34 px at
+1080p landscape, x1.4 in portrait) and lay out at their final size from step 0; scene.reserve(node)
+makes the follow camera frame a node of your own before it appears.
 
 check also reports: a delta step that adds edges but no nodes; an edge without animationStyle; an
 edgeTween that trims 0 to 1 without trim 1 in the snapshot; glow 0 (use noGlow); a mono iconify icon
@@ -166,6 +169,16 @@ def edge_label_min(width, height):
     return 28 if height > width else 22
 
 
+FONT_FLOORS = {"body": 34, "code": 30, "tick": 28, "var": 34}
+
+
+def font_floor(kind, width, height):
+    """Smallest readable font size for kind (body, code, tick, var) on a width x height artboard: at 1080p
+    landscape body / event / bullet text 34 px, code 30, chart ticks and small labels 28, variable boxes 34;
+    portrait (9:16) is scaled up by 1.4 because the phone shows the frame smaller."""
+    return int(round(FONT_FLOORS[kind] * (1.4 if height > width else 1.0)))
+
+
 def label_width(label, font_size):
     """Estimated width of an edge label chip."""
     return len(str(label)) * 0.6 * font_size + 24
@@ -229,6 +242,12 @@ class Rect:
     def cut_top(self, h, gap=40):
         """Split into (top band of height h, the rest below it)."""
         return self._r(self.x, self.y, self.w, h), self._r(self.x, self.y + h + gap, self.w, self.h - h - gap)
+
+    def split(self, frac=0.5, gap=60):
+        """Split side by side into (left frac of the width, the rest on the right), gap px apart. A code
+        panel and its variables: left, right = body.split(0.68)."""
+        lw = (self.w - gap) * frac
+        return self._r(self.x, self.y, lw, self.h), self._r(self.x + lw + gap, self.y, self.w - lw - gap, self.h)
 
     def cut_bottom(self, h, gap=40):
         """Split into (the rest above, bottom band of height h). Note the order: the band is [1]."""
@@ -407,6 +426,35 @@ def text_overflow(node):
     return None
 
 
+def font_floor_issue(node, width, height):
+    """None if the node's text is at or above the readable floor (see font_floor), else a short reason.
+    Code (monospace or syntaxStyle) needs the code floor, a variable box the variable floor, text of 4 or
+    more words the body floor, and any other text or label the tick floor."""
+    kind = node.get("kind")
+    if kind == "algo-variable":
+        fs, what = node.get("labelFontSize", 14), "var"
+    elif kind == "text" and str(node.get("text", "")).strip():
+        fs = node.get("fontSize", 24)
+        if node.get("syntaxStyle") or "mono" in str(node.get("fontFamily", "")):
+            what = "code"
+        else:
+            what = "body" if len(str(node["text"]).split()) >= 4 else "tick"
+    elif kind == "algo-pointer" and node.get("pointerLabel"):
+        fs, what = node.get("labelFontSize", 14), "tick"
+    elif node.get("label") and kind not in ("svg", "icon", "lottie", "group"):
+        fs = node.get("labelFontSize", 14)
+        what = "body" if len(str(node["label"]).split()) >= 4 else "tick"
+    else:
+        return None
+    if not _num(fs):
+        return None
+    floor = font_floor(what, width, height)
+    if fs + 0.5 < floor:
+        name = {"var": "variable", "code": "code", "body": "text of 4+ words", "tick": "short text"}[what]
+        return "%s at %g px is under the %d px readable floor" % (name, fs, floor)
+    return None
+
+
 def fit_font(text, start, w, h, kind="text", bold=False, minimum=14, line_height=LINE_H):
     """Largest font size <= start at which text fits a w x h node (estimate)."""
     fs = float(start)
@@ -575,9 +623,20 @@ def _tick_fmt(v):
 
 
 def _series(m, upto):
+    """The line-chart series drawn to point upto, plus copies nudged a couple of px each way: openCanviz
+    draws a chart line 2 px wide, the copies make it read as a ~5 px line."""
     pts = m["points"]
     shown = [pts[min(i, upto)] for i in range(len(pts))]
-    return {"id": "s", "color": m["color"], "points": [{"x": _clean(x), "y": _clean(y)} for x, y in shown]}
+    out = []
+    for k, (dx, dy) in enumerate(m.get("offsets") or [(0, 0)]):
+        out.append({"id": "s" if k == 0 else "s_w%d" % k, "color": m["color"],
+                    "points": [{"x": _r4(x + dx), "y": _r4(y + dy)} for x, y in shown]})
+    return out
+
+
+def _r4(v):
+    v = round(float(v), 4)
+    return int(v) if v == int(v) else v
 
 
 def _dots(m):
@@ -902,7 +961,7 @@ class Step:
             raise OpenCanvizError("extend(%s): upto must be past the last shown point (%d) and at most %d."
                                   % (chart.id, m["shown"], len(pts) - 1))
         m["shown"] = upto
-        self._patch(chart, chartSeries=[_series(m, upto)])
+        self._patch(chart, chartSeries=_series(m, upto))
         for i, t in sorted(m["notes"].items()):
             if i <= upto and not t.meta.get("shown"):
                 t.meta["shown"] = True
@@ -1037,7 +1096,8 @@ class Step:
 
     def assign(self, var, value):
         """Variable box: show a new value (it switches at the start of the step)."""
-        self._recipe(var, "var", "assign")
+        m = self._recipe(var, "var", "assign")
+        m["values"].append(str(value))
         self._patch(var, varValue=str(value))
         return self
 
@@ -1097,9 +1157,9 @@ class Step:
         self.reveal(ev, duration=500, offset=0)
         f = timeline.fields
         if m["vertical"]:
-            self.move(timeline, h=max(10, m["pos"][i] - f["y"] + 5))
+            self.move(timeline, h=max(12, m["pos"][i] - f["y"] + 6))
         else:
-            self.move(timeline, w=max(10, m["pos"][i] - f["x"] + 5))
+            self.move(timeline, w=max(12, m["pos"][i] - f["x"] + 6))
         return self
 
     def sweep(self, pie):
@@ -1339,7 +1399,10 @@ class Scene:
         return self.project.height > self.project.width
 
     def _small_font(self):
-        return 30 if self._portrait else 26
+        return 44 if self._portrait else 32
+
+    def _floor(self, kind):
+        return font_floor(kind, self.project.width, self.project.height)
 
     def line(self, p0, p1, a, b=None, arrow="none", color=None, width=3, dashed=False, id=None):
         """A straight line from world point p0 to p1 (an axis, a baseline, a sequence message). It is an
@@ -1468,15 +1531,22 @@ class Scene:
         col = color or th["hi"]
         m = {"points": [tuple(p) for p in points], "shown": 0, "color": col, "notes": {}}
         chart, px = self._plot("algo-chart-line", at, x_range, y_range, x_ticks, y_ticks, x_title, y_title, font,
-                               fmt, id, {"chartSeries": [_series(m, 0)]})
+                               fmt, id, {"chartSeries": _series(m, 0)})
+        # the renderer maps data to px like px() does; 1.6 px in data units, each way
+        (ax0, ay0), (ax1, ay1) = px(x_range[0], y_range[0]), px(x_range[1], y_range[1])
+        ux = (x_range[1] - x_range[0]) / float(ax1 - ax0 or 1) * 1.6
+        uy = (y_range[1] - y_range[0]) / float(ay0 - ay1 or 1) * 1.6
+        m["offsets"] = [(0, 0), (0, uy), (0, -uy), (ux, 0), (-ux, 0)]
+        chart.fields["chartSeries"] = _series(m, 0)
         tf = font or self._small_font()
+        nf = max(self._floor("body"), tf + 6)
         for i, txt in sorted((notes or {}).items()):
             X, Y = px(*points[i])
-            w = len(str(txt)) * 0.6 * (tf + 2) + 24
+            w = len(str(txt)) * 0.6 * nf + 24
             nx = min(max(X - w / 2, chart.fields["x"]), chart.fields["x"] + chart.fields["w"] - w)
-            nh = _tline(tf + 2)
-            ny = Y - nh - 14 if Y - nh - 14 > chart.fields["y"] else Y + 14
-            t = self.text(str(txt), x=nx, y=ny, w=w, h=nh, fontSize=tf + 2, fontWeight=700, color=col,
+            nh = _tline(nf)
+            ny = Y - nh - 18 if Y - nh - 18 > chart.fields["y"] else Y + 18
+            t = self.text(str(txt), x=nx, y=ny, w=w, h=nh, fontSize=nf, fontWeight=700, color=col,
                           id="%s_note%d" % (id, i))
             m["notes"][i] = t
         chart.meta["line"] = m
@@ -1497,13 +1567,15 @@ class Scene:
 
     def array(self, values, at, font=None, indices=True, id="array"):
         """A row of cells (sorting, searching, two pointers). The rect also keeps 70 px on top for pointers
-        and 80 px below for the index row and a bracket label. Use step.swap / color / bracket and
+        and about 130 px below (170 in portrait) for the index row and a bracket label. Use step.swap / color / bracket and
         scene.pointer(). The index numbers are text nodes that come and go with the array."""
         n = len(values)
         th = self.project.colors
-        y, h = at.y + 70, at.h - 150
+        sf, isf = self._small_font(), self._floor("tick")
+        below = 16 + (_tline(isf) if indices else 0) + 4 + _tline(sf)
+        y, h = at.y + 70, at.h - 70 - below
         if h < 80 or n == 0:
-            raise OpenCanvizError("array(): give a rect at least 230 px tall and one or more values.")
+            raise OpenCanvizError("array(): give a rect at least %d px tall and one or more values." % (150 + below))
         cell_w = at.w / float(n)
         fs = font or int(min(64, cell_w * 0.45, (h - 30) * 0.5))
         # openCanviz's own index row resets the canvas alpha, so with it on the array ignores opacity and
@@ -1511,13 +1583,12 @@ class Scene:
         node = self.node("algo-array", None, x=at.x, y=y, w=at.w, h=h, id=id, cellValues=[str(v) for v in values],
                          cellColors=[None] * n, cellFontSize=fs, cellShowIndices=False, fill=th["fill"],
                          stroke=th["muted"], labelColor=th["text"], noGlow=True)
-        sf = self._small_font()
         if indices:
             for i in range(n):
-                node.parts.append(self.text(str(i), x=at.x + i * cell_w, y=y + h + 16, w=cell_w, h=_tline(sf - 4),
-                                            fontSize=sf - 4, color=th["muted"], id="%s_i%d" % (id, i)))
+                node.parts.append(self.text(str(i), x=at.x + i * cell_w, y=y + h + 16, w=cell_w, h=_tline(isf),
+                                            fontSize=isf, color=th["muted"], id="%s_i%d" % (id, i)))
         m = {"values": [str(v) for v in values], "colors": [None] * n, "label_font": sf,
-             "label_y": y + h + 16 + (_tline(sf - 4) if indices else 0) + 4, "indices": indices}
+             "label_y": y + h + 16 + (_tline(isf) if indices else 0) + 4, "indices": indices}
         node.meta["array"] = node.meta["struct"] = m
         return node
 
@@ -1526,7 +1597,7 @@ class Scene:
         grid (row, col) or a bar index of a bar chart. It shows with its target; move it with step.point."""
         self._own_node(target)
         f = {"pointerTargetId": target.id, "pointerLabel": str(label), "pointerColor": color or self.project.colors["hi"],
-             "labelFontSize": font or 30, "pointerArrowSize": 20}
+             "labelFontSize": font or self._small_font() + 4, "pointerArrowSize": 20}
         if target.fields.get("kind") == "algo-array":
             if side == "bottom" and target.meta["array"]["indices"]:
                 raise OpenCanvizError("pointer(%s): a bottom pointer sits right under the cells, over the index row "
@@ -1639,12 +1710,34 @@ class Scene:
         return node
 
     def variable(self, name, value, at, font=None, id=None):
-        """A named value box ("min = 3"); step.assign(var, v) changes it."""
-        node = self.node("algo-variable", None, at=at, id=id or "var_" + _slug(name), varName=str(name),
-                         varValue=str(value), labelFontSize=font or int(min(40, at.h * 0.4)),
+        """A named value box ("min = 3"); step.assign(var, v) changes it. The box is only as wide as the
+        name plus its longest value (openCanviz draws the name at the left edge and the value at the right
+        edge, so a wide box splits them apart); it sits at the left of at, centered vertically. Every
+        variable of the scene gets the same width so a column of them lines up."""
+        fl = self._floor("var")
+        fs = font or int(max(fl, min(fl * 1.4, at.h * 0.4)))
+        h = min(at.h, int(math.ceil(fs * 2.0)))
+        node = self.node("algo-variable", None, x=at.x, y=at.y + (at.h - h) / 2.0, w=at.w, h=h,
+                         id=id or "var_" + _slug(name), varName=str(name), varValue=str(value), labelFontSize=fs,
                          labelColor=self.project.colors["text"])
-        node.meta["var"] = {}
+        node.meta["var"] = {"values": [str(value)], "max_w": at.w}
+        node.meta["reserve"] = True
         return node
+
+    def _size_variables(self):
+        """Narrow every variable box to its name plus its longest value (called once, at compile)."""
+        vs = [n for n in self.nodes if "var" in n.meta]
+        want = {}
+        for n in vs:
+            fs = n.fields["labelFontSize"]
+            name_w = len(n.fields["varName"] + " =") * CHAR_W * fs
+            val_w = max(len(v) for v in n.meta["var"]["values"]) * (CHAR_W + 0.07) * fs
+            want[n.id] = 16 + name_w + 0.9 * fs + val_w + 8
+        if not vs:
+            return
+        w = max(want.values())
+        for n in vs:
+            n.fields["w"] = _clean(min(n.meta["var"]["max_w"], max(w, n.fields["h"] * 1.6)))
 
     def code(self, source, at, language="python", font=None, id="code"):
         """A code panel with syntax colors (python, javascript or pseudo). step.highlight(code, 3) marks
@@ -1654,10 +1747,12 @@ class Scene:
         th = self.project.colors
         lines = source.rstrip("\n").split("\n")
         longest = max(len(l) for l in lines)
-        fs = font or int(min(44, (at.h - 48) / (len(lines) * 1.4), (at.w - 48) / (longest * 0.62)))
-        if fs < 18:
-            raise OpenCanvizError("code(): %d lines of up to %d characters need a bigger rect (font would be %d px); "
-                                  "show fewer lines." % (len(lines), longest, fs))
+        fl = self._floor("code")
+        fs = font or int(min(fl * 1.8, (at.h - 48) / (len(lines) * 1.4), (at.w - 48) / (longest * 0.62)))
+        if fs < fl:
+            raise OpenCanvizError("code(): %d lines of up to %d characters need a bigger rect (font would be %d px, "
+                                  "the readable floor is %d); give the panel more width, shorten the longest line "
+                                  "or show fewer lines." % (len(lines), longest, fs, fl))
         ch = min(at.h, int(math.ceil(len(lines) * fs * 1.4 + 2 * 20 + 12)))
         at = Rect(at.x, at.y + (at.h - ch) / 2.0, at.w, ch)
         node = self.node("text", None, at=at, id=id, text="\n".join(lines), fontFamily="monospace", fontSize=fs,
@@ -1668,6 +1763,7 @@ class Scene:
         # the mark jump at the start of the step instead (seen working in the export renderer)
         node.fields["_animatedProps"] = {"highlightedLines": False}
         node.meta["code"] = {"lines": len(lines)}
+        node.meta["reserve"] = True
         return node
 
     def sequence(self, names, at, font=None):
@@ -1680,7 +1776,7 @@ class Scene:
         out = []
         for i, name in enumerate(names):
             x = at.x + col * i + (col - w) / 2
-            lf = font or (32 if self._portrait else 30)   # the header box is a fixed 50 px
+            lf = font or (40 if self._portrait else 34)   # the header box is a fixed 50 px
             ln = self.node("uml-lifeline", str(name), x=x, y=at.y, w=w, h=at.h, id="life_" + _slug(name),
                            lifelineLength=_clean(at.h - 50), fill=th["fill"], stroke=th["muted"], labelColor=th["text"],
                            labelFontSize=lf, noGlow=True)
@@ -1696,13 +1792,13 @@ class Scene:
             raise OpenCanvizError("message(): a and b must be different lifelines.")
         th = self.project.colors
         y = getattr(self, "_seq_y", a.fields["y"] + 130) if y is None else y
-        self._seq_y = y + 100
+        self._seq_y = y + max(100, _tline(font or self._floor("body")) + 50)
         ax, bx = a.rect.cx, b.rect.cx
         e = self.line((ax, y), (bx, y), a, b, arrow="end", color=th["muted"] if reply else th["text"], width=3,
                       dashed=reply, id="msg_" + _slug(text))
         e.fields["endArrowType"] = "open-triangle" if reply else "triangle"
         e.fields["strokeStyle"] = "dashed" if reply else "solid"
-        fs = font or (30 if self._portrait else 28)
+        fs = font or self._floor("body")
         t = self.text(str(text), x=min(ax, bx) + 16, y=y - _tline(fs) - 8, w=abs(bx - ax) - 32, h=_tline(fs), fontSize=fs,
                       color=th["text"], id="msg_" + _slug(text) + "_text")
         e.parts.append(t)
@@ -1711,57 +1807,118 @@ class Scene:
 
     def timeline(self, events, at, font=None, color=None, id="timeline"):
         """Events [(year, text), ...] on a line that grows from one to the next: across in landscape, down in
-        portrait. step.event(tl) brings in the next one (call it once per event)."""
+        portrait. step.event(tl) brings in the next one (call it once per event). The whole track is laid
+        out (and framed by the camera) from the first event, so the first dot sits where it will stay and
+        the line grows along a faint track. In landscape, 4 or more events alternate above and below the
+        line so each text gets twice the width. Keep each event text to a few words (about 30 characters)."""
         th = self.project.colors
         acc = color or th["accent"]
         n = len(events)
         if n < 2:
             raise OpenCanvizError("timeline(): give at least two events.")
         vertical = at.h > at.w
-        fs = font or (34 if self._portrait else 30)
-        yf = int(fs * 1.3)
+        floor = self._floor("body")
         handles, pos = [], []
+        if not vertical and not font:
+            # the biggest event font (up to 56 px) at which every text fits in 3 lines and the block fits at.h
+            slot = at.w / float(n)
+            tw = min(560.0, (2 * at.w - 24 * (n - 1)) / (n + 1.0)) if n >= 4 else slot - 16
+            font = floor
+            for f in range(56, floor - 1, -2):
+                ls = [text_lines(str(t), f, tw) for _, t in events]
+                if None in ls or max(ls) > 3:
+                    continue
+                bh = math.ceil(max(ls) * f * LINE_H + 2 * TEXT_PAD + 2)
+                one = _tline(int(f * 1.35)) + 8 + bh
+                blk = 2 * (one + f * 0.65 + 12) if n >= 4 else one + 34 + f * 1.3
+                if blk <= at.h:
+                    font = f
+                    break
+        fs = font or max(floor, 48 if self._portrait else 38)
+        yf = int(fs * 1.35)
+        D = int(fs * 1.3)
+
+        def body_font(txt, w, h):
+            tf = fit_font(str(txt), fs, w, h, minimum=min(fs, floor))
+            if tf is None:
+                raise OpenCanvizError("timeline(): event text %r does not fit at %d px (the readable floor); shorten "
+                                      "it to a few words and say the rest in the narration." % (txt, floor))
+            return tf
+
         if not vertical:
             slot = at.w / float(n)
-            body_h = min(int(math.ceil(3 * fs * LINE_H + 18)), at.h - _tline(yf) - 74)
-            block = _tline(yf) + 40 + 34 + body_h
-            cy = at.y + max(0, (at.h - block) / 2.0) + _tline(yf) + 40
-            for i, (yr, txt) in enumerate(events):
-                xi = at.x + slot * (i + 0.5)
-                pos.append(xi)
-            line = self.node("rect", None, x=pos[0] - 5, y=cy - 5, w=10, h=10, id=id, fill=th["muted"],
-                             stroke="none", cornerRadius=5, noGlow=True)
+            alt = n >= 4
+            # alternating: texts on one side are two dots apart, and the end texts stay inside at
+            tw = min(560.0, (2 * at.w - 24 * (n - 1)) / (n + 1.0)) if alt else slot - 16
+            yh = _tline(yf)
+            nl = max([text_lines(str(t), fs, tw) or 3 for _, t in events] + [1])
+            body_h = int(math.ceil(min(3, nl) * fs * LINE_H + 2 * TEXT_PAD + 2))
+            if alt:
+                half = yh + 8 + body_h
+                block = 2 * (half + D / 2.0 + 12)
+                if block > at.h:
+                    body_h = max(int(math.ceil(2 * fs * LINE_H + 2 * TEXT_PAD + 2)), int(body_h - (block - at.h) / 2))
+                    half = yh + 8 + body_h
+                    block = 2 * (half + D / 2.0 + 12)
+                cy = at.y + max(0, (at.h - block) / 2.0) + half + D / 2.0 + 12
+            else:
+                block = yh + 14 + D + 20 + body_h
+                cy = at.y + max(0, (at.h - block) / 2.0) + yh + 14 + D / 2.0
+            for i in range(n):
+                if alt:
+                    pos.append(at.x + tw / 2.0 + (at.w - tw) * i / float(n - 1))
+                else:
+                    pos.append(at.x + slot * (i + 0.5))
+            track = self.node("rect", None, x=pos[0], y=cy - 5, w=max(10, pos[-1] - pos[0]), h=10, id=id + "_track",
+                              fill=th["line"], stroke="none", cornerRadius=5, noGlow=True)
+            line = self.node("rect", None, x=pos[0] - 6, y=cy - 6, w=12, h=12, id=id, fill=th["muted"],
+                             stroke="none", cornerRadius=6, noGlow=True)
+            line.parts.append(track)
             for i, (yr, txt) in enumerate(events):
                 xi = pos[i]
-                dot = self.node("circle", None, x=xi - 18, y=cy - 18, w=36, h=36, id="%s_dot%d" % (id, i),
-                                fill=acc, stroke=self.scene_background(), strokeWidth=4, noGlow=True)
-                year = self.text(str(yr), x=xi - slot / 2 + 6, y=cy - 18 - 14 - _tline(yf), w=slot - 12, h=_tline(yf),
-                                 fontSize=yf, fontWeight=700, color=acc, id="%s_year%d" % (id, i))
-                tf = fit_font(str(txt), fs, slot - 16, body_h) or 16
-                body = self.text(str(txt), x=xi - slot / 2 + 8, y=cy + 34, w=slot - 16, h=body_h,
-                                 fontSize=tf, color=th["text"], verticalAlign="top", id="%s_text%d" % (id, i))
+                dot = self.node("circle", None, x=xi - D / 2.0, y=cy - D / 2.0, w=D, h=D, id="%s_dot%d" % (id, i),
+                                fill=acc, stroke=self.scene_background(), strokeWidth=5, noGlow=True)
+                up = alt and i % 2 == 1
+                tf = body_font(txt, tw, body_h)
+                if up:
+                    yy = cy - D / 2.0 - 12 - yh
+                    by = yy - 8 - body_h
+                    va = "bottom"
+                else:
+                    yy = cy + D / 2.0 + 12 if alt else cy - D / 2.0 - 14 - yh
+                    by = (yy + yh + 8) if alt else cy + D / 2.0 + 20
+                    va = "top"
+                year = self.text(str(yr), x=xi - tw / 2.0, y=yy, w=tw, h=yh, fontSize=yf, fontWeight=700, color=acc,
+                                 id="%s_year%d" % (id, i))
+                body = self.text(str(txt), x=xi - tw / 2.0, y=by, w=tw, h=body_h, fontSize=tf, color=th["text"],
+                                 verticalAlign=va, id="%s_text%d" % (id, i))
                 dot.parts += [year, body]
                 handles.append(dot)
         else:
             slot = at.h / float(n)
-            lx = at.x + yf * 3.2 + 30
+            lx = at.x + yf * 2.6 + 30
             for i in range(n):
                 pos.append(at.y + slot * (i + 0.5))
-            line = self.node("rect", None, x=lx - 5, y=pos[0] - 5, w=10, h=10, id=id, fill=th["muted"],
-                             stroke="none", cornerRadius=5, noGlow=True)
+            track = self.node("rect", None, x=lx - 5, y=pos[0], w=10, h=max(10, pos[-1] - pos[0]), id=id + "_track",
+                              fill=th["line"], stroke="none", cornerRadius=5, noGlow=True)
+            line = self.node("rect", None, x=lx - 6, y=pos[0] - 6, w=12, h=12, id=id, fill=th["muted"],
+                             stroke="none", cornerRadius=6, noGlow=True)
+            line.parts.append(track)
             for i, (yr, txt) in enumerate(events):
                 yi = pos[i]
-                dot = self.node("circle", None, x=lx - 18, y=yi - 18, w=36, h=36, id="%s_dot%d" % (id, i),
-                                fill=acc, stroke=self.scene_background(), strokeWidth=4, noGlow=True)
-                year = self.text(str(yr), x=at.x, y=yi - _tline(yf) / 2.0, w=lx - 30 - at.x, h=_tline(yf), fontSize=yf,
-                                 fontWeight=700, color=acc, textAlign="right", id="%s_year%d" % (id, i))
-                bw = at.x + at.w - (lx + 34)
-                tf = fit_font(str(txt), fs, bw, slot - 12) or 16
-                body = self.text(str(txt), x=lx + 34, y=yi - (slot - 12) / 2, w=bw, h=slot - 12, fontSize=tf,
+                dot = self.node("circle", None, x=lx - D / 2.0, y=yi - D / 2.0, w=D, h=D, id="%s_dot%d" % (id, i),
+                                fill=acc, stroke=self.scene_background(), strokeWidth=5, noGlow=True)
+                year = self.text(str(yr), x=at.x, y=yi - _tline(yf) / 2.0, w=lx - D / 2.0 - 16 - at.x, h=_tline(yf),
+                                 fontSize=yf, fontWeight=700, color=acc, textAlign="right", id="%s_year%d" % (id, i))
+                bx = lx + D / 2.0 + 20
+                bw = at.x + at.w - bx
+                tf = body_font(txt, bw, slot - 12)
+                body = self.text(str(txt), x=bx, y=yi - (slot - 12) / 2, w=bw, h=slot - 12, fontSize=tf,
                                  color=th["text"], textAlign="left", id="%s_text%d" % (id, i))
                 dot.parts += [year, body]
                 handles.append(dot)
         line.meta["timeline"] = {"events": handles, "pos": pos, "shown": -1, "vertical": vertical}
+        self.reserve(line, *handles)
         return line
 
     def panels(self, titles, at, colors=None, font=None):
@@ -1770,7 +1927,7 @@ class Scene:
         th = self.project.colors
         cols = list(colors or [th["bad"], th["ok"], th["accent"], th["hi"]])
         rects = at.column(len(titles), gap=40) if self._portrait else at.row(len(titles), gap=60)
-        fs = font or int(self.project.base_font * 0.9)
+        fs = font or int(max(self._floor("body") * 1.1, self.project.base_font * 0.9))
         out = []
         for i, (title, r) in enumerate(zip(titles, rects)):
             c = cols[i % len(cols)]
@@ -1781,28 +1938,60 @@ class Scene:
             p.parts.append(head)
             top = 16 + _tline(fs) + 16
             p.content = Rect(r.x + 28, r.y + top, r.w - 56, r.h - top - 28, at.label_size)
+            p.meta["reserve"] = True
             out.append(p)
         return out
 
     def bullets(self, items, at, glyph="check", color=None, font=None, id="point"):
         """A list of points, each with a check (or x, dot, arrow) that draws itself in when the point is
-        revealed. Returns the text nodes; reveal them one per step, or together."""
+        revealed. The list is big (body text and up), centered as a block in at, and the camera frames the
+        whole list from the first point. Returns the text nodes; reveal them one per step, or together."""
         th = self.project.colors
         n = len(items)
-        gap = 24
-        rh = min((at.h - gap * (n - 1)) / float(n), self.project.base_font * 3.2)
-        rows = at.column(n, gap=gap, h=rh)
-        g = min(rh, self.project.base_font * 1.3)
+        floor = self._floor("body")
+        start = font
+        if not start:
+            # the biggest font (up to 1.6 x base) at which every point fits in 2 lines and the list fits at.h
+            start = floor
+            for f in range(int(self.project.base_font * 1.6), floor - 1, -2):
+                ls = [text_lines(str(t), f, at.w - f * 1.2 - 28) for t in items]
+                if None in ls or max(ls) > 2:
+                    continue
+                r = math.ceil(max(ls) * f * LINE_H + 2 * TEXT_PAD + 6)
+                if n * r + int(f * 0.6) * (n - 1) <= at.h:
+                    start = f
+                    break
+        gap = int(start * 0.6)
+        rh = min((at.h - gap * (n - 1)) / float(n), math.ceil(2 * start * LINE_H + 2 * TEXT_PAD + 6))
+        g = int(min(rh, start * 1.2))
         tw = at.w - g - 28
-        fs = font or min([fit_font(str(t), self.project.base_font, tw, rh) or 14 for t in items])
+        if font:
+            fs = font
+        else:
+            got = [fit_font(str(t), start, tw, rh, minimum=floor) for t in items]
+            if None in got:
+                raise OpenCanvizError("bullets(): %r does not fit at %d px (the readable floor) in a %dx%d row; use "
+                                      "fewer or shorter points, or a taller rect." % (items[got.index(None)], floor,
+                                                                                       tw, rh))
+            fs = min(got)
+        widths = []
+        for t in items:
+            lines = text_lines(str(t), fs, tw) or 1
+            widths.append(tw if lines > 1 else len(str(t)) * CHAR_W * fs + 12)
+        text_w = min(tw, max(widths))
+        block_w = g + 28 + text_w
+        x0 = at.cx - block_w / 2.0
+        y0 = at.cy - (n * rh + gap * (n - 1)) / 2.0
         out = []
-        for i, (txt, r) in enumerate(zip(items, rows)):
-            gl = self.node("glyph", None, x=r.x, y=r.cy - g / 2, w=g, h=g, id="%s%d_glyph" % (id, i + 1), glyph=glyph,
-                           color=color or th["ok"])
-            t = self.text(str(txt), x=r.x + g + 28, y=r.y, w=tw, h=r.h, fontSize=fs, textAlign="left",
+        for i, txt in enumerate(items):
+            ry = y0 + i * (rh + gap)
+            gl = self.node("glyph", None, x=x0, y=ry + rh / 2.0 - g / 2.0, w=g, h=g, id="%s%d_glyph" % (id, i + 1),
+                           glyph=glyph, color=color or th["ok"])
+            t = self.text(str(txt), x=x0 + g + 28, y=ry, w=text_w, h=rh, fontSize=fs, textAlign="left",
                           id="%s%d" % (id, i + 1))
             t.parts.append(gl)
             out.append(t)
+        self.reserve(*out)
         return out
 
     def counter(self, value, at, start=0, prefix="", suffix="", decimals=0, font=None, color=None, duration=1500,
@@ -1844,9 +2033,9 @@ class Scene:
             wedges.append(self.node("wedge", None, at=pr, id="%s_%s" % (id, _slug(lab)), **f))
             angles.append((_clean(a0), _clean(a1)))
         n = len(data)
-        rh = min(self.project.base_font * 1.6, (legend.h - 16 * (n - 1)) / float(n))
+        rh = min(self.project.base_font * 1.8, (legend.h - 16 * (n - 1)) / float(n))
         rows = legend.column(n, gap=16, h=rh)
-        fs = font or int(min(self.project.base_font * 0.9, (rh - 2 * TEXT_PAD - 2) / LINE_H))
+        fs = font or int(max(self._floor("body"), min(self.project.base_font, (rh - 2 * TEXT_PAD - 2) / LINE_H)))
         parts = wedges[1:]
         for i, ((lab, v), r) in enumerate(zip(data, rows)):
             sw = min(rh * 0.8, 40)
@@ -1877,6 +2066,25 @@ class Scene:
 
     def scene_background(self):
         return self.background or self.project.colors["background"]
+
+    def reserve(self, *nodes):
+        """Make the follow camera frame these nodes (and their parts) from the first step, as if they were
+        already on screen, so the layout does not pan when they arrive. The timeline, code, variable,
+        bullets and panels recipes reserve their nodes for you: a code panel whose variables come in later
+        is centered with them from the start."""
+        for n in nodes:
+            self._own_node(n)
+            n.meta["reserve"] = True
+        return nodes[0] if len(nodes) == 1 else nodes
+
+    def _reserved_ids(self):
+        out, todo = set(), [n for n in self.nodes if n.meta.get("reserve")]
+        while todo:
+            n = todo.pop()
+            if isinstance(n, Node) and n.id not in out and n.fields.get("kind") != "algo-pointer":
+                out.add(n.id)
+                todo += n.parts
+        return out
 
     def step(self, caption, narration=None, duration=None, easing=None):
         """Add a step. narration defaults to the caption; pass narration=False for no voice line."""
@@ -1961,6 +2169,7 @@ class Scene:
         if not self.steps:
             raise OpenCanvizError("scene %d (%s) has no steps; add at least one with scene.step(caption)."
                                   % (self.index + 1, self.name))
+        self._size_variables()
         for e in self.edges:
             if e.around:
                 self._route_around(e)
@@ -2088,6 +2297,7 @@ class Scene:
         A = P.area()
         nodes, edges = {}, {}
         cur = (0.0, 0.0)
+        keep = self._reserved_ids()
         for k, sd in enumerate(steps):
             if k == 0:
                 nodes = {n["id"]: dict(n) for n in sd["nodes"]}
@@ -2104,6 +2314,11 @@ class Scene:
             box = _visible_bbox(nodes, edges)
             if box is None:
                 continue
+            held = [n for i, n in nodes.items() if i in keep and all(_num(n.get(k)) for k in ("x", "y", "w", "h"))]
+            if held:
+                xs = [x for n in held for x in _ink_x(n)]
+                box = (min([box[0]] + xs), min([box[1]] + [n["y"] for n in held]),
+                       max([box[2]] + xs), max([box[3]] + [n["y"] + n["h"] for n in held]))
             target = _center_camera(box, (A.x, A.y, A.x + A.w, A.y + A.h))
             if math.hypot(target[0] - cur[0], target[1] - cur[1]) < 40:
                 continue
@@ -2408,7 +2623,7 @@ def _ink_x(n):
     """Left and right x of what a node draws. A text node's box is often the full width of the frame,
     so its ink (the longest line, placed by textAlign) is used instead."""
     x0, x1 = n["x"], n["x"] + n["w"]
-    if n.get("kind") != "text" or not _num(n.get("fontSize")):
+    if n.get("kind") != "text" or not _num(n.get("fontSize")) or n.get("fill") not in (None, "", "transparent", "none"):
         return x0, x1
     bold = str(n.get("fontWeight", 400)) in ("600", "700", "800", "900", "bold")
     longest = max([len(s) for s in str(n.get("text", "")).split("\n")] or [0])
@@ -2559,6 +2774,17 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
     if not steps:
         E("%s: add at least one step; a scene with no steps renders nothing." % S)
         return
+    # every node that shows at some point of the scene (the finished layout the steps build toward)
+    ever = set()
+    for k, st in enumerate(steps):
+        if not isinstance(st, dict):
+            continue
+        for n in st.get("nodes") or []:
+            if isinstance(n, dict) and (k == 0 and (n.get("opacity", 1) or 0) > 0.01 or k > 0 and (n.get("opacity") or 0) > 0.01):
+                ever.add(n.get("id"))
+        for a in st.get("actions") or []:
+            if isinstance(a, dict) and _arrives(a) and isinstance(a.get("target"), dict):
+                ever.add(a["target"].get("id"))
     s0 = steps[0]
     if not isinstance(s0, dict):
         E("%s step 0: must be an object." % S)
@@ -2878,6 +3104,10 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             if why:
                 W("%s: text in %s will likely overflow: %s. Enlarge the box, lower the font size or shorten it."
                   % (P, nid, why))
+            low = font_floor_issue(n, ab["width"], ab["height"]) if ab else None
+            if low and once(("floor", nid)):
+                W("%s: %s: %s (1080p landscape: body 34, code 30, ticks 28, variables 34; x1.4 in portrait). "
+                  "Raise the font size and give it the room, or say less on screen." % (P, nid, low))
             for key in ("fill", "stroke", "color", "labelColor", "progressColor"):
                 if key in n and (not isinstance(n[key], str) or not COLOR_RE.match(n[key].strip())):
                     W("%s: %s.%s=%r is not a hex color." % (P, nid, key, n[key]))
@@ -2902,7 +3132,9 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
         if ab and isinstance(c, dict) and all(_num(c.get(x)) for x in ("x", "y", "zoom")):
             view = (c["x"], c["y"], c["zoom"])
         if ab and view:
-            _screen_checks(P, ab, captions, nodes, edges, vis, view, W, once)
+            later = [n for i, n in nodes.items() if i in ever and n.get("kind") not in ("group", "algo-pointer")
+                     and not n.get("parentId") and all(_num(n.get(x)) for x in ("x", "y", "w", "h"))]
+            _screen_checks(P, ab, captions, nodes, edges, vis, view, W, once, later)
         _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once)
         _arrow_length_checks(P, nodes, edges, vis, W, once)
         if k == len(steps) - 1 and ab:
@@ -2982,9 +3214,13 @@ def _arrow_length_checks(P, nodes, edges, vis, W, once):
               % (P, eid, max(0, length - chip), " beside its label" if chip else "", e["from"], e["to"]))
 
 
-def _screen_checks(P, ab, captions, nodes, edges, vis, cam, W, once):
+def _screen_checks(P, ab, captions, nodes, edges, vis, cam, W, once, later=None):
     """Where the step's content lands on screen (after the camera pan): centered in the safe area,
-    and clear of the side edges. Skipped while the camera zooms."""
+    and clear of the side edges. Skipped while the camera zooms. A step that shows part of a layout
+    passes when the finished layout (later: every node the scene shows at some point) is centered and
+    what shows already spans at least half of it on one axis (a timeline's first event, a code panel
+    whose variables come next) or only text (a title over a list still to come), so the frame holds
+    still while it fills in."""
     if abs(cam[2] - 1) > 0.05:
         return
     W_, H_ = ab["width"], ab["height"]
@@ -2996,6 +3232,13 @@ def _screen_checks(P, ab, captions, nodes, edges, vis, cam, W, once):
     acx, acy = ab["x"] + W_ / 2.0, ab["y"] + 60 + (H_ - 60 - band) / 2.0
     bcx, bcy = (box[0] + box[2]) / 2.0 - sx, (box[1] + box[3]) / 2.0 - sy
     off = math.hypot(bcx - acx, bcy - acy)
+    if off > 0.15 * H_ and later:
+        fb = _visible_bbox({n["id"]: dict(n, opacity=1) for n in later}, {})
+        if fb is not None:
+            fx, fy = (fb[0] + fb[2]) / 2.0 - sx, (fb[1] + fb[3]) / 2.0 - sy
+            span = max((box[2] - box[0]) / max(1.0, fb[2] - fb[0]), (box[3] - box[1]) / max(1.0, fb[3] - fb[1]))
+            if math.hypot(fx - acx, fy - acy) <= 0.15 * H_ and (span >= 0.5 or all(n.get("kind") == "text" for n in vis)):
+                off = 0
     if off > 0.15 * H_ and once(("center", P)):
         W("%s: what shows sits %d px off the center of the safe area (%s); center it, or pan the camera to it "
           "(the Python helper's follow camera does this per step)." % (P, off, "%s%s" % (

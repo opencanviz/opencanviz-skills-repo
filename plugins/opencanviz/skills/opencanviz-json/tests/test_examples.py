@@ -483,6 +483,50 @@ class RecipeShapes(unittest.TestCase):
             with self.subTest(example=name):
                 self.assertEqual(clean(load_example(name)), [])
 
+    def test_text_below_the_readable_floor_warns(self):
+        doc = load_example("bullets")
+        sc = doc["diagrams"][0]
+        for n in sc["nodes"] + [n for st in sc["steps"] for n in st["nodes"]]:
+            if n["id"] == "s1_point1" and "fontSize" in n:
+                n["fontSize"] = 16
+        _, warnings = oc.validate(doc)
+        self.assertTrue(any("readable" in w for w in warnings), warnings)
+
+    def test_variable_box_is_narrow(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        v = s.variable("i", 0, at=p.area())
+        s.step("i starts at zero.").reveal(v)
+        s.step("i becomes 12.").assign(v, 12)
+        node = next(n for n in p.to_dict()["diagrams"][0]["nodes"] if n["kind"] == "algo-variable")
+        self.assertLess(node["w"], 400)
+
+    def test_code_below_the_floor_is_refused(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        src = "\n".join("value_%d = compute_something_long(%d)" % (i, i) for i in range(30))
+        with self.assertRaises(oc.OpenCanvizError):
+            s.code(src, at=p.area().cut_top(300)[0])
+
+    def test_line_chart_draws_a_thick_line(self):
+        doc = load_example("line_chart")
+        chart = next(n for n in doc["diagrams"][0]["nodes"] if n["kind"] == "algo-chart-line")
+        self.assertEqual(len(chart["chartSeries"]), 5)
+
+    def test_timeline_spans_the_frame_from_the_start(self):
+        doc = load_example("timeline")
+        dots = [n for n in doc["diagrams"][0]["nodes"] if "_dot" in n["id"]]
+        xs = [n["x"] for n in dots]
+        self.assertGreater(max(xs) - min(xs), doc["artboard"]["width"] * 0.5)
+
+    def test_bullets_are_centred(self):
+        doc = load_example("bullets")
+        pts = [n for n in doc["diagrams"][0]["nodes"] if n["id"].split("_", 1)[-1].startswith("point")]
+        ab = doc["artboard"]
+        lo = min(n["x"] for n in pts)
+        hi = max(n["x"] + n["w"] for n in pts)
+        self.assertLess(abs((lo + hi) / 2 - (ab["x"] + ab["width"] / 2)), ab["width"] * 0.08)
+
 
 if __name__ == "__main__":
     unittest.main()

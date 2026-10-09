@@ -34,22 +34,22 @@
         {
           "id": "s1_point1_glyph",
           "kind": "glyph",
-          "x": -680,
-          "y": -181,
-          "w": 52,
-          "h": 52,
+          "x": -674,
+          "y": -245,
+          "w": 76,
+          "h": 76,
           "glyph": "check",
           "color": "#22c55e",
           "opacity": 0,
-          "drawStartMs": 4400
+          "drawStartMs": 3700
         },
         {
           "id": "s1_point1",
           "kind": "text",
-          "x": -600,
-          "y": -219,
-          "w": 1280,
-          "h": 128,
+          "x": -570,
+          "y": -290,
+          "w": 1244,
+          "h": 166,
           "text": "Make it long: 14 characters or more",
           "fontWeight": 400,
           "color": "#f8fafc",
@@ -57,28 +57,28 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 40,
+          "fontSize": 64,
           "opacity": 0
         },
         {
           "id": "s1_point2_glyph",
           "kind": "glyph",
-          "x": -680,
-          "y": -29,
-          "w": 52,
-          "h": 52,
+          "x": -674,
+          "y": -41,
+          "w": 76,
+          "h": 76,
           "glyph": "check",
           "color": "#22c55e",
           "opacity": 0,
-          "drawStartMs": 6400
+          "drawStartMs": 5700
         },
         {
           "id": "s1_point2",
           "kind": "text",
-          "x": -600,
-          "y": -67,
-          "w": 1280,
-          "h": 128,
+          "x": -570,
+          "y": -86,
+          "w": 1244,
+          "h": 166,
           "text": "Never reuse it on another site",
           "fontWeight": 400,
           "color": "#f8fafc",
@@ -86,28 +86,28 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 40,
+          "fontSize": 64,
           "opacity": 0
         },
         {
           "id": "s1_point3_glyph",
           "kind": "glyph",
-          "x": -680,
-          "y": 123,
-          "w": 52,
-          "h": 52,
+          "x": -674,
+          "y": 163,
+          "w": 76,
+          "h": 76,
           "glyph": "check",
           "color": "#22c55e",
           "opacity": 0,
-          "drawStartMs": 9300
+          "drawStartMs": 8600
         },
         {
           "id": "s1_point3",
           "kind": "text",
-          "x": -600,
-          "y": 85,
-          "w": 1280,
-          "h": 128,
+          "x": -570,
+          "y": 118,
+          "w": 1244,
+          "h": 166,
           "text": "Keep it in a password manager",
           "fontWeight": 400,
           "color": "#f8fafc",
@@ -115,7 +115,7 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 40,
+          "fontSize": 64,
           "opacity": 0
         }
       ],
@@ -146,22 +146,22 @@
             {
               "id": "s1_point1_glyph",
               "kind": "glyph",
-              "x": -680,
-              "y": -181,
-              "w": 52,
-              "h": 52,
+              "x": -674,
+              "y": -245,
+              "w": 76,
+              "h": 76,
               "glyph": "check",
               "color": "#22c55e",
               "opacity": 0,
-              "drawStartMs": 4400
+              "drawStartMs": 3700
             },
             {
               "id": "s1_point1",
               "kind": "text",
-              "x": -600,
-              "y": -219,
-              "w": 1280,
-              "h": 128,
+              "x": -570,
+              "y": -290,
+              "w": 1244,
+              "h": 166,
               "text": "Make it long: 14 characters or more",
               "fontWeight": 400,
               "color": "#f8fafc",
@@ -169,28 +169,28 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 40,
+              "fontSize": 64,
               "opacity": 0
             },
             {
               "id": "s1_point2_glyph",
               "kind": "glyph",
-              "x": -680,
-              "y": -29,
-              "w": 52,
-              "h": 52,
+              "x": -674,
+              "y": -41,
+              "w": 76,
+              "h": 76,
               "glyph": "check",
               "color": "#22c55e",
               "opacity": 0,
-              "drawStartMs": 6400
+              "drawStartMs": 5700
             },
             {
               "id": "s1_point2",
               "kind": "text",
-              "x": -600,
-              "y": -67,
-              "w": 1280,
-              "h": 128,
+              "x": -570,
+              "y": -86,
+              "w": 1244,
+              "h": 166,
               "text": "Never reuse it on another site",
               "fontWeight": 400,
               "color": "#f8fafc",
@@ -198,28 +198,28 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 40,
+              "fontSize": 64,
               "opacity": 0
             },
             {
               "id": "s1_point3_glyph",
               "kind": "glyph",
-              "x": -680,
-              "y": 123,
-              "w": 52,
-              "h": 52,
+              "x": -674,
+              "y": 163,
+              "w": 76,
+              "h": 76,
               "glyph": "check",
               "color": "#22c55e",
               "opacity": 0,
-              "drawStartMs": 9300
+              "drawStartMs": 8600
             },
             {
               "id": "s1_point3",
               "kind": "text",
-              "x": -600,
-              "y": 85,
-              "w": 1280,
-              "h": 128,
+              "x": -570,
+              "y": 118,
+              "w": 1244,
+              "h": 166,
               "text": "Keep it in a password manager",
               "fontWeight": 400,
               "color": "#f8fafc",
@@ -227,7 +227,7 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 40,
+              "fontSize": 64,
               "opacity": 0
             }
           ],
@@ -242,13 +242,7 @@
               "mode": "fadeIn",
               "durationMs": 500
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": -347,
-            "zoom": 1
-          },
-          "cameraDurationMs": 0
+          ]
         },
         {
           "id": "s1_step1",
@@ -274,8 +268,7 @@
                 "id": "s1_point1"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "visibility",
@@ -284,17 +277,9 @@
                 "id": "s1_point1_glyph"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             }
-          ],
-          "camera": {
-            "x": -61,
-            "y": -207.5,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step2",
@@ -320,8 +305,7 @@
                 "id": "s1_point2"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "visibility",
@@ -330,17 +314,9 @@
                 "id": "s1_point2_glyph"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             }
-          ],
-          "camera": {
-            "x": -61,
-            "y": -131.5,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step3",
@@ -366,8 +342,7 @@
                 "id": "s1_point3"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "visibility",
@@ -376,17 +351,9 @@
                 "id": "s1_point3_glyph"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             }
-          ],
-          "camera": {
-            "x": -61,
-            "y": -55.5,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         }
       ],
       "narration": [

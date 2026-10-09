@@ -35,12 +35,12 @@
           "id": "s1_code",
           "kind": "text",
           "x": -840,
-          "y": -176,
-          "w": 810,
-          "h": 346,
+          "y": -218,
+          "w": 1101.6,
+          "h": 430,
           "text": "def factorial(n):\n    result = 1\n    for i in range(2, n + 1):\n        result = result * i\n    return result",
           "fontFamily": "monospace",
-          "fontSize": 42,
+          "fontSize": 54,
           "lineHeight": 1.4,
           "textAlign": "left",
           "verticalAlign": "top",
@@ -61,26 +61,26 @@
         {
           "id": "s1_var_result",
           "kind": "algo-variable",
-          "x": 30,
-          "y": -210,
-          "w": 810,
-          "h": 177,
+          "x": 321.6,
+          "y": -130,
+          "w": 331.4,
+          "h": 94,
           "varName": "result",
           "varValue": "-",
-          "labelFontSize": 40,
+          "labelFontSize": 47,
           "labelColor": "#f8fafc",
           "opacity": 0
         },
         {
           "id": "s1_var_i",
           "kind": "algo-variable",
-          "x": 30,
-          "y": 27,
-          "w": 810,
-          "h": 177,
+          "x": 321.6,
+          "y": 30,
+          "w": 331.4,
+          "h": 94,
           "varName": "i",
           "varValue": "-",
-          "labelFontSize": 40,
+          "labelFontSize": 47,
           "labelColor": "#f8fafc",
           "opacity": 0
         }
@@ -113,12 +113,12 @@
               "id": "s1_code",
               "kind": "text",
               "x": -840,
-              "y": -176,
-              "w": 810,
-              "h": 346,
+              "y": -218,
+              "w": 1101.6,
+              "h": 430,
               "text": "def factorial(n):\n    result = 1\n    for i in range(2, n + 1):\n        result = result * i\n    return result",
               "fontFamily": "monospace",
-              "fontSize": 42,
+              "fontSize": 54,
               "lineHeight": 1.4,
               "textAlign": "left",
               "verticalAlign": "top",
@@ -139,26 +139,26 @@
             {
               "id": "s1_var_result",
               "kind": "algo-variable",
-              "x": 30,
-              "y": -210,
-              "w": 810,
-              "h": 177,
+              "x": 321.6,
+              "y": -130,
+              "w": 331.4,
+              "h": 94,
               "varName": "result",
               "varValue": "-",
-              "labelFontSize": 40,
+              "labelFontSize": 47,
               "labelColor": "#f8fafc",
               "opacity": 0
             },
             {
               "id": "s1_var_i",
               "kind": "algo-variable",
-              "x": 30,
-              "y": 27,
-              "w": 810,
-              "h": 177,
+              "x": 321.6,
+              "y": 30,
+              "w": 331.4,
+              "h": 94,
               "varName": "i",
               "varValue": "-",
-              "labelFontSize": 40,
+              "labelFontSize": 47,
               "labelColor": "#f8fafc",
               "opacity": 0
             }
@@ -186,8 +186,8 @@
             }
           ],
           "camera": {
-            "x": -231,
-            "y": -77,
+            "x": -93.5,
+            "y": -56,
             "zoom": 1
           },
           "cameraDurationMs": 0
@@ -219,17 +219,9 @@
                 "id": "s1_var_result"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": -77,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step2",

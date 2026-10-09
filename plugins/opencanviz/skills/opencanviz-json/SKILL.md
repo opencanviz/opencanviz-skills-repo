@@ -82,10 +82,12 @@ tree = s.tree({"8": ["4", "12"], "4": ["2", "6"]}, at=body)  # sized for you; .c
 lst = s.linked_list([3, 7], at=body, capacity=3)             # .append(lst, 9); capacity = the most it will hold
 g = s.graph({"A": (0, .5), "B": (1, .5)}, [("A", "B")], at=body)  # .color(g, {...}, edges={("A", "B"): c})
 grid = s.grid([[1, 1], [1, ""]], at=body)                    # .set_cell(grid, 1, 1, 2)
+left, right = body.split(0.68)                               # code left, variables right
+r_box, i_box = right.column(2, gap=40, h=120)
 code = s.code(source, at=left)                               # .highlight(code, 3), 1-based lines
-i = s.variable("i", 1, at=right)                             # .assign(i, 2)
+i = s.variable("i", 1, at=i_box)                             # .assign(i, 2); box only as wide as name + value
 web, api = s.sequence(["Browser", "Server"], at=body)        # m = s.message(web, api, "GET /"); .draw(m)
-tl = s.timeline([(1961, "Program starts"), (1969, "Moon landing")], at=body)  # .event(tl) once per event
+tl = s.timeline([(1961, "Program starts"), (1969, "Moon landing")], at=body)  # .event(tl) once per event; 4+ alternate above/below
 before, after = s.panels(["Before", "After"], at=body)       # lay out inside before.content
 pts = s.bullets(["Use 12+ characters", "Never reuse"], at=body)  # reveal one per step
 n = s.counter(2048, at=r, suffix=" MB"); bar = s.progress(0, at=r2)  # .set(bar, value=1) fills it over the step
@@ -102,6 +104,9 @@ What the recipes take care of, and what to keep in mind if you write these kinds
 - **Paths:** `pathFollow` needs `length` (total px) and `cum` (length so far at each point, from 0) on the path, or the exported video leaves the node where it is. `scene.path` fills them.
 - **Fonts:** each structure kind has its own font field (`cellFontSize`, `nodeFontSize`, `gridCellFontSize`, `labelFontSize`, `fontSize`); without it the text renders at 11 to 14 px. The recipes size every one for the frame.
 - Charts, trees, timelines and code panels size and center themselves in the rect you pass; give them the whole body rect.
+- **Readable floor:** at 1080p landscape, text of 4+ words at least 34 px, code 30, chart ticks and short labels 28, variables 34; in portrait 1.4x that (48, 42, 39, 48). The recipes never go lower: `code()`, `bullets()` and `timeline()` raise when the text cannot fit at the floor, so shorten it (timeline events of 2 to 6 words) or give it a bigger rect. The checker warns on hand-written text under the floor.
+- **Stable layout:** timelines, code panels, bullets, panels and variables are laid out at their final size from step 0, and the camera frames that final layout, so nothing shifts as items appear. `scene.reserve(node, ...)` does the same for your own nodes. `rect.split(0.68)` returns a left and a right rect side by side.
+- **Line charts** draw the line as five overlaid series (`s`, `s_w1` to `s_w4`), because openCanviz draws every series 2 px wide.
 
 ## Workflow
 
@@ -257,6 +262,7 @@ Full field lists and enums are in `schema.json`.
 - [ ] Every action ends within its step, and its `to` values match the snapshot.
 - [ ] One narration clip per step; `transitions` has one entry fewer than there are scenes.
 - [ ] Caption band clear; diagram fills about 60 to 75% of the safe area; text fits its boxes.
+- [ ] Text at or above the readable floor (34 body, 30 code, 28 ticks, 34 variables at 1080p landscape; 1.4x in portrait).
 - [ ] Edge labels 22 px+ (28 px+ portrait) with `labelBgColor`; gaps fit them; no edge crosses a node.
 - [ ] Labeled edges fade in after an unlabeled copy draws the line; arrows draw after their end nodes appear.
 - [ ] Each step's content is centered in the safe area; 120 px side margins in landscape; every labeled arrow shows 120 px+ of line.

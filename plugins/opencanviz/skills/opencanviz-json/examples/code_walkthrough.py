@@ -9,11 +9,11 @@ from opencanviz import Project  # noqa: E402
 p = Project("Factorial, line by line", aspect="16:9")
 s = p.scene("factorial(4)")
 title_area, body = p.area().cut_top(110)
-left, right = body.split(0.62, gap=60) if hasattr(body, "split") else body.row(2, gap=60)
+left, right = body.split(0.68)                        # code gets the width; the variables are narrow
 title = s.text("How factorial(4) runs", at=title_area, fontWeight=700)
 code = s.code("def factorial(n):\n    result = 1\n    for i in range(2, n + 1):\n        result = result * i\n    return result",
               at=left)
-r_box, i_box = right.inset(0, 120).column(2, gap=60)
+r_box, i_box = right.column(2, gap=40, h=120)         # stacked next to the code, centered
 result = s.variable("result", "-", at=r_box)
 i_var = s.variable("i", "-", at=i_box)
 

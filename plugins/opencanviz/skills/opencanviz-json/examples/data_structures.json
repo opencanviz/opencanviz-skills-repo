@@ -110,7 +110,7 @@
           "pointerTargetId": "s1_tree",
           "pointerLabel": "cur",
           "pointerColor": "#f59e0b",
-          "labelFontSize": 30,
+          "labelFontSize": 36,
           "pointerArrowSize": 20,
           "pointerTreeNodeId": "n_8",
           "opacity": 1
@@ -207,7 +207,7 @@
               "pointerTargetId": "s1_tree",
               "pointerLabel": "cur",
               "pointerColor": "#f59e0b",
-              "labelFontSize": 30,
+              "labelFontSize": 36,
               "pointerArrowSize": 20,
               "pointerTreeNodeId": "n_8",
               "opacity": 1

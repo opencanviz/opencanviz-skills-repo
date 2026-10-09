@@ -41,10 +41,10 @@
         {
           "id": "s1_scatter",
           "kind": "algo-chart-scatter",
-          "x": -627.8,
-          "y": -286,
-          "w": 1307.8,
-          "h": 502,
+          "x": -620.9,
+          "y": -276,
+          "w": 1300.9,
+          "h": 478,
           "chartShowAxes": false,
           "chartGridLines": false,
           "chartXRange": [
@@ -123,9 +123,9 @@
           "id": "s1_scatter_y0",
           "kind": "text",
           "x": -680,
-          "y": 159.3,
-          "w": 38.2,
-          "h": 50,
+          "y": 142.9,
+          "w": 45.1,
+          "h": 57,
           "text": "0",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -133,16 +133,16 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         },
         {
           "id": "s1_scatter_y5",
           "kind": "text",
           "x": -680,
-          "y": -58,
-          "w": 38.2,
-          "h": 50,
+          "y": -63.5,
+          "w": 45.1,
+          "h": 57,
           "text": "5",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -150,16 +150,16 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         },
         {
           "id": "s1_scatter_y10",
           "kind": "text",
           "x": -680,
-          "y": -275.3,
-          "w": 38.2,
-          "h": 50,
+          "y": -269.9,
+          "w": 45.1,
+          "h": 57,
           "text": "10",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -167,16 +167,16 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         },
         {
           "id": "s1_scatter_x0",
           "kind": "text",
-          "x": -727.8,
-          "y": 220,
+          "x": -720.9,
+          "y": 206,
           "w": 220,
-          "h": 50,
+          "h": 57,
           "text": "0",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -184,16 +184,16 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         },
         {
           "id": "s1_scatter_x5",
           "kind": "text",
-          "x": -84.9,
-          "y": 220,
+          "x": -81.4,
+          "y": 206,
           "w": 220,
-          "h": 50,
+          "h": 57,
           "text": "5",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -201,16 +201,16 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         },
         {
           "id": "s1_scatter_x10",
           "kind": "text",
           "x": 558,
-          "y": 220,
+          "y": 206,
           "w": 220,
-          "h": 50,
+          "h": 57,
           "text": "10",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -218,16 +218,16 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         },
         {
           "id": "s1_scatter_xtitle",
           "kind": "text",
-          "x": -627.8,
-          "y": 274,
-          "w": 1307.8,
-          "h": 50,
+          "x": -620.9,
+          "y": 267,
+          "w": 1300.9,
+          "h": 57,
           "text": "visits per month",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -235,7 +235,7 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         },
         {
@@ -244,7 +244,7 @@
           "x": -680,
           "y": -330,
           "w": 816,
-          "h": 50,
+          "h": 57,
           "text": "spend",
           "fontWeight": 400,
           "color": "#94a3b8",
@@ -252,7 +252,7 @@
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
-          "fontSize": 26,
+          "fontSize": 32,
           "opacity": 1
         }
       ],
@@ -262,12 +262,12 @@
           "from": "s1_scatter",
           "to": "s1_scatter",
           "fromXY": {
-            "x": -617.8,
-            "y": 184.3
+            "x": -610.9,
+            "y": 171.4
           },
           "toXY": {
             "x": 668,
-            "y": 184.3
+            "y": 171.4
           },
           "lineType": "straight",
           "arrow": "none",
@@ -282,12 +282,12 @@
           "from": "s1_scatter",
           "to": "s1_scatter",
           "fromXY": {
-            "x": -617.8,
-            "y": -250.3
+            "x": -610.9,
+            "y": -241.4
           },
           "toXY": {
-            "x": -617.8,
-            "y": 184.3
+            "x": -610.9,
+            "y": 171.4
           },
           "lineType": "straight",
           "arrow": "none",
@@ -324,10 +324,10 @@
             {
               "id": "s1_scatter",
               "kind": "algo-chart-scatter",
-              "x": -627.8,
-              "y": -286,
-              "w": 1307.8,
-              "h": 502,
+              "x": -620.9,
+              "y": -276,
+              "w": 1300.9,
+              "h": 478,
               "chartShowAxes": false,
               "chartGridLines": false,
               "chartXRange": [
@@ -406,9 +406,9 @@
               "id": "s1_scatter_y0",
               "kind": "text",
               "x": -680,
-              "y": 159.3,
-              "w": 38.2,
-              "h": 50,
+              "y": 142.9,
+              "w": 45.1,
+              "h": 57,
               "text": "0",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -416,16 +416,16 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             },
             {
               "id": "s1_scatter_y5",
               "kind": "text",
               "x": -680,
-              "y": -58,
-              "w": 38.2,
-              "h": 50,
+              "y": -63.5,
+              "w": 45.1,
+              "h": 57,
               "text": "5",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -433,16 +433,16 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             },
             {
               "id": "s1_scatter_y10",
               "kind": "text",
               "x": -680,
-              "y": -275.3,
-              "w": 38.2,
-              "h": 50,
+              "y": -269.9,
+              "w": 45.1,
+              "h": 57,
               "text": "10",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -450,16 +450,16 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             },
             {
               "id": "s1_scatter_x0",
               "kind": "text",
-              "x": -727.8,
-              "y": 220,
+              "x": -720.9,
+              "y": 206,
               "w": 220,
-              "h": 50,
+              "h": 57,
               "text": "0",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -467,16 +467,16 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             },
             {
               "id": "s1_scatter_x5",
               "kind": "text",
-              "x": -84.9,
-              "y": 220,
+              "x": -81.4,
+              "y": 206,
               "w": 220,
-              "h": 50,
+              "h": 57,
               "text": "5",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -484,16 +484,16 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             },
             {
               "id": "s1_scatter_x10",
               "kind": "text",
               "x": 558,
-              "y": 220,
+              "y": 206,
               "w": 220,
-              "h": 50,
+              "h": 57,
               "text": "10",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -501,16 +501,16 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             },
             {
               "id": "s1_scatter_xtitle",
               "kind": "text",
-              "x": -627.8,
-              "y": 274,
-              "w": 1307.8,
-              "h": 50,
+              "x": -620.9,
+              "y": 267,
+              "w": 1300.9,
+              "h": 57,
               "text": "visits per month",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -518,7 +518,7 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             },
             {
@@ -527,7 +527,7 @@
               "x": -680,
               "y": -330,
               "w": 816,
-              "h": 50,
+              "h": 57,
               "text": "spend",
               "fontWeight": 400,
               "color": "#94a3b8",
@@ -535,7 +535,7 @@
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
-              "fontSize": 26,
+              "fontSize": 32,
               "opacity": 1
             }
           ],
@@ -545,12 +545,12 @@
               "from": "s1_scatter",
               "to": "s1_scatter",
               "fromXY": {
-                "x": -617.8,
-                "y": 184.3
+                "x": -610.9,
+                "y": 171.4
               },
               "toXY": {
                 "x": 668,
-                "y": 184.3
+                "y": 171.4
               },
               "lineType": "straight",
               "arrow": "none",
@@ -565,12 +565,12 @@
               "from": "s1_scatter",
               "to": "s1_scatter",
               "fromXY": {
-                "x": -617.8,
-                "y": -250.3
+                "x": -610.9,
+                "y": -241.4
               },
               "toXY": {
-                "x": -617.8,
-                "y": 184.3
+                "x": -610.9,
+                "y": 171.4
               },
               "lineType": "straight",
               "arrow": "none",
