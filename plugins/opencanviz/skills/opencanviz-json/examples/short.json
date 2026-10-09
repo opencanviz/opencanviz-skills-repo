@@ -10,172 +10,176 @@
   },
   "nodes": [
     {
-      "id": "headline",
+      "id": "s1_3_habits_of_fast_teams",
       "kind": "text",
       "x": -460,
-      "y": -760,
+      "y": -900,
       "w": 920,
-      "h": 240,
+      "h": 320,
       "text": "3 habits of\nfast teams",
-      "fontSize": 96,
       "fontWeight": 800,
-      "lineHeight": 1.1,
       "color": "#1c1917",
       "textAlign": "center",
       "verticalAlign": "middle",
       "fill": "transparent",
-      "stroke": "none"
+      "stroke": "none",
+      "lineHeight": 1.1,
+      "fontSize": 72,
+      "opacity": 1
     },
     {
-      "id": "habit_0",
+      "id": "s1_ship_small",
       "kind": "rect",
-      "x": -440,
-      "y": -380,
-      "w": 880,
-      "h": 240,
-      "cornerRadius": 28,
+      "x": -460,
+      "y": -540,
+      "w": 920,
+      "h": 246.7,
+      "label": "Ship small",
+      "labelColor": "#1c1917",
       "fill": "#fde68a",
       "stroke": "#1c1917",
       "strokeWidth": 4,
-      "label": "Ship small",
-      "labelColor": "#1c1917",
-      "labelFontSize": 52,
+      "cornerRadius": 28,
       "labelFontWeight": "bold",
+      "labelFontSize": 48,
       "opacity": 0
     },
     {
-      "id": "habit_1",
+      "id": "s1_review_fast",
       "kind": "rect",
-      "x": -440,
-      "y": -80,
-      "w": 880,
-      "h": 240,
-      "cornerRadius": 28,
+      "x": -460,
+      "y": -245.3,
+      "w": 920,
+      "h": 246.7,
+      "label": "Review fast",
+      "labelColor": "#1c1917",
       "fill": "#bbf7d0",
       "stroke": "#1c1917",
       "strokeWidth": 4,
-      "label": "Review fast",
-      "labelColor": "#1c1917",
-      "labelFontSize": 52,
+      "cornerRadius": 28,
       "labelFontWeight": "bold",
+      "labelFontSize": 48,
       "opacity": 0
     },
     {
-      "id": "habit_2",
+      "id": "s1_automate_tests",
       "kind": "rect",
-      "x": -440,
-      "y": 220,
-      "w": 880,
-      "h": 240,
-      "cornerRadius": 28,
+      "x": -460,
+      "y": 49.3,
+      "w": 920,
+      "h": 246.7,
+      "label": "Automate tests",
+      "labelColor": "#1c1917",
       "fill": "#bfdbfe",
       "stroke": "#1c1917",
       "strokeWidth": 4,
-      "label": "Automate tests",
-      "labelColor": "#1c1917",
-      "labelFontSize": 52,
+      "cornerRadius": 28,
       "labelFontWeight": "bold",
+      "labelFontSize": 48,
       "opacity": 0
     },
     {
-      "id": "progress",
+      "id": "s1_progress",
       "kind": "progress",
-      "x": -440,
-      "y": 620,
-      "w": 880,
+      "x": -460,
+      "y": 356,
+      "w": 920,
       "h": 28,
       "value": 0,
       "fill": "#e7e5e4",
       "stroke": "none",
-      "progressColor": "#f59e0b"
+      "progressColor": "#f59e0b",
+      "opacity": 1
     }
   ],
   "edges": [],
   "steps": [
     {
-      "id": "hook",
-      "durationMs": 1800,
+      "id": "s1_step0",
+      "durationMs": 2500,
       "caption": "Three habits of fast teams.",
       "nodes": [
         {
-          "id": "headline",
+          "id": "s1_3_habits_of_fast_teams",
           "kind": "text",
           "x": -460,
-          "y": -760,
+          "y": -900,
           "w": 920,
-          "h": 240,
+          "h": 320,
           "text": "3 habits of\nfast teams",
-          "fontSize": 96,
           "fontWeight": 800,
-          "lineHeight": 1.1,
           "color": "#1c1917",
           "textAlign": "center",
           "verticalAlign": "middle",
           "fill": "transparent",
-          "stroke": "none"
+          "stroke": "none",
+          "lineHeight": 1.1,
+          "fontSize": 72,
+          "opacity": 1
         },
         {
-          "id": "habit_0",
+          "id": "s1_ship_small",
           "kind": "rect",
-          "x": -440,
-          "y": -380,
-          "w": 880,
-          "h": 240,
-          "cornerRadius": 28,
+          "x": -460,
+          "y": -540,
+          "w": 920,
+          "h": 246.7,
+          "label": "Ship small",
+          "labelColor": "#1c1917",
           "fill": "#fde68a",
           "stroke": "#1c1917",
           "strokeWidth": 4,
-          "label": "Ship small",
-          "labelColor": "#1c1917",
-          "labelFontSize": 52,
+          "cornerRadius": 28,
           "labelFontWeight": "bold",
+          "labelFontSize": 48,
           "opacity": 0
         },
         {
-          "id": "habit_1",
+          "id": "s1_review_fast",
           "kind": "rect",
-          "x": -440,
-          "y": -80,
-          "w": 880,
-          "h": 240,
-          "cornerRadius": 28,
+          "x": -460,
+          "y": -245.3,
+          "w": 920,
+          "h": 246.7,
+          "label": "Review fast",
+          "labelColor": "#1c1917",
           "fill": "#bbf7d0",
           "stroke": "#1c1917",
           "strokeWidth": 4,
-          "label": "Review fast",
-          "labelColor": "#1c1917",
-          "labelFontSize": 52,
+          "cornerRadius": 28,
           "labelFontWeight": "bold",
+          "labelFontSize": 48,
           "opacity": 0
         },
         {
-          "id": "habit_2",
+          "id": "s1_automate_tests",
           "kind": "rect",
-          "x": -440,
-          "y": 220,
-          "w": 880,
-          "h": 240,
-          "cornerRadius": 28,
+          "x": -460,
+          "y": 49.3,
+          "w": 920,
+          "h": 246.7,
+          "label": "Automate tests",
+          "labelColor": "#1c1917",
           "fill": "#bfdbfe",
           "stroke": "#1c1917",
           "strokeWidth": 4,
-          "label": "Automate tests",
-          "labelColor": "#1c1917",
-          "labelFontSize": 52,
+          "cornerRadius": 28,
           "labelFontWeight": "bold",
+          "labelFontSize": 48,
           "opacity": 0
         },
         {
-          "id": "progress",
+          "id": "s1_progress",
           "kind": "progress",
-          "x": -440,
-          "y": 620,
-          "w": 880,
+          "x": -460,
+          "y": 356,
+          "w": 920,
           "h": 28,
           "value": 0,
           "fill": "#e7e5e4",
           "stroke": "none",
-          "progressColor": "#f59e0b"
+          "progressColor": "#f59e0b",
+          "opacity": 1
         }
       ],
       "edges": [],
@@ -184,26 +188,26 @@
           "type": "visibility",
           "target": {
             "kind": "node",
-            "id": "headline"
+            "id": "s1_3_habits_of_fast_teams"
           },
           "mode": "slideInUp",
-          "durationMs": 600
+          "durationMs": 500
         }
       ]
     },
     {
-      "id": "habit_0_in",
+      "id": "s1_step1",
       "delta": true,
-      "durationMs": 1800,
+      "durationMs": 2200,
       "caption": "One: ship small changes.",
       "nodes": [
         {
-          "id": "habit_0",
-          "opacity": 1
+          "id": "s1_progress",
+          "value": 0.333
         },
         {
-          "id": "progress",
-          "value": 0.333
+          "id": "s1_ship_small",
+          "opacity": 1
         }
       ],
       "edges": [],
@@ -212,27 +216,26 @@
           "type": "visibility",
           "target": {
             "kind": "node",
-            "id": "habit_0"
+            "id": "s1_ship_small"
           },
           "mode": "slideInLeft",
-          "durationMs": 500,
-          "ease": "back"
+          "durationMs": 500
         }
       ]
     },
     {
-      "id": "habit_1_in",
+      "id": "s1_step2",
       "delta": true,
-      "durationMs": 1800,
+      "durationMs": 2900,
       "caption": "Two: review them the same day.",
       "nodes": [
         {
-          "id": "habit_1",
-          "opacity": 1
+          "id": "s1_progress",
+          "value": 0.667
         },
         {
-          "id": "progress",
-          "value": 0.667
+          "id": "s1_review_fast",
+          "opacity": 1
         }
       ],
       "edges": [],
@@ -241,27 +244,26 @@
           "type": "visibility",
           "target": {
             "kind": "node",
-            "id": "habit_1"
+            "id": "s1_review_fast"
           },
           "mode": "slideInLeft",
-          "durationMs": 500,
-          "ease": "back"
+          "durationMs": 500
         }
       ]
     },
     {
-      "id": "habit_2_in",
+      "id": "s1_step3",
       "delta": true,
-      "durationMs": 1800,
+      "durationMs": 2900,
       "caption": "Three: let tests catch the mistakes.",
       "nodes": [
         {
-          "id": "habit_2",
-          "opacity": 1
+          "id": "s1_progress",
+          "value": 1.0
         },
         {
-          "id": "progress",
-          "value": 1.0
+          "id": "s1_automate_tests",
+          "opacity": 1
         }
       ],
       "edges": [],
@@ -270,13 +272,55 @@
           "type": "visibility",
           "target": {
             "kind": "node",
-            "id": "habit_2"
+            "id": "s1_automate_tests"
           },
           "mode": "slideInLeft",
-          "durationMs": 500,
-          "ease": "back"
+          "durationMs": 500
         }
       ]
     }
-  ]
+  ],
+  "narration": [
+    {
+      "id": "s1_n0",
+      "text": "Three habits of fast teams.",
+      "stepIndex": 0,
+      "voice": {
+        "provider": "openai",
+        "voiceId": "alloy",
+        "voiceName": "Alloy"
+      }
+    },
+    {
+      "id": "s1_n1",
+      "text": "One: ship small changes.",
+      "stepIndex": 1,
+      "voice": {
+        "provider": "openai",
+        "voiceId": "alloy",
+        "voiceName": "Alloy"
+      }
+    },
+    {
+      "id": "s1_n2",
+      "text": "Two: review them the same day.",
+      "stepIndex": 2,
+      "voice": {
+        "provider": "openai",
+        "voiceId": "alloy",
+        "voiceName": "Alloy"
+      }
+    },
+    {
+      "id": "s1_n3",
+      "text": "Three: let tests catch the mistakes.",
+      "stepIndex": 3,
+      "voice": {
+        "provider": "openai",
+        "voiceId": "alloy",
+        "voiceName": "Alloy"
+      }
+    }
+  ],
+  "showCaptions": true
 }

@@ -1,0 +1,558 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "How a vaccine trains your body",
+  "artboard": {
+    "x": -540,
+    "y": -960,
+    "width": 1080,
+    "height": 1920,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Vaccine"
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_how_a_vaccine_trains_you",
+          "kind": "text",
+          "x": -480,
+          "y": -900,
+          "w": 960,
+          "h": 260,
+          "text": "How a vaccine\ntrains your body",
+          "fontWeight": 800,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 72,
+          "opacity": 1
+        },
+        {
+          "id": "s1_vaccine",
+          "kind": "rect",
+          "x": -380,
+          "y": -600,
+          "w": 760,
+          "h": 177,
+          "label": "Vaccine",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#f472b6",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 48,
+          "opacity": 0
+        },
+        {
+          "id": "s1_immune_cells",
+          "kind": "rect",
+          "x": -380,
+          "y": -331,
+          "w": 760,
+          "h": 177,
+          "label": "Immune cells",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 48,
+          "opacity": 0
+        },
+        {
+          "id": "s1_antibodies",
+          "kind": "rect",
+          "x": -380,
+          "y": -62,
+          "w": 760,
+          "h": 177,
+          "label": "Antibodies",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#a78bfa",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 48,
+          "opacity": 0
+        },
+        {
+          "id": "s1_protection",
+          "kind": "rect",
+          "x": -380,
+          "y": 207,
+          "w": 760,
+          "h": 177,
+          "label": "Protection",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#34d399",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 48,
+          "opacity": 0
+        }
+      ],
+      "edges": [
+        {
+          "id": "s1_vaccine_to_immune_cells",
+          "from": "s1_vaccine",
+          "to": "s1_immune_cells",
+          "fromPort": "S",
+          "toPort": "N",
+          "lineType": "straight",
+          "stroke": "#94a3b8",
+          "width": 4,
+          "arrow": "end",
+          "label": "shows a harmless piece",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 30,
+          "labelPosition": "center",
+          "labelBgColor": "#0f172a",
+          "trim": 0,
+          "opacity": 0
+        },
+        {
+          "id": "s1_immune_cells_to_antibodi",
+          "from": "s1_immune_cells",
+          "to": "s1_antibodies",
+          "fromPort": "S",
+          "toPort": "N",
+          "lineType": "straight",
+          "stroke": "#94a3b8",
+          "width": 4,
+          "arrow": "end",
+          "label": "learn the shape",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 30,
+          "labelPosition": "center",
+          "labelBgColor": "#0f172a",
+          "trim": 0,
+          "opacity": 0
+        },
+        {
+          "id": "s1_antibodies_to_protection",
+          "from": "s1_antibodies",
+          "to": "s1_protection",
+          "fromPort": "S",
+          "toPort": "N",
+          "lineType": "straight",
+          "stroke": "#94a3b8",
+          "width": 4,
+          "arrow": "end",
+          "label": "remember it",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 30,
+          "labelPosition": "center",
+          "labelBgColor": "#0f172a",
+          "trim": 0,
+          "opacity": 0
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 3300,
+          "caption": "How does a vaccine train your body?",
+          "nodes": [
+            {
+              "id": "s1_how_a_vaccine_trains_you",
+              "kind": "text",
+              "x": -480,
+              "y": -900,
+              "w": 960,
+              "h": 260,
+              "text": "How a vaccine\ntrains your body",
+              "fontWeight": 800,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 72,
+              "opacity": 1
+            },
+            {
+              "id": "s1_vaccine",
+              "kind": "rect",
+              "x": -380,
+              "y": -600,
+              "w": 760,
+              "h": 177,
+              "label": "Vaccine",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#f472b6",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 48,
+              "opacity": 0
+            },
+            {
+              "id": "s1_immune_cells",
+              "kind": "rect",
+              "x": -380,
+              "y": -331,
+              "w": 760,
+              "h": 177,
+              "label": "Immune cells",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 48,
+              "opacity": 0
+            },
+            {
+              "id": "s1_antibodies",
+              "kind": "rect",
+              "x": -380,
+              "y": -62,
+              "w": 760,
+              "h": 177,
+              "label": "Antibodies",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#a78bfa",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 48,
+              "opacity": 0
+            },
+            {
+              "id": "s1_protection",
+              "kind": "rect",
+              "x": -380,
+              "y": 207,
+              "w": 760,
+              "h": 177,
+              "label": "Protection",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#34d399",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 48,
+              "opacity": 0
+            }
+          ],
+          "edges": [
+            {
+              "id": "s1_vaccine_to_immune_cells",
+              "from": "s1_vaccine",
+              "to": "s1_immune_cells",
+              "fromPort": "S",
+              "toPort": "N",
+              "lineType": "straight",
+              "stroke": "#94a3b8",
+              "width": 4,
+              "arrow": "end",
+              "label": "shows a harmless piece",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 30,
+              "labelPosition": "center",
+              "labelBgColor": "#0f172a",
+              "trim": 0,
+              "opacity": 0
+            },
+            {
+              "id": "s1_immune_cells_to_antibodi",
+              "from": "s1_immune_cells",
+              "to": "s1_antibodies",
+              "fromPort": "S",
+              "toPort": "N",
+              "lineType": "straight",
+              "stroke": "#94a3b8",
+              "width": 4,
+              "arrow": "end",
+              "label": "learn the shape",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 30,
+              "labelPosition": "center",
+              "labelBgColor": "#0f172a",
+              "trim": 0,
+              "opacity": 0
+            },
+            {
+              "id": "s1_antibodies_to_protection",
+              "from": "s1_antibodies",
+              "to": "s1_protection",
+              "fromPort": "S",
+              "toPort": "N",
+              "lineType": "straight",
+              "stroke": "#94a3b8",
+              "width": 4,
+              "arrow": "end",
+              "label": "remember it",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 30,
+              "labelPosition": "center",
+              "labelBgColor": "#0f172a",
+              "trim": 0,
+              "opacity": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_how_a_vaccine_trains_you"
+              },
+              "mode": "slideInDown",
+              "durationMs": 500
+            }
+          ]
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 4800,
+          "caption": "A vaccine shows your body a harmless piece of a germ.",
+          "nodes": [
+            {
+              "id": "s1_vaccine",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_vaccine"
+              },
+              "mode": "slideInLeft",
+              "durationMs": 500
+            }
+          ]
+        },
+        {
+          "id": "s1_step2",
+          "delta": true,
+          "durationMs": 2500,
+          "caption": "Immune cells study its shape.",
+          "nodes": [
+            {
+              "id": "s1_immune_cells",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s1_vaccine_to_immune_cells",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_immune_cells"
+              },
+              "mode": "slideInLeft",
+              "durationMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_vaccine_to_immune_cells"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 500
+            }
+          ]
+        },
+        {
+          "id": "s1_step3",
+          "delta": true,
+          "durationMs": 3300,
+          "caption": "They make antibodies that fit that shape.",
+          "nodes": [
+            {
+              "id": "s1_antibodies",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s1_immune_cells_to_antibodi",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_antibodies"
+              },
+              "mode": "slideInLeft",
+              "durationMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_immune_cells_to_antibodi"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 500
+            }
+          ]
+        },
+        {
+          "id": "s1_step4",
+          "delta": true,
+          "durationMs": 4800,
+          "caption": "Your body remembers it, so the real germ is stopped fast.",
+          "nodes": [
+            {
+              "id": "s1_protection",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s1_antibodies_to_protection",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_protection"
+              },
+              "mode": "slideInLeft",
+              "durationMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s1_antibodies_to_protection"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 500
+            }
+          ]
+        },
+        {
+          "id": "s1_step5",
+          "delta": true,
+          "durationMs": 2500,
+          "caption": "That memory is your protection.",
+          "nodes": [
+            {
+              "id": "s1_protection",
+              "fill": "#065f46"
+            }
+          ],
+          "edges": []
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "How does a vaccine train your body?",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "shimmer",
+            "voiceName": "Shimmer"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "A vaccine shows your body a harmless piece of a germ.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "shimmer",
+            "voiceName": "Shimmer"
+          }
+        },
+        {
+          "id": "s1_n2",
+          "text": "Immune cells study its shape.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "shimmer",
+            "voiceName": "Shimmer"
+          }
+        },
+        {
+          "id": "s1_n3",
+          "text": "They make antibodies that fit that shape.",
+          "stepIndex": 3,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "shimmer",
+            "voiceName": "Shimmer"
+          }
+        },
+        {
+          "id": "s1_n4",
+          "text": "Your body remembers it, so the real germ is stopped fast.",
+          "stepIndex": 4,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "shimmer",
+            "voiceName": "Shimmer"
+          }
+        },
+        {
+          "id": "s1_n5",
+          "text": "That memory is your protection.",
+          "stepIndex": 5,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "shimmer",
+            "voiceName": "Shimmer"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

@@ -1,0 +1,870 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Why the sky is blue",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Title",
+    "Scattering",
+    "Sunsets"
+  ],
+  "transitions": [
+    {
+      "kind": "slideLeft",
+      "durationMs": 600
+    },
+    {
+      "kind": "crossfade",
+      "durationMs": 600
+    }
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_sun",
+          "kind": "circle",
+          "x": -144.7,
+          "y": -443.8,
+          "w": 289.4,
+          "h": 289.4,
+          "fill": "#fbbf24",
+          "stroke": "#f59e0b",
+          "strokeWidth": 3,
+          "opacity": 1
+        },
+        {
+          "id": "s1_why_the_sky_is_blue",
+          "kind": "text",
+          "x": -900,
+          "y": -78.2,
+          "w": 1800,
+          "h": 130,
+          "text": "Why the sky is blue",
+          "fontWeight": 800,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s1_sunlight_air_and_a_littl",
+          "kind": "text",
+          "x": -900,
+          "y": 71.8,
+          "w": 1800,
+          "h": 70,
+          "text": "Sunlight, air, and a little physics",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 40,
+          "opacity": 0
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 4800,
+          "caption": "Why is the sky blue?",
+          "nodes": [
+            {
+              "id": "s1_sun",
+              "kind": "circle",
+              "x": -144.7,
+              "y": -443.8,
+              "w": 289.4,
+              "h": 289.4,
+              "fill": "#fbbf24",
+              "stroke": "#f59e0b",
+              "strokeWidth": 3,
+              "opacity": 1
+            },
+            {
+              "id": "s1_why_the_sky_is_blue",
+              "kind": "text",
+              "x": -900,
+              "y": -78.2,
+              "w": 1800,
+              "h": 130,
+              "text": "Why the sky is blue",
+              "fontWeight": 800,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s1_sunlight_air_and_a_littl",
+              "kind": "text",
+              "x": -900,
+              "y": 71.8,
+              "w": 1800,
+              "h": 70,
+              "text": "Sunlight, air, and a little physics",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 40,
+              "opacity": 0
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_sun"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_why_the_sky_is_blue"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
+            }
+          ]
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 2900,
+          "caption": "Sunlight, air, and a little physics.",
+          "nodes": [
+            {
+              "id": "s1_sunlight_air_and_a_littl",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_sunlight_air_and_a_littl"
+              },
+              "mode": "slideInUp",
+              "durationMs": 500
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "Look up on a clear day. Why is the sky blue?",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "nova",
+            "voiceName": "Nova"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "Sunlight, air, and a little physics.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "nova",
+            "voiceName": "Nova"
+          }
+        }
+      ]
+    },
+    {
+      "nodes": [
+        {
+          "id": "s2_sunlight",
+          "kind": "rect",
+          "x": -681.6,
+          "y": -448.3,
+          "w": 520,
+          "h": 312,
+          "label": "Sunlight",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#fbbf24",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 1
+        },
+        {
+          "id": "s2_air_molecules",
+          "kind": "circle",
+          "x": 265.6,
+          "y": -448.3,
+          "w": 312,
+          "h": 312,
+          "label": "Air molecules",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 3,
+          "labelFontSize": 40,
+          "opacity": 0
+        },
+        {
+          "id": "s2_your_eye",
+          "kind": "rect",
+          "x": 161.6,
+          "y": -19.7,
+          "w": 520,
+          "h": 312,
+          "label": "Your eye",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#a78bfa",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 0
+        }
+      ],
+      "edges": [
+        {
+          "id": "s2_sunlight_to_air_molecule",
+          "from": "s2_sunlight",
+          "to": "s2_air_molecules",
+          "fromPort": "E",
+          "toPort": "W",
+          "lineType": "straight",
+          "stroke": "#94a3b8",
+          "width": 4,
+          "arrow": "end",
+          "label": "all colors",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 24,
+          "labelPosition": "above",
+          "labelBgColor": "#0f172a",
+          "trim": 0,
+          "opacity": 0
+        },
+        {
+          "id": "s2_air_molecules_to_your_ey",
+          "from": "s2_air_molecules",
+          "to": "s2_your_eye",
+          "fromPort": "S",
+          "toPort": "N",
+          "lineType": "straight",
+          "stroke": "#38bdf8",
+          "width": 4,
+          "arrow": "end",
+          "label": "blue scatters most",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 24,
+          "labelPosition": "center",
+          "labelBgColor": "#0f172a",
+          "trim": 0,
+          "opacity": 0
+        }
+      ],
+      "steps": [
+        {
+          "id": "s2_step0",
+          "durationMs": 4800,
+          "caption": "Sunlight holds every color.",
+          "nodes": [
+            {
+              "id": "s2_sunlight",
+              "kind": "rect",
+              "x": -681.6,
+              "y": -448.3,
+              "w": 520,
+              "h": 312,
+              "label": "Sunlight",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#fbbf24",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 1
+            },
+            {
+              "id": "s2_air_molecules",
+              "kind": "circle",
+              "x": 265.6,
+              "y": -448.3,
+              "w": 312,
+              "h": 312,
+              "label": "Air molecules",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 3,
+              "labelFontSize": 40,
+              "opacity": 0
+            },
+            {
+              "id": "s2_your_eye",
+              "kind": "rect",
+              "x": 161.6,
+              "y": -19.7,
+              "w": 520,
+              "h": 312,
+              "label": "Your eye",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#a78bfa",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 0
+            }
+          ],
+          "edges": [
+            {
+              "id": "s2_sunlight_to_air_molecule",
+              "from": "s2_sunlight",
+              "to": "s2_air_molecules",
+              "fromPort": "E",
+              "toPort": "W",
+              "lineType": "straight",
+              "stroke": "#94a3b8",
+              "width": 4,
+              "arrow": "end",
+              "label": "all colors",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 24,
+              "labelPosition": "above",
+              "labelBgColor": "#0f172a",
+              "trim": 0,
+              "opacity": 0
+            },
+            {
+              "id": "s2_air_molecules_to_your_ey",
+              "from": "s2_air_molecules",
+              "to": "s2_your_eye",
+              "fromPort": "S",
+              "toPort": "N",
+              "lineType": "straight",
+              "stroke": "#38bdf8",
+              "width": 4,
+              "arrow": "end",
+              "label": "blue scatters most",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 24,
+              "labelPosition": "center",
+              "labelBgColor": "#0f172a",
+              "trim": 0,
+              "opacity": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_sunlight"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            }
+          ]
+        },
+        {
+          "id": "s2_step1",
+          "delta": true,
+          "durationMs": 3700,
+          "caption": "Air molecules scatter short blue waves the most.",
+          "nodes": [
+            {
+              "id": "s2_air_molecules",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s2_sunlight_to_air_molecule",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_air_molecules"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_sunlight_to_air_molecule"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 500
+            }
+          ]
+        },
+        {
+          "id": "s2_step2",
+          "delta": true,
+          "durationMs": 4800,
+          "caption": "That scattered blue reaches your eye from all over the sky.",
+          "nodes": [
+            {
+              "id": "s2_air_molecules",
+              "fill": "#0c4a6e"
+            },
+            {
+              "id": "s2_your_eye",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s2_air_molecules_to_your_ey",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_your_eye"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_air_molecules_to_your_ey"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 500
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s2_n0",
+          "text": "Sunlight looks white, but it holds every color of the rainbow.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "nova",
+            "voiceName": "Nova"
+          }
+        },
+        {
+          "id": "s2_n1",
+          "text": "Air molecules scatter short blue waves the most.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "nova",
+            "voiceName": "Nova"
+          }
+        },
+        {
+          "id": "s2_n2",
+          "text": "That scattered blue reaches your eye from all over the sky.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "nova",
+            "voiceName": "Nova"
+          }
+        }
+      ]
+    },
+    {
+      "nodes": [
+        {
+          "id": "s3_noon",
+          "kind": "rect",
+          "x": -624,
+          "y": -480,
+          "w": 520,
+          "h": 362,
+          "label": "Noon",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 1
+        },
+        {
+          "id": "s3_blue_sky",
+          "kind": "rect",
+          "x": 104,
+          "y": -480,
+          "w": 520,
+          "h": 362,
+          "label": "Blue sky",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 1
+        },
+        {
+          "id": "s3_sunset",
+          "kind": "rect",
+          "x": -616.8,
+          "y": -38,
+          "w": 520,
+          "h": 362,
+          "label": "Sunset",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#f97316",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 0
+        },
+        {
+          "id": "s3_red_sky",
+          "kind": "rect",
+          "x": 96.8,
+          "y": -38,
+          "w": 520,
+          "h": 362,
+          "label": "Red sky",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#f97316",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 0
+        }
+      ],
+      "edges": [
+        {
+          "id": "s3_noon_to_blue_sky",
+          "from": "s3_noon",
+          "to": "s3_blue_sky",
+          "fromPort": "E",
+          "toPort": "W",
+          "lineType": "straight",
+          "stroke": "#38bdf8",
+          "width": 4,
+          "arrow": "end",
+          "label": "short path",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 24,
+          "labelPosition": "above",
+          "labelBgColor": "#0f172a",
+          "trim": 1,
+          "opacity": 1
+        },
+        {
+          "id": "s3_sunset_to_red_sky",
+          "from": "s3_sunset",
+          "to": "s3_red_sky",
+          "fromPort": "E",
+          "toPort": "W",
+          "lineType": "straight",
+          "stroke": "#f97316",
+          "width": 4,
+          "arrow": "end",
+          "label": "long path",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 24,
+          "labelPosition": "above",
+          "labelBgColor": "#0f172a",
+          "trim": 0,
+          "opacity": 0
+        }
+      ],
+      "steps": [
+        {
+          "id": "s3_step0",
+          "durationMs": 4100,
+          "caption": "At noon, light crosses a thin layer of air.",
+          "nodes": [
+            {
+              "id": "s3_noon",
+              "kind": "rect",
+              "x": -624,
+              "y": -480,
+              "w": 520,
+              "h": 362,
+              "label": "Noon",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 1
+            },
+            {
+              "id": "s3_blue_sky",
+              "kind": "rect",
+              "x": 104,
+              "y": -480,
+              "w": 520,
+              "h": 362,
+              "label": "Blue sky",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 1
+            },
+            {
+              "id": "s3_sunset",
+              "kind": "rect",
+              "x": -616.8,
+              "y": -38,
+              "w": 520,
+              "h": 362,
+              "label": "Sunset",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#f97316",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 0
+            },
+            {
+              "id": "s3_red_sky",
+              "kind": "rect",
+              "x": 96.8,
+              "y": -38,
+              "w": 520,
+              "h": 362,
+              "label": "Red sky",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#f97316",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 0
+            }
+          ],
+          "edges": [
+            {
+              "id": "s3_noon_to_blue_sky",
+              "from": "s3_noon",
+              "to": "s3_blue_sky",
+              "fromPort": "E",
+              "toPort": "W",
+              "lineType": "straight",
+              "stroke": "#38bdf8",
+              "width": 4,
+              "arrow": "end",
+              "label": "short path",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 24,
+              "labelPosition": "above",
+              "labelBgColor": "#0f172a",
+              "trim": 1,
+              "opacity": 1
+            },
+            {
+              "id": "s3_sunset_to_red_sky",
+              "from": "s3_sunset",
+              "to": "s3_red_sky",
+              "fromPort": "E",
+              "toPort": "W",
+              "lineType": "straight",
+              "stroke": "#f97316",
+              "width": 4,
+              "arrow": "end",
+              "label": "long path",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 24,
+              "labelPosition": "above",
+              "labelBgColor": "#0f172a",
+              "trim": 0,
+              "opacity": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s3_noon"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s3_blue_sky"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s3_noon_to_blue_sky"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 1000
+            }
+          ]
+        },
+        {
+          "id": "s3_step1",
+          "delta": true,
+          "durationMs": 8600,
+          "caption": "At sunset it crosses much more, so the blue scatters away.",
+          "nodes": [
+            {
+              "id": "s3_red_sky",
+              "fill": "#7c2d12",
+              "opacity": 1
+            },
+            {
+              "id": "s3_sunset",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s3_sunset_to_red_sky",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s3_sunset"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s3_red_sky"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 500
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s3_sunset_to_red_sky"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 1000
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s3_n0",
+          "text": "At noon, light crosses a thin layer of air.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "nova",
+            "voiceName": "Nova"
+          }
+        },
+        {
+          "id": "s3_n1",
+          "text": "At sunset, light crosses much more air. The blue scatters away before it reaches you, and reds and oranges are left.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "nova",
+            "voiceName": "Nova"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

@@ -13,8 +13,30 @@ plugins/opencanviz/
   skills/opencanviz-json/
     SKILL.md                             the skill: workflow, rules, checklist
     schema.json                          JSON Schema, same as https://opencanviz.com/schema/v1.json
-    examples/*.json                      four complete projects that import and play
+    scripts/opencanviz.py                Python builder and validator (stdlib only, Python 3.9+)
+    examples/*.json                      six complete projects that import and play
+    examples/*.py                        the Python script that writes each example
+    tests/test_examples.py               runs the examples and checks the validator refuses bad files
 ```
+
+Agents that can run Python build the project with `scripts/opencanviz.py`, which lays out the nodes, fits the text, keeps captions and arrows readable, and refuses to save a file that breaks a rule. Agents that cannot run code write the JSON by hand from the rules in `SKILL.md`.
+
+### Python example
+
+```python
+import sys; sys.path.insert(0, "plugins/opencanviz/skills/opencanviz-json/scripts")
+from opencanviz import Project
+p = Project("How caching works", aspect="16:9")
+s = p.scene("Cache")
+app_r, cache_r, db_r = p.area().row(3, labels=["2 ms"], h=400)
+app, cache, db = s.box("App", at=app_r), s.box("Cache", at=cache_r), s.node("cylinder", "Database", at=db_r)
+s.step("Every request goes to the app.").reveal(app)
+s.step("A cache keeps recent answers close.").reveal(cache).draw(s.arrow(app, cache, "2 ms"))
+s.step("The database holds everything else.").reveal(db).draw(s.arrow(cache, db))
+p.save("caching.json")  # validated; raises with a fix hint if a rule is broken
+```
+
+Check any openCanviz JSON file, hand-written or not, with `python3 plugins/opencanviz/skills/opencanviz-json/scripts/opencanviz.py check file.json`. Run the tests with `python3 -m unittest discover -s plugins/opencanviz/skills/opencanviz-json/tests`.
 
 ## Install
 

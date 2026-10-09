@@ -7,26 +7,49 @@ description: Write valid openCanviz video/diagram JSON that imports cleanly thro
 
 openCanviz turns a JSON file into an animated, narrated video. The user pastes your JSON into **Import** on https://opencanviz.com/create and clicks **Import project**. Import does not validate fields, so a file that parses can still play wrongly. Follow the rules below and validate before you answer.
 
+**If you can run Python, use `scripts/opencanviz.py` (see `examples/*.py`); otherwise write JSON by hand following the rules below.** The helper applies every rule on this page for you and refuses to save a file that breaks one.
+
 ## Files in this skill
 
 - `schema.json`: the JSON Schema (draft 2020-12), the same as https://opencanviz.com/schema/v1.json. Validate every file against it.
+- `scripts/opencanviz.py`: a Python 3.9+ builder and validator (standard library only; also checks `schema.json` when `jsonschema` is installed).
 - `examples/minimal.json`: two boxes, one arrow, two steps. The smallest correct project.
-- `examples/flow.json`: a four-step 16:9 flow diagram with captions and narration.
-- `examples/two_scenes.json`: two scenes, a crossfade, a typewriter title, `addNodes`, `addEdges`, `removeEdgeIds` and a camera zoom.
-- `examples/short.json`: a 9:16 Short in the flat single-scene form.
+- `examples/flow.json`: a four-step 16:9 flow diagram with a title, captions and narration.
+- `examples/two_scenes.json`: two scenes, a crossfade, a typewriter title, a skip arrow on its own lane, a removed edge and a camera zoom.
+- `examples/short.json`: a 9:16 Short in the flat single-scene form, with stacked cards and a progress bar.
+- `examples/science_explainer.json`: three narrated scenes with labeled arrows and a two-row comparison.
+- `examples/portrait_stack.json`: a 9:16 Short with a vertical chain of cards and labeled arrows.
+- Each example has a matching `.py` that writes it. `tests/test_examples.py` runs them all.
 
-Read the example closest to the request before you write. Copy its structure, not its content. Every example passes the schema and plays correctly in openCanviz.
+Read the example closest to the request before you write. Copy its structure, not its content. Every example passes the schema, the rules below, and plays correctly in openCanviz.
 
 Human docs: https://opencanviz.com/docs/json-overview, https://opencanviz.com/docs/json-schema-reference and https://opencanviz.com/docs/json-rules-for-ai-agents
+
+## Python helper
+
+```python
+import sys; sys.path.insert(0, "<skill folder>/scripts")
+from opencanviz import Project
+p = Project("Title", aspect="16:9")              # or "9:16", "1:1"; theme="light"; voice="nova"
+s = p.scene("Scene name")                          # transition="crossfade" joins it to the previous scene
+cells = p.area().flow(3, labels=["asks", "reads"]) # also row/column/stack/grid/cut_top; gaps fit the labels
+a, b = s.box("Client", at=cells[0]), s.node("cylinder", "DB", at=cells[1])
+link = s.arrow(a, b, "asks")                       # route="below" sends a skip arrow along its own lane
+s.step("Caption, also the narration.").reveal(a)   # .hide .move .set .typewrite .camera .focus .remove .wait
+s.step("Next beat.").reveal(b).draw(link)          # reveal a node before drawing an arrow to it
+p.save("out.json")                                 # validates; raises with a fix hint and writes nothing on error
+```
+
+`p.area()` is the artboard minus the margin and the caption band. `rect.cut_top(h)` returns `(band, rest)` but `rect.cut_bottom(h)` returns `(rest, band)`; two visible nodes on the same rect are refused. Fonts are fitted to their boxes. Ids get the `s1_` prefix. Step durations follow the narration length. To check a file written by hand, run `python3 scripts/opencanviz.py check out.json`.
 
 ## Workflow
 
 1. **Plan.** Pick the aspect ratio (16:9 = 1920 x 1080, 9:16 = 1080 x 1920, 1:1 = 1080 x 1080). Split the topic into scenes, and each scene into 2 to 6 steps. Write one caption line per step, about 8 to 20 words.
-2. **Lay out.** Center the artboard on the origin (`x = -width/2`, `y = -height/2`). Place every node inside it with a margin of at least 60 px. A node's `x`, `y` is its top-left corner.
+2. **Lay out.** Center the artboard on the origin (`x = -width/2`, `y = -height/2`). Place every node inside it with a margin of at least 60 px, above the caption band, following the layout rules below. A node's `x`, `y` is its top-left corner.
 3. **Write step 0** of each scene as a full snapshot: every node and edge the scene will ever show, with nodes that appear later at `"opacity": 0` and edges that draw in later at `"trim": 0`. Copy the same nodes and edges into the scene's `nodes` and `edges`.
 4. **Write later steps** as deltas: `"delta": true`, then only `id` plus the changed fields. Add actions for timing.
 5. **Add narration**: one clip per step, `text` equal to the caption, `stepIndex` matching the step.
-6. **Validate** the file against `schema.json` with a real validator if you can run code (for example Python `jsonschema.Draft202012Validator`). Then walk the checklist at the end by hand.
+6. **Validate** with `python3 scripts/opencanviz.py check out.json` if you can run Python (it also runs `schema.json` when `jsonschema` is installed), or against `schema.json` with any real validator. Then walk the checklist at the end by hand.
 7. **Fix** every error and validate again.
 8. **Output** the JSON alone in one ```json code block, with no comments and no trailing commas. Tell the user to paste it into Import, then open the Narration panel and click **Generate All Scenes** to voice it.
 
@@ -79,6 +102,19 @@ Human docs: https://opencanviz.com/docs/json-overview, https://opencanviz.com/do
 16. Leave out fields openCanviz fills in: `_addedNodeIds`, `_removedNodeIds`, `_addedEdgeIds`, `_removedEdgeIds`, `_animatedProps`, `_selected`, `illuOf`, `imageFailed`, and on narration `audioData`, `audioUrl`, `audioDurationMs`, `words`.
 17. Plain JSON only: no comments, no trailing commas, no `NaN`, no functions.
 
+## Layout rules
+
+These keep the video readable once captions and arrows are on screen. The helper checks all of them.
+
+18. **Caption band.** Keep every node out of the bottom 20% of the frame in landscape and the bottom 30% in portrait (captions wrap to 3 or 4 lines there). For 16:9 that is `y + h <= 324`; for 9:16, `y + h <= 384`.
+19. **Fill the frame.** At the last step of a scene the diagram should cover about 60 to 75% of the safe area (artboard minus margin and caption band). No thin row with big empty bands: use bigger boxes or a second row.
+20. **Text fits its box.** Width: characters x 0.55 x font size per line, within `w` minus padding. Height: lines x font size x 1.2 plus 16 px padding, within `h`. Shapes have less room inside (a circle about 72%, a diamond about 50%).
+21. **Edge labels are readable.** `labelFontSize` at least 22 in landscape and 28 in portrait, with `"labelBgColor"` set to the background color so the label masks the line behind it.
+22. **Gaps fit arrows.** Between two connected nodes leave at least 60 px, and for a labeled edge at least characters x 0.6 x `labelFontSize` + 24 for the label plus 40 for the arrowhead (vertical links: font size x 1.2 + 56). When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
+23. **No edge crosses a node.** An edge may not pass over any node except its two ends. Join neighbours, and send a skip connection along its own lane: `"fromPort": "S", "toPort": "S", "lineType": "elbowed"` (or `N`/`N`) with nothing in the lane.
+24. **Labeled edges stay invisible until drawn.** A labeled edge at `"trim": 0` also gets `"opacity": 0`, and its draw-in `edgeTween` sets `opacity` to 1 with the trim (`"from":{"trim":0,"opacity":1},"to":{"trim":1,"opacity":1}`, and `"opacity": 1` in the snapshot). Otherwise its label floats at the start port before the line arrives. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
+25. **Reveal before you draw.** Within a step, an arrow's `edgeTween` starts no earlier than the reveal of the node it points to (same or later `offsetMs`).
+
 ## Timing model
 
 - A step lasts `durationMs`; 0 or missing counts as 900. A scene lasts the sum of its steps; scenes play back to back. Once narration is recorded, each step stretches to fit its audio.
@@ -126,6 +162,10 @@ Full field lists and enums are in `schema.json`.
 | Tiny dots or 1 px lines as nodes | Not drawn | 10 x 10 px minimum; draw lines as edges |
 | Caption with no narration clip | Nothing to voice later | One clip per step, same text |
 | Copying a backup's `audioData` or `_animatedProps` | Bloated or stale data | Leave internal fields out |
+| Five boxes in one row with 12 px edge labels | Labels collide with boxes and are unreadable | Two rows, gaps sized for the labels, `labelFontSize` 22+ |
+| Arrow from box 1 to box 3 in a row | It runs over box 2 | Same-side ports and `elbowed`, on a lane below or above |
+| Nodes in the bottom fifth of the frame | Captions cover them | Keep the caption band clear |
+| Arrow draws, then its end node fades in | It points at empty space | Reveal the node first, then draw |
 
 ## Checklist before you answer
 
@@ -138,4 +178,7 @@ Full field lists and enums are in `schema.json`.
 - [ ] Every revealed node has `opacity` 1 in its reveal step; every drawn-in edge has `trim` 1.
 - [ ] Every action ends within its step, and its `to` values match the snapshot.
 - [ ] One narration clip per step; `transitions` has one entry fewer than there are scenes.
+- [ ] Caption band clear; diagram fills about 60 to 75% of the safe area; text fits its boxes.
+- [ ] Edge labels 22 px+ (28 px+ portrait) with `labelBgColor`; gaps fit them; no edge crosses a node.
+- [ ] Labeled edges sit at `trim` 0 and `opacity` 0 until their draw step; arrows draw after their end nodes appear.
 - [ ] No internal fields, comments or trailing commas.

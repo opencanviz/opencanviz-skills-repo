@@ -18,89 +18,86 @@
       "durationMs": 600
     }
   ],
-  "captionStyle": {
-    "variant": "band",
-    "fontScale": 1.1,
-    "textColor": "#f8fafc",
-    "bandColor": "#020617",
-    "bandOpacity": 0.8
-  },
   "diagrams": [
     {
       "nodes": [
         {
-          "id": "s1_title",
+          "id": "s1_caching_in_two_minutes",
           "kind": "text",
           "x": -800,
-          "y": -160,
+          "y": -207.8,
           "w": 1600,
-          "h": 160,
+          "h": 170,
           "text": "Caching in two minutes",
-          "fontSize": 96,
           "fontWeight": 800,
           "color": "#f8fafc",
           "textAlign": "center",
           "verticalAlign": "middle",
           "fill": "transparent",
           "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1,
           "typeProgress": 1
         },
         {
-          "id": "s1_subtitle",
+          "id": "s1_why_the_second_request_i",
           "kind": "text",
-          "x": -600,
-          "y": 40,
-          "w": 1200,
-          "h": 80,
+          "x": -800,
+          "y": -17.8,
+          "w": 1600,
+          "h": 90,
           "text": "Why the second request is faster",
-          "fontSize": 44,
           "fontWeight": 400,
           "color": "#94a3b8",
           "textAlign": "center",
           "verticalAlign": "middle",
           "fill": "transparent",
-          "stroke": "none"
+          "stroke": "none",
+          "fontSize": 44,
+          "opacity": 1
         }
       ],
       "edges": [],
       "steps": [
         {
-          "id": "s1_type",
-          "durationMs": 2600,
+          "id": "s1_step0",
+          "durationMs": 2500,
           "caption": "Caching, in two minutes.",
           "nodes": [
             {
-              "id": "s1_title",
+              "id": "s1_caching_in_two_minutes",
               "kind": "text",
               "x": -800,
-              "y": -160,
+              "y": -207.8,
               "w": 1600,
-              "h": 160,
+              "h": 170,
               "text": "Caching in two minutes",
-              "fontSize": 96,
               "fontWeight": 800,
               "color": "#f8fafc",
               "textAlign": "center",
               "verticalAlign": "middle",
               "fill": "transparent",
               "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1,
               "typeProgress": 1
             },
             {
-              "id": "s1_subtitle",
+              "id": "s1_why_the_second_request_i",
               "kind": "text",
-              "x": -600,
-              "y": 40,
-              "w": 1200,
-              "h": 80,
+              "x": -800,
+              "y": -17.8,
+              "w": 1600,
+              "h": 90,
               "text": "Why the second request is faster",
-              "fontSize": 44,
               "fontWeight": 400,
               "color": "#94a3b8",
               "textAlign": "center",
               "verticalAlign": "middle",
               "fill": "transparent",
-              "stroke": "none"
+              "stroke": "none",
+              "fontSize": 44,
+              "opacity": 1
             }
           ],
           "edges": [],
@@ -109,7 +106,7 @@
               "type": "transformTween",
               "target": {
                 "kind": "node",
-                "id": "s1_title"
+                "id": "s1_caching_in_two_minutes"
               },
               "from": {
                 "typeProgress": 0
@@ -117,26 +114,26 @@
               "to": {
                 "typeProgress": 1
               },
-              "durationMs": 1400,
-              "ease": "linear"
+              "ease": "linear",
+              "durationMs": 1400
             },
             {
               "type": "visibility",
               "target": {
                 "kind": "node",
-                "id": "s1_subtitle"
+                "id": "s1_why_the_second_request_i"
               },
               "mode": "slideInDown",
+              "slideDistance": 60,
               "durationMs": 500,
-              "offsetMs": 1500,
-              "slideDistance": 60
+              "offsetMs": 1400
             }
           ]
         }
       ],
       "narration": [
         {
-          "id": "s1_line_0",
+          "id": "s1_n0",
           "text": "Caching, in two minutes.",
           "stepIndex": 0,
           "voice": {
@@ -152,97 +149,181 @@
         {
           "id": "s2_app",
           "kind": "rect",
-          "x": -760,
-          "y": -110,
-          "w": 340,
-          "h": 220,
-          "cornerRadius": 20,
-          "fill": "#1e293b",
-          "stroke": "#38bdf8",
-          "strokeWidth": 4,
+          "x": -871.6,
+          "y": -278,
+          "w": 500,
+          "h": 400,
           "label": "App",
           "labelColor": "#f8fafc",
-          "labelFontSize": 44
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 1
         },
         {
-          "id": "s2_db",
+          "id": "s2_cache",
+          "kind": "rect",
+          "x": -250,
+          "y": -278,
+          "w": 500,
+          "h": 400,
+          "label": "Cache",
+          "labelColor": "#f8fafc",
+          "fill": "#3b0764",
+          "stroke": "#c084fc",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 0
+        },
+        {
+          "id": "s2_database",
           "kind": "cylinder",
-          "x": 420,
-          "y": -140,
-          "w": 300,
-          "h": 280,
-          "fill": "#1e293b",
-          "stroke": "#f59e0b",
-          "strokeWidth": 4,
+          "x": 411.6,
+          "y": -278,
+          "w": 420,
+          "h": 400,
           "label": "Database",
           "labelColor": "#f8fafc",
-          "labelFontSize": 40
+          "fill": "#1e293b",
+          "stroke": "#f59e0b",
+          "strokeWidth": 3,
+          "labelFontSize": 40,
+          "opacity": 1
         }
       ],
       "edges": [
         {
-          "id": "s2_slow",
+          "id": "s2_app_to_database",
           "from": "s2_app",
-          "to": "s2_db",
+          "to": "s2_database",
+          "fromPort": "S",
+          "toPort": "S",
+          "lineType": "elbowed",
           "stroke": "#f59e0b",
-          "width": 5,
+          "width": 4,
           "arrow": "both",
-          "strokeStyle": "dashed",
           "label": "200 ms",
-          "labelColor": "#fbbf24",
-          "labelFontSize": 32,
-          "labelPosition": "above"
+          "labelColor": "#94a3b8",
+          "labelFontSize": 24,
+          "labelPosition": "below",
+          "labelBgColor": "#0f172a",
+          "strokeStyle": "dashed",
+          "trim": 1,
+          "opacity": 1
+        },
+        {
+          "id": "s2_app_to_cache",
+          "from": "s2_app",
+          "to": "s2_cache",
+          "fromPort": "E",
+          "toPort": "W",
+          "lineType": "straight",
+          "stroke": "#c084fc",
+          "width": 4,
+          "arrow": "both",
+          "label": "2 ms",
+          "labelColor": "#94a3b8",
+          "labelFontSize": 24,
+          "labelPosition": "above",
+          "labelBgColor": "#0f172a",
+          "trim": 0,
+          "opacity": 0
         }
       ],
       "steps": [
         {
-          "id": "s2_slow_path",
-          "durationMs": 3000,
+          "id": "s2_step0",
+          "durationMs": 5200,
           "caption": "Without a cache, every request goes all the way to the database.",
           "nodes": [
             {
               "id": "s2_app",
               "kind": "rect",
-              "x": -760,
-              "y": -110,
-              "w": 340,
-              "h": 220,
-              "cornerRadius": 20,
-              "fill": "#1e293b",
-              "stroke": "#38bdf8",
-              "strokeWidth": 4,
+              "x": -871.6,
+              "y": -278,
+              "w": 500,
+              "h": 400,
               "label": "App",
               "labelColor": "#f8fafc",
-              "labelFontSize": 44
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 1
             },
             {
-              "id": "s2_db",
+              "id": "s2_cache",
+              "kind": "rect",
+              "x": -250,
+              "y": -278,
+              "w": 500,
+              "h": 400,
+              "label": "Cache",
+              "labelColor": "#f8fafc",
+              "fill": "#3b0764",
+              "stroke": "#c084fc",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 0
+            },
+            {
+              "id": "s2_database",
               "kind": "cylinder",
-              "x": 420,
-              "y": -140,
-              "w": 300,
-              "h": 280,
-              "fill": "#1e293b",
-              "stroke": "#f59e0b",
-              "strokeWidth": 4,
+              "x": 411.6,
+              "y": -278,
+              "w": 420,
+              "h": 400,
               "label": "Database",
               "labelColor": "#f8fafc",
-              "labelFontSize": 40
+              "fill": "#1e293b",
+              "stroke": "#f59e0b",
+              "strokeWidth": 3,
+              "labelFontSize": 40,
+              "opacity": 1
             }
           ],
           "edges": [
             {
-              "id": "s2_slow",
+              "id": "s2_app_to_database",
               "from": "s2_app",
-              "to": "s2_db",
+              "to": "s2_database",
+              "fromPort": "S",
+              "toPort": "S",
+              "lineType": "elbowed",
               "stroke": "#f59e0b",
-              "width": 5,
+              "width": 4,
               "arrow": "both",
-              "strokeStyle": "dashed",
               "label": "200 ms",
-              "labelColor": "#fbbf24",
-              "labelFontSize": 32,
-              "labelPosition": "above"
+              "labelColor": "#94a3b8",
+              "labelFontSize": 24,
+              "labelPosition": "below",
+              "labelBgColor": "#0f172a",
+              "strokeStyle": "dashed",
+              "trim": 1,
+              "opacity": 1
+            },
+            {
+              "id": "s2_app_to_cache",
+              "from": "s2_app",
+              "to": "s2_cache",
+              "fromPort": "E",
+              "toPort": "W",
+              "lineType": "straight",
+              "stroke": "#c084fc",
+              "width": 4,
+              "arrow": "both",
+              "label": "2 ms",
+              "labelColor": "#94a3b8",
+              "labelFontSize": 24,
+              "labelPosition": "above",
+              "labelBgColor": "#0f172a",
+              "trim": 0,
+              "opacity": 0
             }
           ],
           "actions": [
@@ -259,7 +340,7 @@
               "type": "visibility",
               "target": {
                 "kind": "node",
-                "id": "s2_db"
+                "id": "s2_database"
               },
               "mode": "slideInRight",
               "durationMs": 500,
@@ -269,77 +350,41 @@
               "type": "edgeTween",
               "target": {
                 "kind": "edge",
-                "id": "s2_slow"
+                "id": "s2_app_to_database"
               },
               "from": {
-                "trim": 0
+                "trim": 0,
+                "opacity": 1
               },
               "to": {
-                "trim": 1
+                "trim": 1,
+                "opacity": 1
               },
+              "ease": "ease-out",
               "durationMs": 700,
               "offsetMs": 800
             }
           ]
         },
         {
-          "id": "s2_add_cache",
+          "id": "s2_step1",
           "delta": true,
-          "durationMs": 3200,
+          "durationMs": 4100,
           "caption": "A cache keeps recent answers close to the app.",
           "nodes": [
             {
-              "id": "s2_db",
-              "x": 520
-            }
-          ],
-          "edges": [],
-          "addNodes": [
-            {
               "id": "s2_cache",
-              "kind": "rect",
-              "x": -170,
-              "y": -100,
-              "w": 300,
-              "h": 200,
-              "cornerRadius": 20,
-              "fill": "#3b0764",
-              "stroke": "#c084fc",
-              "strokeWidth": 4,
-              "label": "Cache",
-              "labelColor": "#f8fafc",
-              "labelFontSize": 44,
               "opacity": 1
             }
           ],
-          "addEdges": [
+          "edges": [
             {
-              "id": "s2_fast",
-              "from": "s2_app",
-              "to": "s2_cache",
-              "stroke": "#c084fc",
-              "width": 5,
-              "arrow": "both",
-              "label": "2 ms",
-              "labelColor": "#e9d5ff",
-              "labelFontSize": 32,
-              "labelPosition": "above",
-              "trim": 0
+              "id": "s2_app_to_cache",
+              "trim": 1,
+              "opacity": 1
             }
           ],
           "actions": [
-            {
-              "type": "transformTween",
-              "target": {
-                "kind": "node",
-                "id": "s2_db"
-              },
-              "to": {
-                "x": 520
-              },
-              "durationMs": 600,
-              "ease": "ease-out"
-            },
             {
               "type": "visibility",
               "target": {
@@ -347,53 +392,72 @@
                 "id": "s2_cache"
               },
               "mode": "fadeIn",
-              "durationMs": 500,
-              "offsetMs": 600
+              "durationMs": 500
             },
             {
               "type": "edgeTween",
               "target": {
                 "kind": "edge",
-                "id": "s2_fast"
+                "id": "s2_app_to_cache"
               },
               "from": {
-                "trim": 0
+                "trim": 0,
+                "opacity": 1
               },
               "to": {
-                "trim": 1
+                "trim": 1,
+                "opacity": 1
               },
-              "durationMs": 600,
-              "offsetMs": 1100
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 500
             }
           ]
         },
         {
-          "id": "s2_zoom",
+          "id": "s2_step2",
           "delta": true,
-          "durationMs": 3000,
+          "durationMs": 3700,
           "caption": "The next request is answered in two milliseconds.",
           "nodes": [],
           "edges": [
             {
-              "id": "s2_fast",
-              "trim": 1
+              "id": "s2_app_to_database",
+              "trim": 0,
+              "opacity": 0
             }
           ],
-          "removeEdgeIds": [
-            "s2_slow"
+          "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_app_to_database"
+              },
+              "from": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 0,
+                "opacity": 0
+              },
+              "durationMs": 400
+            }
           ],
           "camera": {
-            "x": -300,
-            "y": 0,
+            "x": -310.8,
+            "y": -78.0,
             "zoom": 1.4
           },
-          "cameraDurationMs": 1200,
-          "cameraEasing": "ease-out"
+          "cameraDurationMs": 1000,
+          "cameraEasing": "ease-out",
+          "cameraOffsetMs": 400
         }
       ],
       "narration": [
         {
-          "id": "s2_line_0",
+          "id": "s2_n0",
           "text": "Without a cache, every request goes all the way to the database.",
           "stepIndex": 0,
           "voice": {
@@ -403,7 +467,7 @@
           }
         },
         {
-          "id": "s2_line_1",
+          "id": "s2_n1",
           "text": "A cache keeps recent answers close to the app.",
           "stepIndex": 1,
           "voice": {
@@ -413,7 +477,7 @@
           }
         },
         {
-          "id": "s2_line_2",
+          "id": "s2_n2",
           "text": "The next request is answered in two milliseconds.",
           "stepIndex": 2,
           "voice": {
@@ -424,5 +488,13 @@
         }
       ]
     }
-  ]
+  ],
+  "showCaptions": true,
+  "captionStyle": {
+    "variant": "band",
+    "fontScale": 1.1,
+    "textColor": "#f8fafc",
+    "bandColor": "#020617",
+    "bandOpacity": 0.8
+  }
 }
