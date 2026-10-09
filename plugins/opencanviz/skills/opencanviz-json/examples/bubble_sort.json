@@ -18,7 +18,7 @@
           "id": "s1_bubble_sort_swap_neighbo",
           "kind": "text",
           "x": -840,
-          "y": -480,
+          "y": -440,
           "w": 1680,
           "h": 110,
           "text": "Bubble sort: swap neighbours that are out of order",
@@ -208,7 +208,7 @@
               "id": "s1_bubble_sort_swap_neighbo",
               "kind": "text",
               "x": -840,
-              "y": -480,
+              "y": -440,
               "w": 1680,
               "h": 110,
               "text": "Bubble sort: swap neighbours that are out of order",
@@ -477,7 +477,13 @@
               "durationMs": 500,
               "offsetMs": 300
             }
-          ]
+          ],
+          "camera": {
+            "x": 0,
+            "y": 40,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
         },
         {
           "id": "s1_step1",
@@ -727,11 +733,6 @@
             {
               "id": "s1_array_range",
               "opacity": 1
-            },
-            {
-              "id": "s1_bubble_sort_swap_neighbo",
-              "x": -840,
-              "y": -440
             }
           ],
           "edges": [],
@@ -752,8 +753,7 @@
                 ]
               },
               "durationMs": 350,
-              "ease": "ease-out",
-              "offsetMs": 700
+              "ease": "ease-out"
             },
             {
               "type": "visibility",
@@ -762,30 +762,9 @@
                 "id": "s1_array_range"
               },
               "mode": "fadeIn",
-              "durationMs": 400,
-              "offsetMs": 700
-            },
-            {
-              "type": "transformTween",
-              "target": {
-                "kind": "node",
-                "id": "s1_bubble_sort_swap_neighbo"
-              },
-              "to": {
-                "x": -840,
-                "y": -440
-              },
-              "durationMs": 700,
-              "ease": "ease"
+              "durationMs": 400
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": 40,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         }
       ],
       "narration": [

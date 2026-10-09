@@ -261,7 +261,13 @@
               "mode": "fadeIn",
               "durationMs": 500
             }
-          ]
+          ],
+          "camera": {
+            "x": 0,
+            "y": -347,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
         },
         {
           "id": "s1_step1",
@@ -281,6 +287,11 @@
             {
               "id": "s1_every_request_goes_to_th",
               "opacity": 1
+            },
+            {
+              "id": "s1_adding_a_cache",
+              "x": -840,
+              "y": -475
             }
           ],
           "edges": [],
@@ -292,7 +303,8 @@
                 "id": "s1_panel_before"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "visibility",
@@ -301,7 +313,8 @@
                 "id": "s1_panel_before_title"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "visibility",
@@ -311,9 +324,29 @@
               },
               "mode": "fadeIn",
               "durationMs": 500,
-              "offsetMs": 300
+              "offsetMs": 1000
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_adding_a_cache"
+              },
+              "to": {
+                "x": -840,
+                "y": -475
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
-          ]
+          ],
+          "camera": {
+            "x": 0,
+            "y": 5,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
         },
         {
           "id": "s1_step2",

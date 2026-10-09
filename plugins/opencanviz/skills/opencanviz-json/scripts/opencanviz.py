@@ -1312,12 +1312,12 @@ class Scene:
         return n, body
 
     def _is_title(self, n, A):
-        """A title: made by scene.title(), or a bold one-line text across most of the top of the frame."""
+        """A title: made by scene.title(), or bold text across most of the top of the frame."""
         f = n.fields
         if n.meta.get("title"):
             return True
         return f.get("kind") == "text" and _is_bold(f.get("fontWeight")) and f.get("w", 0) >= 0.6 * A.w and \
-            f.get("y", 1e9) <= A.y + 0.15 * A.h and f.get("h", 1e9) <= 200 and not n.parts
+            f.get("y", 1e9) <= A.y + 0.15 * A.h and f.get("h", 1e9) <= max(200, 0.25 * A.h) and not n.parts
 
     def icon(self, ref, at=None, **kw):
         """An Iconify icon, e.g. icon("mdi:database", at=rect). Loads when the project opens in the editor."""
@@ -2351,6 +2351,24 @@ class Scene:
         titles = {n.id: (n.fields["x"], n.fields["y"], n.fields["y"] + n.fields["h"]) for n in self.nodes
                   if self._is_title(n, A)}
         tpos = {tid: (t[0], t[1]) for tid, t in titles.items()}
+        # under a title the camera frames the scene's whole body layout from the first step when it fits,
+        # so items appear in their final places and nothing shifts as the scene builds
+        union = None
+        if titles:
+            un, ue = {}, {}
+            for k, sd in enumerate(steps):
+                if k == 0:
+                    un = {n["id"]: dict(n) for n in sd["nodes"]}
+                    ue = {e["id"]: dict(e) for e in sd["edges"]}
+                else:
+                    for p in sd["nodes"]:
+                        un.setdefault(p["id"], {}).update(p)
+                    for p in sd["edges"]:
+                        ue.setdefault(p["id"], {}).update(p)
+                bb = _visible_bbox({i: n for i, n in un.items() if i not in titles}, ue)
+                if bb:
+                    union = bb if union is None else (min(union[0], bb[0]), min(union[1], bb[1]),
+                                                      max(union[2], bb[2]), max(union[3], bb[3]))
         for k, sd in enumerate(steps):
             if k == 0:
                 nodes = {n["id"]: dict(n) for n in sd["nodes"]}
@@ -2368,17 +2386,21 @@ class Scene:
             body_nodes = {i: n for i, n in nodes.items() if i not in titles}
             box = _visible_bbox(body_nodes, edges)
             held = [n for i, n in body_nodes.items() if i in keep and all(_num(n.get(k)) for k in ("x", "y", "w", "h"))]
-            if box is None and held:
+            if box is None and held and not shown_t:   # a title alone is a title card, framed on its own
                 box = (1e9, 1e9, -1e9, -1e9)
             area = (A.x, A.y, A.x + A.w, A.y + A.h)
-            if box is None:
+            card = box is None
+            if card:
                 box = _visible_bbox(nodes, edges)    # a title card alone: center it
                 if box is None:
                     continue
                 shown_t = []
             elif shown_t:
                 area = (A.x, max(titles[t][2] for t in shown_t) + 30, A.x + A.w, A.y + A.h)
-            if held:
+            if shown_t and union and union[2] - union[0] <= area[2] - area[0] and \
+                    union[3] - union[1] <= area[3] - area[1]:
+                box = union
+            elif held and not card:
                 xs = [x for n in held for x in _ink_x(n)]
                 box = (min([box[0]] + xs), min([box[1]] + [n["y"] for n in held]),
                        max([box[2]] + xs), max([box[3]] + [n["y"] + n["h"] for n in held]))
@@ -3397,7 +3419,7 @@ def _screen_checks(P, ab, captions, nodes, edges, vis, cam, W, once, later=None)
     if off > 0.15 * H_:
         # under a title: the content is horizontally centered and starts close under it
         tl = [n for n in vis if n.get("kind") == "text" and _is_bold(n.get("fontWeight")) and n["w"] >= 0.5 * W_
-              and n["y"] - sy <= ab["y"] + 0.2 * H_ and n["h"] <= 200]
+              and n["y"] - sy <= ab["y"] + 0.2 * H_ and n["h"] <= max(200, 0.18 * H_)]
         rest = {n["id"]: n for n in vis if n not in tl}
         b2 = _visible_bbox(rest, edges) if tl and rest else None
         if b2 is not None:

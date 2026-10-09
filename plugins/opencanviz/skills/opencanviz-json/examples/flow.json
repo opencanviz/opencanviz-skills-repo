@@ -17,8 +17,8 @@
         {
           "id": "s1_how_a_web_request_travel",
           "kind": "text",
-          "x": -1150,
-          "y": -590,
+          "x": -840,
+          "y": -480,
           "w": 1680,
           "h": 110,
           "text": "How a web request travels",
@@ -119,8 +119,8 @@
             {
               "id": "s1_how_a_web_request_travel",
               "kind": "text",
-              "x": -1150,
-              "y": -590,
+              "x": -840,
+              "y": -480,
               "w": 1680,
               "h": 110,
               "text": "How a web request travels",
@@ -231,13 +231,7 @@
               "durationMs": 500,
               "offsetMs": 400
             }
-          ],
-          "camera": {
-            "x": -310,
-            "y": -110,
-            "zoom": 1
-          },
-          "cameraDurationMs": 0
+          ]
         },
         {
           "id": "s1_step1",
@@ -249,11 +243,6 @@
             {
               "id": "s1_api_server",
               "opacity": 1
-            },
-            {
-              "id": "s1_how_a_web_request_travel",
-              "x": -840,
-              "y": -590
             }
           ],
           "edges": [
@@ -271,8 +260,7 @@
                 "id": "s1_api_server"
               },
               "mode": "fadeIn",
-              "durationMs": 400,
-              "offsetMs": 700
+              "durationMs": 400
             },
             {
               "type": "edgeTween",
@@ -290,29 +278,9 @@
               },
               "ease": "ease-out",
               "durationMs": 600,
-              "offsetMs": 1100
-            },
-            {
-              "type": "transformTween",
-              "target": {
-                "kind": "node",
-                "id": "s1_how_a_web_request_travel"
-              },
-              "to": {
-                "x": -840,
-                "y": -590
-              },
-              "durationMs": 700,
-              "ease": "ease"
+              "offsetMs": 400
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": -110,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step2",
@@ -324,11 +292,6 @@
             {
               "id": "s1_database",
               "opacity": 1
-            },
-            {
-              "id": "s1_how_a_web_request_travel",
-              "x": -840,
-              "y": -475
             }
           ],
           "edges": [
@@ -346,8 +309,7 @@
                 "id": "s1_database"
               },
               "mode": "fadeIn",
-              "durationMs": 400,
-              "offsetMs": 700
+              "durationMs": 400
             },
             {
               "type": "edgeTween",
@@ -365,29 +327,9 @@
               },
               "ease": "ease-out",
               "durationMs": 600,
-              "offsetMs": 1100
-            },
-            {
-              "type": "transformTween",
-              "target": {
-                "kind": "node",
-                "id": "s1_how_a_web_request_travel"
-              },
-              "to": {
-                "x": -840,
-                "y": -475
-              },
-              "durationMs": 700,
-              "ease": "ease"
+              "offsetMs": 400
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": 5,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step3",

@@ -433,6 +433,11 @@
             {
               "id": "s1_vaccine",
               "opacity": 1
+            },
+            {
+              "id": "s1_how_a_vaccine_trains_you",
+              "x": -460,
+              "y": -895
             }
           ],
           "edges": [],
@@ -446,11 +451,24 @@
               "mode": "slideInLeft",
               "durationMs": 500,
               "offsetMs": 700
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_how_a_vaccine_trains_you"
+              },
+              "to": {
+                "x": -460,
+                "y": -895
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
           ],
           "camera": {
             "x": 0,
-            "y": -437.2,
+            "y": 5,
             "zoom": 1
           },
           "cameraDurationMs": 700,
@@ -459,7 +477,7 @@
         {
           "id": "s1_step2",
           "delta": true,
-          "durationMs": 2600,
+          "durationMs": 2500,
           "caption": "Immune cells study its shape.",
           "easing": "ease",
           "nodes": [
@@ -488,8 +506,7 @@
                 "id": "s1_immune_cells"
               },
               "mode": "slideInLeft",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "edgeTween",
@@ -507,7 +524,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 1200
+              "offsetMs": 500
             },
             {
               "type": "edgeTween",
@@ -524,7 +541,7 @@
                 "opacity": 1
               },
               "durationMs": 40,
-              "offsetMs": 1900,
+              "offsetMs": 1200,
               "ease": "step"
             },
             {
@@ -542,17 +559,10 @@
                 "opacity": 0
               },
               "durationMs": 40,
-              "offsetMs": 1900,
+              "offsetMs": 1200,
               "ease": "step"
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": -291.5,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step3",
@@ -586,8 +596,7 @@
                 "id": "s1_antibodies"
               },
               "mode": "slideInLeft",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "edgeTween",
@@ -605,7 +614,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 1200
+              "offsetMs": 500
             },
             {
               "type": "edgeTween",
@@ -622,7 +631,7 @@
                 "opacity": 1
               },
               "durationMs": 40,
-              "offsetMs": 1900,
+              "offsetMs": 1200,
               "ease": "step"
             },
             {
@@ -640,17 +649,10 @@
                 "opacity": 0
               },
               "durationMs": 40,
-              "offsetMs": 1900,
+              "offsetMs": 1200,
               "ease": "step"
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": -145.8,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step4",
@@ -684,8 +686,7 @@
                 "id": "s1_protection"
               },
               "mode": "slideInLeft",
-              "durationMs": 500,
-              "offsetMs": 700
+              "durationMs": 500
             },
             {
               "type": "edgeTween",
@@ -703,7 +704,7 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 1200
+              "offsetMs": 500
             },
             {
               "type": "edgeTween",
@@ -720,7 +721,7 @@
                 "opacity": 1
               },
               "durationMs": 40,
-              "offsetMs": 1900,
+              "offsetMs": 1200,
               "ease": "step"
             },
             {
@@ -738,17 +739,10 @@
                 "opacity": 0
               },
               "durationMs": 40,
-              "offsetMs": 1900,
+              "offsetMs": 1200,
               "ease": "step"
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": 0,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         },
         {
           "id": "s1_step5",

@@ -17,7 +17,7 @@
         {
           "id": "s1_from_idea_to_video",
           "kind": "text",
-          "x": -1250,
+          "x": -840,
           "y": -383,
           "w": 1680,
           "h": 110,
@@ -90,7 +90,7 @@
             {
               "id": "s1_from_idea_to_video",
               "kind": "text",
-              "x": -1250,
+              "x": -840,
               "y": -383,
               "w": 1680,
               "h": 110,
@@ -175,7 +175,7 @@
             }
           ],
           "camera": {
-            "x": -410,
+            "x": 0,
             "y": 97,
             "zoom": 1
           },
@@ -191,11 +191,6 @@
             {
               "id": "s1_video",
               "opacity": 1
-            },
-            {
-              "id": "s1_from_idea_to_video",
-              "x": -840,
-              "y": -383
             }
           ],
           "edges": [
@@ -213,8 +208,7 @@
                 "id": "s1_video"
               },
               "mode": "fadeIn",
-              "durationMs": 400,
-              "offsetMs": 700
+              "durationMs": 400
             },
             {
               "type": "edgeTween",
@@ -232,29 +226,9 @@
               },
               "ease": "ease-out",
               "durationMs": 700,
-              "offsetMs": 1100
-            },
-            {
-              "type": "transformTween",
-              "target": {
-                "kind": "node",
-                "id": "s1_from_idea_to_video"
-              },
-              "to": {
-                "x": -840,
-                "y": -383
-              },
-              "durationMs": 700,
-              "ease": "ease"
+              "offsetMs": 400
             }
-          ],
-          "camera": {
-            "x": 0,
-            "y": 97,
-            "zoom": 1
-          },
-          "cameraDurationMs": 700,
-          "cameraEasing": "ease"
+          ]
         }
       ],
       "narration": [

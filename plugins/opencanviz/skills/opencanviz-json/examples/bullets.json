@@ -41,7 +41,7 @@
           "glyph": "check",
           "color": "#22c55e",
           "opacity": 0,
-          "drawStartMs": 3700
+          "drawStartMs": 4400
         },
         {
           "id": "s1_point1",
@@ -154,7 +154,7 @@
               "glyph": "check",
               "color": "#22c55e",
               "opacity": 0,
-              "drawStartMs": 3700
+              "drawStartMs": 4400
             },
             {
               "id": "s1_point1",
@@ -243,7 +243,13 @@
               "mode": "fadeIn",
               "durationMs": 500
             }
-          ]
+          ],
+          "camera": {
+            "x": 0,
+            "y": -347,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
         },
         {
           "id": "s1_step1",
@@ -259,6 +265,11 @@
             {
               "id": "s1_point1",
               "opacity": 1
+            },
+            {
+              "id": "s1_three_rules_for_a_good_p",
+              "x": -846,
+              "y": -475
             }
           ],
           "edges": [],
@@ -270,7 +281,8 @@
                 "id": "s1_point1"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
             },
             {
               "type": "visibility",
@@ -279,9 +291,30 @@
                 "id": "s1_point1_glyph"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_three_rules_for_a_good_p"
+              },
+              "to": {
+                "x": -846,
+                "y": -475
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
-          ]
+          ],
+          "camera": {
+            "x": -6,
+            "y": 5,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
         },
         {
           "id": "s1_step2",

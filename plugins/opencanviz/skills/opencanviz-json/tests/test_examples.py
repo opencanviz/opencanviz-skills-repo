@@ -637,5 +637,27 @@ class Titles(unittest.TestCase):
         self.assertEqual(len(seen), 1, seen)
 
 
+    def test_hand_made_two_line_title_stays_put(self):
+        p = oc.Project("t", aspect="9:16")
+        s = p.scene("t")
+        head, body = p.area().cut_top(260)
+        t = s.text("The Water\nCycle", at=head, fontWeight=800)
+        cells = body.column(3, h=140, labels=["a", "b"])
+        boxes = [s.box(x, at=c) for x, c in zip(["One", "Two", "Three"], cells)]
+        s.step("A title.").reveal(t)
+        for b in boxes:
+            s.step("One more box appears here.").reveal(b)
+        sc = p.to_dict()["diagrams"][0]
+        x, cam, seen = {}, None, set()
+        for k, st in enumerate(sc["steps"]):
+            for n in st["nodes"]:
+                if n["id"] == t.id:
+                    x.update(n)
+            cam = st.get("camera") or cam
+            if k and cam:
+                seen.add(round(x["y"] - cam["y"]))
+        self.assertEqual(len(seen), 1, seen)
+
+
 if __name__ == "__main__":
     unittest.main()
