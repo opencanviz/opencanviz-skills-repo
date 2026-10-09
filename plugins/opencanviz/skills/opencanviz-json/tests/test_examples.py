@@ -283,6 +283,16 @@ class LayoutOnScreen(unittest.TestCase):
         self.assertAlmostEqual(a["y"] + a["h"] / 2 - cam["y"], cy, delta=2)
         self.assertEqual(clean(doc), [])
 
+    def test_stub_arrow_is_refused(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        a = s.box("House vote", x=-300, y=-300, w=300, h=150)
+        b = s.box("Senate vote", x=-300, y=-70, w=300, h=150)
+        e = s.arrow(a, b, "sent over to the other chamber")
+        s.step("Both.").reveal(a).reveal(b).draw(e)
+        _, warnings = oc.validate(p.to_dict())
+        self.assertTrue(any("shows only" in w for w in warnings), warnings)
+
     def test_full_width_title_does_not_hide_an_off_center_node(self):
         p = oc.Project("t")
         s = p.scene("t")

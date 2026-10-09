@@ -1720,6 +1720,7 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
         if ab and view:
             _screen_checks(P, ab, captions, nodes, edges, vis, view, W, once)
         _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once)
+        _arrow_length_checks(P, nodes, edges, vis, W, once)
         if k == len(steps) - 1 and ab:
             _fill_check(P, ab, captions, vis, W)
         prev_edge_trim = {i: e.get("trim", 1) for i, e in edges.items()}
@@ -1762,6 +1763,33 @@ def _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once):
                 W("%s: edge %s from %s to %s passes over %s. Connect neighbours instead, or send the skip along its "
                   "own lane (fromPort and toPort both \"S\" with lineType \"elbowed\", and nothing in the lane below)."
                   % (P, eid, a["id"], b["id"], n["id"]))
+
+
+def _arrow_length_checks(P, nodes, edges, vis, W, once):
+    """A drawn arrow must show a real line: at least 80 px beside its label chip."""
+    vids = {n["id"] for n in vis}
+    for eid, e in edges.items():
+        if (e.get("trim", 1) or 0) <= 0.01 or (e.get("opacity", 1) or 0) <= 0.01:
+            continue
+        if e.get("from") not in vids or e.get("to") not in vids or eid.endswith("_line") and eid[:-5] in edges:
+            continue
+        pts = edge_path(e, nodes[e["from"]], nodes[e["to"]])
+        segs = [(p, q, math.hypot(q[0] - p[0], q[1] - p[1])) for p, q in zip(pts, pts[1:])]
+        length = sum(s[2] for s in segs)
+        chip = 0
+        if e.get("label"):
+            fs = e.get("labelFontSize") or 12
+            acc, horiz = 0.0, True
+            for p, q, s in segs:
+                if acc + s >= length / 2 and s > 0:
+                    horiz = abs(q[0] - p[0]) >= abs(q[1] - p[1])
+                    break
+                acc += s
+            chip = label_width(e["label"], fs) if horiz else label_height(fs)
+        if length - chip < 80 and once(("short", eid)):
+            W("%s: arrow %s shows only %d px of line%s; leave a gap of the label chip plus 120 px between "
+              "%s and %s (link_gap() gives it; the layout helpers use it when you pass labels=)."
+              % (P, eid, max(0, length - chip), " beside its label" if chip else "", e["from"], e["to"]))
 
 
 def _screen_checks(P, ab, captions, nodes, edges, vis, cam, W, once):
