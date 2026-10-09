@@ -1,0 +1,14 @@
+{
+  "name": "opencanviz",
+  "displayName": "openCanviz",
+  "version": "1.0.0",
+  "description": "Write valid openCanviz video and diagram JSON you can paste into Import on opencanviz.com.",
+  "author": {
+    "name": "openCanviz",
+    "url": "https://opencanviz.com"
+  },
+  "homepage": "https://opencanviz.com/docs/json-rules-for-ai-agents",
+  "repository": "https://github.com/opencanviz/opencanviz-skills-repo",
+  "license": "MIT",
+  "keywords": ["opencanviz", "video", "animation", "diagram", "json", "explainer"]
+}

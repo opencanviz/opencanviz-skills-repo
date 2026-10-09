@@ -1,0 +1,428 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Caching in two minutes",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Title",
+    "Why caches help"
+  ],
+  "transitions": [
+    {
+      "kind": "crossfade",
+      "durationMs": 600
+    }
+  ],
+  "captionStyle": {
+    "variant": "band",
+    "fontScale": 1.1,
+    "textColor": "#f8fafc",
+    "bandColor": "#020617",
+    "bandOpacity": 0.8
+  },
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_title",
+          "kind": "text",
+          "x": -800,
+          "y": -160,
+          "w": 1600,
+          "h": 160,
+          "text": "Caching in two minutes",
+          "fontSize": 96,
+          "fontWeight": 800,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "typeProgress": 1
+        },
+        {
+          "id": "s1_subtitle",
+          "kind": "text",
+          "x": -600,
+          "y": 40,
+          "w": 1200,
+          "h": 80,
+          "text": "Why the second request is faster",
+          "fontSize": 44,
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none"
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s1_type",
+          "durationMs": 2600,
+          "caption": "Caching, in two minutes.",
+          "nodes": [
+            {
+              "id": "s1_title",
+              "kind": "text",
+              "x": -800,
+              "y": -160,
+              "w": 1600,
+              "h": 160,
+              "text": "Caching in two minutes",
+              "fontSize": 96,
+              "fontWeight": 800,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "typeProgress": 1
+            },
+            {
+              "id": "s1_subtitle",
+              "kind": "text",
+              "x": -600,
+              "y": 40,
+              "w": 1200,
+              "h": 80,
+              "text": "Why the second request is faster",
+              "fontSize": 44,
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none"
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_title"
+              },
+              "from": {
+                "typeProgress": 0
+              },
+              "to": {
+                "typeProgress": 1
+              },
+              "durationMs": 1400,
+              "ease": "linear"
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_subtitle"
+              },
+              "mode": "slideInDown",
+              "durationMs": 500,
+              "offsetMs": 1500,
+              "slideDistance": 60
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_line_0",
+          "text": "Caching, in two minutes.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    },
+    {
+      "nodes": [
+        {
+          "id": "s2_app",
+          "kind": "rect",
+          "x": -760,
+          "y": -110,
+          "w": 340,
+          "h": 220,
+          "cornerRadius": 20,
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 4,
+          "label": "App",
+          "labelColor": "#f8fafc",
+          "labelFontSize": 44
+        },
+        {
+          "id": "s2_db",
+          "kind": "cylinder",
+          "x": 420,
+          "y": -140,
+          "w": 300,
+          "h": 280,
+          "fill": "#1e293b",
+          "stroke": "#f59e0b",
+          "strokeWidth": 4,
+          "label": "Database",
+          "labelColor": "#f8fafc",
+          "labelFontSize": 40
+        }
+      ],
+      "edges": [
+        {
+          "id": "s2_slow",
+          "from": "s2_app",
+          "to": "s2_db",
+          "stroke": "#f59e0b",
+          "width": 5,
+          "arrow": "both",
+          "strokeStyle": "dashed",
+          "label": "200 ms",
+          "labelColor": "#fbbf24",
+          "labelFontSize": 32,
+          "labelPosition": "above"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s2_slow_path",
+          "durationMs": 3000,
+          "caption": "Without a cache, every request goes all the way to the database.",
+          "nodes": [
+            {
+              "id": "s2_app",
+              "kind": "rect",
+              "x": -760,
+              "y": -110,
+              "w": 340,
+              "h": 220,
+              "cornerRadius": 20,
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 4,
+              "label": "App",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 44
+            },
+            {
+              "id": "s2_db",
+              "kind": "cylinder",
+              "x": 420,
+              "y": -140,
+              "w": 300,
+              "h": 280,
+              "fill": "#1e293b",
+              "stroke": "#f59e0b",
+              "strokeWidth": 4,
+              "label": "Database",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 40
+            }
+          ],
+          "edges": [
+            {
+              "id": "s2_slow",
+              "from": "s2_app",
+              "to": "s2_db",
+              "stroke": "#f59e0b",
+              "width": 5,
+              "arrow": "both",
+              "strokeStyle": "dashed",
+              "label": "200 ms",
+              "labelColor": "#fbbf24",
+              "labelFontSize": 32,
+              "labelPosition": "above"
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_app"
+              },
+              "mode": "slideInLeft",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_db"
+              },
+              "mode": "slideInRight",
+              "durationMs": 500,
+              "offsetMs": 200
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_slow"
+              },
+              "from": {
+                "trim": 0
+              },
+              "to": {
+                "trim": 1
+              },
+              "durationMs": 700,
+              "offsetMs": 800
+            }
+          ]
+        },
+        {
+          "id": "s2_add_cache",
+          "delta": true,
+          "durationMs": 3200,
+          "caption": "A cache keeps recent answers close to the app.",
+          "nodes": [
+            {
+              "id": "s2_db",
+              "x": 520
+            }
+          ],
+          "edges": [],
+          "addNodes": [
+            {
+              "id": "s2_cache",
+              "kind": "rect",
+              "x": -170,
+              "y": -100,
+              "w": 300,
+              "h": 200,
+              "cornerRadius": 20,
+              "fill": "#3b0764",
+              "stroke": "#c084fc",
+              "strokeWidth": 4,
+              "label": "Cache",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 44,
+              "opacity": 1
+            }
+          ],
+          "addEdges": [
+            {
+              "id": "s2_fast",
+              "from": "s2_app",
+              "to": "s2_cache",
+              "stroke": "#c084fc",
+              "width": 5,
+              "arrow": "both",
+              "label": "2 ms",
+              "labelColor": "#e9d5ff",
+              "labelFontSize": 32,
+              "labelPosition": "above",
+              "trim": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s2_db"
+              },
+              "to": {
+                "x": 520
+              },
+              "durationMs": 600,
+              "ease": "ease-out"
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_cache"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 600
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s2_fast"
+              },
+              "from": {
+                "trim": 0
+              },
+              "to": {
+                "trim": 1
+              },
+              "durationMs": 600,
+              "offsetMs": 1100
+            }
+          ]
+        },
+        {
+          "id": "s2_zoom",
+          "delta": true,
+          "durationMs": 3000,
+          "caption": "The next request is answered in two milliseconds.",
+          "nodes": [],
+          "edges": [
+            {
+              "id": "s2_fast",
+              "trim": 1
+            }
+          ],
+          "removeEdgeIds": [
+            "s2_slow"
+          ],
+          "camera": {
+            "x": -300,
+            "y": 0,
+            "zoom": 1.4
+          },
+          "cameraDurationMs": 1200,
+          "cameraEasing": "ease-out"
+        }
+      ],
+      "narration": [
+        {
+          "id": "s2_line_0",
+          "text": "Without a cache, every request goes all the way to the database.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s2_line_1",
+          "text": "A cache keeps recent answers close to the app.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s2_line_2",
+          "text": "The next request is answered in two milliseconds.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ]
+}

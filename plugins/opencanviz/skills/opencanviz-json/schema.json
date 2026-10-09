@@ -1,0 +1,1648 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://opencanviz.com/schema/v1.json",
+  "title": "openCanviz project JSON",
+  "description": "The JSON that openCanviz accepts on Import (Create > Import > Paste JSON or Mermaid). Two shapes are accepted: a project with a diagrams array (one entry per scene), or a single scene with nodes, edges and steps at the top level. Add \"$schema\": \"https://opencanviz.com/schema/v1.json\" to a file to get editor autocomplete. Fields not listed here are passed through; leave out anything marked as set by openCanviz.",
+  "type": "object",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/projectDocument"
+    },
+    {
+      "$ref": "#/$defs/singleSceneDocument"
+    }
+  ],
+  "$defs": {
+    "projectDocument": {
+      "title": "Project (recommended)",
+      "type": "object",
+      "required": [
+        "diagrams"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "Optional. \"https://opencanviz.com/schema/v1.json\" for editor autocomplete; openCanviz ignores it."
+        },
+        "title": {
+          "type": "string",
+          "description": "Project name shown on the Projects page. Defaults to \"Imported project\"."
+        },
+        "artboard": {
+          "$ref": "#/$defs/artboard"
+        },
+        "diagrams": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Scenes, in playback order.",
+          "items": {
+            "$ref": "#/$defs/scene"
+          }
+        },
+        "sceneNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "One name per scene, same order as diagrams. Missing names default to \"Scene N\"."
+        },
+        "transitions": {
+          "type": "array",
+          "description": "Index i is the transition between scene i and scene i+1. Length should be diagrams.length - 1. null means a hard cut.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/sceneTransition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "showCaptions": {
+          "type": "boolean",
+          "description": "Show step captions on screen. Default true."
+        },
+        "captionStyle": {
+          "$ref": "#/$defs/captionStyle"
+        },
+        "sketchMode": {
+          "type": "boolean",
+          "description": "Draw every shape and edge in a hand-drawn style. Default false."
+        },
+        "floatEnabled": {
+          "type": "boolean",
+          "description": "Gentle idle bob on non-text nodes in every scene. Default false."
+        },
+        "floatOffScenes": {
+          "type": "array",
+          "items": {
+            "type": "boolean"
+          },
+          "description": "Per scene: true keeps that scene still when floatEnabled is on."
+        },
+        "floatOnScenes": {
+          "type": "array",
+          "items": {
+            "type": "boolean"
+          },
+          "description": "Per scene: true makes that scene float even when floatEnabled is off."
+        },
+        "flowEnabled": {
+          "type": "boolean",
+          "description": "Run edge flow animations. Default true."
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "openAtLastStep": {
+              "type": "boolean",
+              "description": "Open the editor on the last step instead of the first."
+            }
+          }
+        }
+      }
+    },
+    "singleSceneDocument": {
+      "title": "Single scene (flat)",
+      "type": "object",
+      "required": [
+        "nodes"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "Optional. \"https://opencanviz.com/schema/v1.json\" for editor autocomplete; openCanviz ignores it."
+        },
+        "title": {
+          "type": "string"
+        },
+        "artboard": {
+          "$ref": "#/$defs/artboard"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/step"
+          },
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/firstStep"
+            }
+          ]
+        },
+        "paths": {
+          "$ref": "#/$defs/paths"
+        },
+        "narration": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/narrationClip"
+          }
+        },
+        "camera": {
+          "$ref": "#/$defs/camera"
+        },
+        "showCaptions": {
+          "type": "boolean"
+        },
+        "captionStyle": {
+          "$ref": "#/$defs/captionStyle"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "openAtLastStep": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "color": {
+      "type": "string",
+      "description": "CSS color: \"#rrggbb\", \"#rgb\", \"rgba(r,g,b,a)\", \"transparent\" or \"none\". Hex is safest."
+    },
+    "easing": {
+      "type": "string",
+      "enum": [
+        "linear",
+        "ease",
+        "ease-in",
+        "ease-out",
+        "spring",
+        "bounce",
+        "elastic",
+        "back",
+        "back-in",
+        "step"
+      ]
+    },
+    "artboard": {
+      "type": "object",
+      "description": "The video frame, in world coordinates. x and y are its top-left corner.",
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "background"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Frame width in px, for example 1920 for 16:9 or 1080 for 9:16 and 1:1."
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "background": {
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": [
+        "x",
+        "y",
+        "zoom"
+      ],
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "World x at the center of the view."
+        },
+        "y": {
+          "type": "number",
+          "description": "World y at the center of the view."
+        },
+        "zoom": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "1 = 100%."
+        }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "required": [
+        "nodes",
+        "edges",
+        "steps"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "description": "Every node in the scene, as it looks in step 0. Usually identical to steps[0].nodes.",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "description": "Every edge in the scene, as it looks in step 0. Usually identical to steps[0].edges.",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The timeline. Step 0 is a full snapshot; later steps list changes.",
+          "items": {
+            "$ref": "#/$defs/step"
+          },
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/firstStep"
+            }
+          ]
+        },
+        "paths": {
+          "$ref": "#/$defs/paths"
+        },
+        "narration": {
+          "type": "array",
+          "description": "Narration lines, at most one per step. Text only; record the audio in the Narration panel.",
+          "items": {
+            "$ref": "#/$defs/narrationClip"
+          }
+        },
+        "background": {
+          "$ref": "#/$defs/color",
+          "description": "Flat background color for this scene only."
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "x",
+        "y",
+        "w",
+        "h"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique within the scene. Keep the same id across steps."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "rect",
+            "circle",
+            "diamond",
+            "triangle",
+            "polygon",
+            "star",
+            "arrow",
+            "cylinder",
+            "text",
+            "callout",
+            "wedge",
+            "chevron",
+            "funnel",
+            "progress",
+            "svg",
+            "icon",
+            "group",
+            "glyph",
+            "lottie",
+            "uml-actor",
+            "uml-lifeline",
+            "uml-class",
+            "uml-note",
+            "algo-array",
+            "algo-pointer",
+            "algo-grid",
+            "algo-variable",
+            "algo-tree",
+            "algo-linked-list",
+            "algo-graph",
+            "algo-chart",
+            "algo-chart-line",
+            "algo-chart-scatter"
+          ]
+        },
+        "x": {
+          "type": "number",
+          "description": "Left edge, world px."
+        },
+        "y": {
+          "type": "number",
+          "description": "Top edge, world px."
+        },
+        "w": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Width px. Nodes under 10 x 10 px, or under 2 px in either direction, are not drawn."
+        },
+        "h": {
+          "type": "number",
+          "minimum": 0
+        },
+        "label": {
+          "type": "string",
+          "description": "Text drawn inside a shape."
+        },
+        "labelColor": {
+          "$ref": "#/$defs/color"
+        },
+        "labelFontSize": {
+          "type": "number"
+        },
+        "labelFontWeight": {
+          "enum": [
+            "normal",
+            "bold"
+          ]
+        },
+        "labelFontStyle": {
+          "enum": [
+            "normal",
+            "italic"
+          ]
+        },
+        "labelFontFamily": {
+          "type": "string"
+        },
+        "labelPadding": {
+          "type": "number"
+        },
+        "labelTextAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "type": "number",
+          "minimum": 0
+        },
+        "strokeDashArray": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "zIndex": {
+          "type": "number",
+          "description": "Higher draws in front."
+        },
+        "text": {
+          "type": "string",
+          "description": "Content of a text node. Use \\n for line breaks."
+        },
+        "fontFamily": {
+          "type": "string"
+        },
+        "fontSize": {
+          "type": "number"
+        },
+        "fontWeight": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 900
+        },
+        "fontStyle": {
+          "enum": [
+            "normal",
+            "italic"
+          ]
+        },
+        "lineHeight": {
+          "type": "number"
+        },
+        "letterSpacing": {
+          "type": "number"
+        },
+        "color": {
+          "$ref": "#/$defs/color",
+          "description": "Text color of a text node."
+        },
+        "textAlign": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        },
+        "verticalAlign": {
+          "enum": [
+            "top",
+            "middle",
+            "bottom"
+          ]
+        },
+        "wrap": {
+          "enum": [
+            "word",
+            "char",
+            "ellipsis",
+            "clip"
+          ]
+        },
+        "autoFit": {
+          "enum": [
+            "none",
+            "shrink",
+            "grow"
+          ]
+        },
+        "typeProgress": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Typewriter reveal of a text node, 1 = all text."
+        },
+        "highlightedLines": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "syntaxStyle": {
+          "enum": [
+            "none",
+            "pseudo",
+            "python",
+            "javascript"
+          ]
+        },
+        "rotationZ": {
+          "type": "number",
+          "description": "2D rotation in degrees."
+        },
+        "rotationX": {
+          "type": "number"
+        },
+        "rotationY": {
+          "type": "number"
+        },
+        "scaleX": {
+          "type": "number"
+        },
+        "scaleY": {
+          "type": "number"
+        },
+        "pivotX": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "pivotY": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "parentId": {
+          "type": "string",
+          "description": "Id of a group node that contains this node."
+        },
+        "rough": {
+          "type": "boolean"
+        },
+        "roughness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "glow": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "pointerSide": {
+          "enum": [
+            "N",
+            "E",
+            "S",
+            "W"
+          ]
+        },
+        "points": {
+          "type": "integer",
+          "minimum": 3
+        },
+        "innerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "startAngle": {
+          "type": "number"
+        },
+        "endAngle": {
+          "type": "number"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "progressColor": {
+          "$ref": "#/$defs/color"
+        },
+        "asset": {
+          "type": "object",
+          "description": "For kind svg: an icon by reference, for example {\"type\":\"icon\",\"source\":\"iconify\",\"ref\":\"mdi:database\"}.",
+          "required": [
+            "type",
+            "source"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "icon",
+                "lottie",
+                "image",
+                "svg"
+              ]
+            },
+            "source": {
+              "enum": [
+                "iconify",
+                "lottie-library",
+                "lottie-icons",
+                "bundled",
+                "url",
+                "user",
+                "embedded"
+              ]
+            },
+            "ref": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "iconStyle": {
+          "enum": [
+            "outline",
+            "solid"
+          ]
+        },
+        "cellValues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cellColors": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/color"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "_selected": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "_animatedProps": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "illuOf": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "imageFailed": {
+          "description": "Set by openCanviz, leave out."
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "from",
+            "to"
+          ]
+        },
+        {
+          "required": [
+            "fromXY",
+            "toXY"
+          ]
+        },
+        {
+          "required": [
+            "from",
+            "toXY"
+          ]
+        },
+        {
+          "required": [
+            "fromXY",
+            "to"
+          ]
+        }
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "description": "Id of the start node. Must exist in the scene."
+        },
+        "to": {
+          "type": "string",
+          "description": "Id of the end node. Must exist in the scene."
+        },
+        "fromXY": {
+          "$ref": "#/$defs/point"
+        },
+        "toXY": {
+          "$ref": "#/$defs/point"
+        },
+        "fromPort": {
+          "enum": [
+            "N",
+            "E",
+            "S",
+            "W"
+          ]
+        },
+        "toPort": {
+          "enum": [
+            "N",
+            "E",
+            "S",
+            "W"
+          ]
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Line width in px. This is width, not strokeWidth."
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "trim": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How much of the line is drawn, from the start. 0 = none, 1 = all."
+        },
+        "trimStart": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "arrow": {
+          "enum": [
+            "none",
+            "end",
+            "start",
+            "both"
+          ]
+        },
+        "endArrowType": {
+          "enum": [
+            "triangle",
+            "open-triangle",
+            "diamond-filled",
+            "diamond-hollow",
+            "circle",
+            "bar"
+          ]
+        },
+        "startArrowType": {
+          "enum": [
+            "triangle",
+            "open-triangle",
+            "diamond-filled",
+            "diamond-hollow",
+            "circle",
+            "bar"
+          ]
+        },
+        "arrowSize": {
+          "type": "number"
+        },
+        "strokeStyle": {
+          "enum": [
+            "solid",
+            "dashed",
+            "dotted"
+          ]
+        },
+        "lineType": {
+          "enum": [
+            "straight",
+            "curved",
+            "elbowed"
+          ]
+        },
+        "router": {
+          "enum": [
+            "AUTO",
+            "VHV",
+            "HVH"
+          ]
+        },
+        "cornerRadius": {
+          "type": "number"
+        },
+        "label": {
+          "type": "string"
+        },
+        "labelColor": {
+          "$ref": "#/$defs/color"
+        },
+        "labelFontSize": {
+          "type": "number"
+        },
+        "labelPosition": {
+          "enum": [
+            "center",
+            "above",
+            "below"
+          ]
+        },
+        "labelPositionT": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "labelBgColor": {
+          "$ref": "#/$defs/color"
+        },
+        "animationStyle": {
+          "enum": [
+            "flow",
+            "ball",
+            "pulse",
+            "none"
+          ]
+        },
+        "flowSpeed": {
+          "type": "number"
+        },
+        "waypoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        },
+        "zIndex": {
+          "type": "number"
+        },
+        "_animatedProps": {
+          "description": "Set by openCanviz, leave out."
+        }
+      }
+    },
+    "point": {
+      "type": "object",
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "description": "Motion paths by id, used by pathFollow actions.",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "id",
+          "points"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "points": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/$defs/point"
+            }
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "length": {
+            "description": "Set by openCanviz, leave out."
+          },
+          "cum": {
+            "description": "Set by openCanviz, leave out."
+          }
+        }
+      }
+    },
+    "nodePatch": {
+      "type": "object",
+      "description": "In step 0: a full node. In a delta step: id plus only the fields that change.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "edgePatch": {
+      "type": "object",
+      "description": "In step 0: a full edge. In a delta step: id plus only the fields that change.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": [
+        "durationMs",
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string",
+          "description": "Private note, not shown in the video."
+        },
+        "caption": {
+          "type": "string",
+          "description": "The narration line for this step. Shown as an on-screen caption."
+        },
+        "durationMs": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Step length in ms. 0 or missing is treated as 900."
+        },
+        "delta": {
+          "type": "boolean",
+          "description": "true = this step lists only changes. Put it on every step after step 0."
+        },
+        "easing": {
+          "$ref": "#/$defs/easing",
+          "description": "Easing for the automatic tween from the previous step. Default ease."
+        },
+        "propertyEasings": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/easing"
+          }
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nodePatch"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edgePatch"
+          }
+        },
+        "addNodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "description": "Delta steps: full new nodes that appear in this step."
+        },
+        "removeNodeIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "addEdges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        },
+        "removeEdgeIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        },
+        "transitions": {
+          "type": "object",
+          "description": "Per node id: how the node changes into this step.",
+          "additionalProperties": {
+            "enum": [
+              "morph",
+              "instant",
+              "fade",
+              "flip-x",
+              "flip-y"
+            ]
+          }
+        },
+        "delays": {
+          "type": "object",
+          "description": "Per node id: delay in ms before its automatic tween starts.",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "camera": {
+          "$ref": "#/$defs/camera"
+        },
+        "cameraDurationMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cameraEasing": {
+          "$ref": "#/$defs/easing"
+        },
+        "cameraOffsetMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cameraEnd": {
+          "$ref": "#/$defs/camera"
+        },
+        "_addedNodeIds": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "_removedNodeIds": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "_addedEdgeIds": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "_removedEdgeIds": {
+          "description": "Set by openCanviz, leave out."
+        }
+      }
+    },
+    "nodeTarget": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "const": "node"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "edgeTarget": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "const": "edge"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "visibility",
+            "transformTween",
+            "positionTween",
+            "edgeTween",
+            "pathFollow",
+            "pathAnimate",
+            "algoSwap",
+            "containerTransform",
+            "voiceOver"
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/visibilityAction"
+        },
+        {
+          "$ref": "#/$defs/transformTweenAction"
+        },
+        {
+          "$ref": "#/$defs/positionTweenAction"
+        },
+        {
+          "$ref": "#/$defs/edgeTweenAction"
+        },
+        {
+          "$ref": "#/$defs/pathFollowAction"
+        },
+        {
+          "$ref": "#/$defs/otherAction"
+        }
+      ]
+    },
+    "timing": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Optional. Generated when missing."
+        },
+        "offsetMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Delay from the start of the step."
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "visibilityAction": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/timing"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "type",
+        "target",
+        "mode"
+      ],
+      "properties": {
+        "type": {
+          "const": "visibility"
+        },
+        "target": {
+          "$ref": "#/$defs/nodeTarget"
+        },
+        "mode": {
+          "enum": [
+            "show",
+            "hide",
+            "fadeIn",
+            "fadeOut",
+            "slideInLeft",
+            "slideInRight",
+            "slideInUp",
+            "slideInDown",
+            "slideOutLeft",
+            "slideOutRight",
+            "slideOutUp",
+            "slideOutDown"
+          ]
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Default 200."
+        },
+        "slideDistance": {
+          "type": "number",
+          "description": "Slide modes: distance in px. Default 150."
+        },
+        "iterations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ease": {
+          "$ref": "#/$defs/easing"
+        }
+      }
+    },
+    "tweenProps": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number"
+        },
+        "h": {
+          "type": "number"
+        },
+        "scaleX": {
+          "type": "number"
+        },
+        "scaleY": {
+          "type": "number"
+        },
+        "rotationX": {
+          "type": "number"
+        },
+        "rotationY": {
+          "type": "number"
+        },
+        "rotationZ": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "type": "number"
+        },
+        "strokeTrimStart": {
+          "type": "number"
+        },
+        "strokeTrimEnd": {
+          "type": "number"
+        },
+        "typeProgress": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "drawProgress": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "blur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "transformTweenAction": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/timing"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "type",
+        "target",
+        "to"
+      ],
+      "properties": {
+        "type": {
+          "const": "transformTween"
+        },
+        "target": {
+          "$ref": "#/$defs/nodeTarget"
+        },
+        "from": {
+          "$ref": "#/$defs/tweenProps",
+          "description": "Start values. from.x and from.y are ignored; position always starts where the node is."
+        },
+        "to": {
+          "$ref": "#/$defs/tweenProps",
+          "description": "End values. Only the properties named here are controlled by this action; set the same end values in the step's snapshot."
+        },
+        "ease": {
+          "$ref": "#/$defs/easing"
+        },
+        "iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "isRelative": {
+          "type": "boolean",
+          "description": "Advanced, not recommended. Use an absolute to.x and to.y instead."
+        },
+        "dx": {
+          "type": "number",
+          "description": "Used only with isRelative."
+        },
+        "dy": {
+          "type": "number",
+          "description": "Used only with isRelative."
+        }
+      }
+    },
+    "positionTweenAction": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/timing"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "type",
+        "target",
+        "from",
+        "to",
+        "durationMs"
+      ],
+      "properties": {
+        "type": {
+          "const": "positionTween"
+        },
+        "target": {
+          "$ref": "#/$defs/nodeTarget"
+        },
+        "from": {
+          "$ref": "#/$defs/point"
+        },
+        "to": {
+          "$ref": "#/$defs/point"
+        },
+        "ease": {
+          "$ref": "#/$defs/easing"
+        },
+        "isRelative": {
+          "type": "boolean"
+        },
+        "dx": {
+          "type": "number"
+        },
+        "dy": {
+          "type": "number"
+        }
+      },
+      "description": "Moves a node from one point to another. transformTween with to.x and to.y is simpler and starts from wherever the node is."
+    },
+    "edgeTweenAction": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/timing"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "type",
+        "target",
+        "to"
+      ],
+      "properties": {
+        "type": {
+          "const": "edgeTween"
+        },
+        "target": {
+          "$ref": "#/$defs/edgeTarget"
+        },
+        "from": {
+          "$ref": "#/$defs/edgeTweenProps"
+        },
+        "to": {
+          "$ref": "#/$defs/edgeTweenProps"
+        },
+        "ease": {
+          "$ref": "#/$defs/easing"
+        }
+      }
+    },
+    "edgeTweenProps": {
+      "type": "object",
+      "properties": {
+        "trim": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "trimStart": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "width": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "pathFollowAction": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/timing"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "type",
+        "target",
+        "pathId",
+        "from",
+        "to"
+      ],
+      "properties": {
+        "type": {
+          "const": "pathFollow"
+        },
+        "target": {
+          "$ref": "#/$defs/nodeTarget"
+        },
+        "pathId": {
+          "type": "string",
+          "description": "Key of an entry in the scene's paths."
+        },
+        "from": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "to": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ease": {
+          "$ref": "#/$defs/easing"
+        },
+        "rotateToTangent": {
+          "type": "boolean"
+        }
+      }
+    },
+    "otherAction": {
+      "type": "object",
+      "description": "pathAnimate, algoSwap, containerTransform and voiceOver are accepted but are advanced; prefer the actions above.",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "pathAnimate",
+            "algoSwap",
+            "containerTransform",
+            "voiceOver"
+          ]
+        }
+      }
+    },
+    "narrationClip": {
+      "type": "object",
+      "required": [
+        "id",
+        "text",
+        "stepIndex",
+        "voice"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "stepIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Index of the step this line belongs to."
+        },
+        "voice": {
+          "type": "object",
+          "required": [
+            "provider",
+            "voiceId",
+            "voiceName"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "Use \"openai\"."
+            },
+            "voiceId": {
+              "type": "string",
+              "description": "For example alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, shimmer or verse."
+            },
+            "voiceName": {
+              "type": "string"
+            }
+          }
+        },
+        "speed": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Playback rate. Default 1."
+        },
+        "audioData": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "audioUrl": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "audioDurationMs": {
+          "description": "Set by openCanviz, leave out."
+        },
+        "words": {
+          "description": "Set by openCanviz, leave out."
+        }
+      }
+    },
+    "sceneTransition": {
+      "type": "object",
+      "required": [
+        "kind",
+        "durationMs"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "crossfade",
+            "slideDown",
+            "slideUp",
+            "slideLeft",
+            "slideRight",
+            "pushUp",
+            "pushDown",
+            "pushLeft",
+            "pushRight",
+            "travelOffUp",
+            "travelOffDown",
+            "travelOffLeft",
+            "travelOffRight",
+            "scribbleWipe",
+            "scribbleWipeLeft",
+            "scribbleWipeUp",
+            "scribbleWipeDown",
+            "colorWipe",
+            "colorWipeLeft",
+            "colorWipeUp",
+            "colorWipeDown",
+            "morph"
+          ]
+        },
+        "durationMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "color": {
+          "$ref": "#/$defs/color",
+          "description": "colorWipe kinds only."
+        }
+      }
+    },
+    "captionStyle": {
+      "type": "object",
+      "properties": {
+        "variant": {
+          "enum": [
+            "band",
+            "display"
+          ]
+        },
+        "fontScale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fontWeight": {
+          "type": "number"
+        },
+        "textColor": {
+          "$ref": "#/$defs/color"
+        },
+        "bandColor": {
+          "$ref": "#/$defs/color"
+        },
+        "bandOpacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "highlightColor": {
+          "$ref": "#/$defs/color"
+        },
+        "outlineColor": {
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "firstStep": {
+      "description": "Step 0: a full snapshot. Every node and edge in full.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/step"
+        }
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "opencanviz-skills",
+  "description": "Agent skills for openCanviz, the animated explainer video maker.",
+  "owner": {
+    "name": "openCanviz",
+    "url": "https://opencanviz.com"
+  },
+  "plugins": [
+    {
+      "name": "opencanviz",
+      "source": "./plugins/opencanviz",
+      "description": "Write valid openCanviz video and diagram JSON you can paste into Import on opencanviz.com."
+    }
+  ]
+}

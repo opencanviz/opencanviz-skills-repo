@@ -1,0 +1,282 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "3 habits of fast teams",
+  "artboard": {
+    "x": -540,
+    "y": -960,
+    "width": 1080,
+    "height": 1920,
+    "background": "#fffbeb"
+  },
+  "nodes": [
+    {
+      "id": "headline",
+      "kind": "text",
+      "x": -460,
+      "y": -760,
+      "w": 920,
+      "h": 240,
+      "text": "3 habits of\nfast teams",
+      "fontSize": 96,
+      "fontWeight": 800,
+      "lineHeight": 1.1,
+      "color": "#1c1917",
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "fill": "transparent",
+      "stroke": "none"
+    },
+    {
+      "id": "habit_0",
+      "kind": "rect",
+      "x": -440,
+      "y": -380,
+      "w": 880,
+      "h": 240,
+      "cornerRadius": 28,
+      "fill": "#fde68a",
+      "stroke": "#1c1917",
+      "strokeWidth": 4,
+      "label": "Ship small",
+      "labelColor": "#1c1917",
+      "labelFontSize": 52,
+      "labelFontWeight": "bold",
+      "opacity": 0
+    },
+    {
+      "id": "habit_1",
+      "kind": "rect",
+      "x": -440,
+      "y": -80,
+      "w": 880,
+      "h": 240,
+      "cornerRadius": 28,
+      "fill": "#bbf7d0",
+      "stroke": "#1c1917",
+      "strokeWidth": 4,
+      "label": "Review fast",
+      "labelColor": "#1c1917",
+      "labelFontSize": 52,
+      "labelFontWeight": "bold",
+      "opacity": 0
+    },
+    {
+      "id": "habit_2",
+      "kind": "rect",
+      "x": -440,
+      "y": 220,
+      "w": 880,
+      "h": 240,
+      "cornerRadius": 28,
+      "fill": "#bfdbfe",
+      "stroke": "#1c1917",
+      "strokeWidth": 4,
+      "label": "Automate tests",
+      "labelColor": "#1c1917",
+      "labelFontSize": 52,
+      "labelFontWeight": "bold",
+      "opacity": 0
+    },
+    {
+      "id": "progress",
+      "kind": "progress",
+      "x": -440,
+      "y": 620,
+      "w": 880,
+      "h": 28,
+      "value": 0,
+      "fill": "#e7e5e4",
+      "stroke": "none",
+      "progressColor": "#f59e0b"
+    }
+  ],
+  "edges": [],
+  "steps": [
+    {
+      "id": "hook",
+      "durationMs": 1800,
+      "caption": "Three habits of fast teams.",
+      "nodes": [
+        {
+          "id": "headline",
+          "kind": "text",
+          "x": -460,
+          "y": -760,
+          "w": 920,
+          "h": 240,
+          "text": "3 habits of\nfast teams",
+          "fontSize": 96,
+          "fontWeight": 800,
+          "lineHeight": 1.1,
+          "color": "#1c1917",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none"
+        },
+        {
+          "id": "habit_0",
+          "kind": "rect",
+          "x": -440,
+          "y": -380,
+          "w": 880,
+          "h": 240,
+          "cornerRadius": 28,
+          "fill": "#fde68a",
+          "stroke": "#1c1917",
+          "strokeWidth": 4,
+          "label": "Ship small",
+          "labelColor": "#1c1917",
+          "labelFontSize": 52,
+          "labelFontWeight": "bold",
+          "opacity": 0
+        },
+        {
+          "id": "habit_1",
+          "kind": "rect",
+          "x": -440,
+          "y": -80,
+          "w": 880,
+          "h": 240,
+          "cornerRadius": 28,
+          "fill": "#bbf7d0",
+          "stroke": "#1c1917",
+          "strokeWidth": 4,
+          "label": "Review fast",
+          "labelColor": "#1c1917",
+          "labelFontSize": 52,
+          "labelFontWeight": "bold",
+          "opacity": 0
+        },
+        {
+          "id": "habit_2",
+          "kind": "rect",
+          "x": -440,
+          "y": 220,
+          "w": 880,
+          "h": 240,
+          "cornerRadius": 28,
+          "fill": "#bfdbfe",
+          "stroke": "#1c1917",
+          "strokeWidth": 4,
+          "label": "Automate tests",
+          "labelColor": "#1c1917",
+          "labelFontSize": 52,
+          "labelFontWeight": "bold",
+          "opacity": 0
+        },
+        {
+          "id": "progress",
+          "kind": "progress",
+          "x": -440,
+          "y": 620,
+          "w": 880,
+          "h": 28,
+          "value": 0,
+          "fill": "#e7e5e4",
+          "stroke": "none",
+          "progressColor": "#f59e0b"
+        }
+      ],
+      "edges": [],
+      "actions": [
+        {
+          "type": "visibility",
+          "target": {
+            "kind": "node",
+            "id": "headline"
+          },
+          "mode": "slideInUp",
+          "durationMs": 600
+        }
+      ]
+    },
+    {
+      "id": "habit_0_in",
+      "delta": true,
+      "durationMs": 1800,
+      "caption": "One: ship small changes.",
+      "nodes": [
+        {
+          "id": "habit_0",
+          "opacity": 1
+        },
+        {
+          "id": "progress",
+          "value": 0.333
+        }
+      ],
+      "edges": [],
+      "actions": [
+        {
+          "type": "visibility",
+          "target": {
+            "kind": "node",
+            "id": "habit_0"
+          },
+          "mode": "slideInLeft",
+          "durationMs": 500,
+          "ease": "back"
+        }
+      ]
+    },
+    {
+      "id": "habit_1_in",
+      "delta": true,
+      "durationMs": 1800,
+      "caption": "Two: review them the same day.",
+      "nodes": [
+        {
+          "id": "habit_1",
+          "opacity": 1
+        },
+        {
+          "id": "progress",
+          "value": 0.667
+        }
+      ],
+      "edges": [],
+      "actions": [
+        {
+          "type": "visibility",
+          "target": {
+            "kind": "node",
+            "id": "habit_1"
+          },
+          "mode": "slideInLeft",
+          "durationMs": 500,
+          "ease": "back"
+        }
+      ]
+    },
+    {
+      "id": "habit_2_in",
+      "delta": true,
+      "durationMs": 1800,
+      "caption": "Three: let tests catch the mistakes.",
+      "nodes": [
+        {
+          "id": "habit_2",
+          "opacity": 1
+        },
+        {
+          "id": "progress",
+          "value": 1.0
+        }
+      ],
+      "edges": [],
+      "actions": [
+        {
+          "type": "visibility",
+          "target": {
+            "kind": "node",
+            "id": "habit_2"
+          },
+          "mode": "slideInLeft",
+          "durationMs": 500,
+          "ease": "back"
+        }
+      ]
+    }
+  ]
+}

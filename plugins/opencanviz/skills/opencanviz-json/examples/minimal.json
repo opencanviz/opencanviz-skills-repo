@@ -1,0 +1,166 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Idea to video",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "a",
+          "kind": "rect",
+          "x": -500,
+          "y": -90,
+          "w": 320,
+          "h": 180,
+          "cornerRadius": 16,
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 3,
+          "label": "Idea",
+          "labelColor": "#f8fafc",
+          "labelFontSize": 40
+        },
+        {
+          "id": "b",
+          "kind": "rect",
+          "x": 180,
+          "y": -90,
+          "w": 320,
+          "h": 180,
+          "cornerRadius": 16,
+          "fill": "#1e293b",
+          "stroke": "#a78bfa",
+          "strokeWidth": 3,
+          "label": "Video",
+          "labelColor": "#f8fafc",
+          "labelFontSize": 40,
+          "opacity": 0
+        }
+      ],
+      "edges": [
+        {
+          "id": "a_to_b",
+          "from": "a",
+          "to": "b",
+          "stroke": "#94a3b8",
+          "width": 4,
+          "arrow": "end",
+          "trim": 0
+        }
+      ],
+      "steps": [
+        {
+          "id": "intro",
+          "durationMs": 1500,
+          "caption": "Every video starts with an idea.",
+          "nodes": [
+            {
+              "id": "a",
+              "kind": "rect",
+              "x": -500,
+              "y": -90,
+              "w": 320,
+              "h": 180,
+              "cornerRadius": 16,
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 3,
+              "label": "Idea",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 40
+            },
+            {
+              "id": "b",
+              "kind": "rect",
+              "x": 180,
+              "y": -90,
+              "w": 320,
+              "h": 180,
+              "cornerRadius": 16,
+              "fill": "#1e293b",
+              "stroke": "#a78bfa",
+              "strokeWidth": 3,
+              "label": "Video",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 40,
+              "opacity": 0
+            }
+          ],
+          "edges": [
+            {
+              "id": "a_to_b",
+              "from": "a",
+              "to": "b",
+              "stroke": "#94a3b8",
+              "width": 4,
+              "arrow": "end",
+              "trim": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "a"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            }
+          ]
+        },
+        {
+          "id": "result",
+          "delta": true,
+          "durationMs": 2000,
+          "caption": "openCanviz turns it into a video.",
+          "nodes": [
+            {
+              "id": "b",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "a_to_b",
+              "trim": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "a_to_b"
+              },
+              "from": {
+                "trim": 0
+              },
+              "to": {
+                "trim": 1
+              },
+              "durationMs": 700,
+              "ease": "ease-out"
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "b"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 700
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

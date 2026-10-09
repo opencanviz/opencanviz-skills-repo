@@ -1,0 +1,389 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "How a web request travels",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "showCaptions": true,
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "title",
+          "kind": "text",
+          "x": -700,
+          "y": -420,
+          "w": 1400,
+          "h": 100,
+          "text": "How a web request travels",
+          "fontSize": 64,
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "opacity": 1
+        },
+        {
+          "id": "client",
+          "kind": "rect",
+          "x": -820,
+          "y": -100,
+          "w": 360,
+          "h": 200,
+          "cornerRadius": 20,
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 4,
+          "label": "Browser",
+          "labelColor": "#f8fafc",
+          "labelFontSize": 44,
+          "opacity": 1
+        },
+        {
+          "id": "server",
+          "kind": "rect",
+          "x": -180,
+          "y": -100,
+          "w": 360,
+          "h": 200,
+          "cornerRadius": 20,
+          "fill": "#1e293b",
+          "stroke": "#a78bfa",
+          "strokeWidth": 4,
+          "label": "API server",
+          "labelColor": "#f8fafc",
+          "labelFontSize": 44,
+          "opacity": 0
+        },
+        {
+          "id": "db",
+          "kind": "rect",
+          "x": 460,
+          "y": -100,
+          "w": 360,
+          "h": 200,
+          "cornerRadius": 20,
+          "fill": "#1e293b",
+          "stroke": "#34d399",
+          "strokeWidth": 4,
+          "label": "Database",
+          "labelColor": "#f8fafc",
+          "labelFontSize": 44,
+          "opacity": 0
+        }
+      ],
+      "edges": [
+        {
+          "id": "client_to_server",
+          "from": "client",
+          "to": "server",
+          "fromPort": "E",
+          "toPort": "W",
+          "stroke": "#cbd5e1",
+          "width": 5,
+          "arrow": "end",
+          "lineType": "straight",
+          "trim": 0
+        },
+        {
+          "id": "server_to_db",
+          "from": "server",
+          "to": "db",
+          "fromPort": "E",
+          "toPort": "W",
+          "stroke": "#cbd5e1",
+          "width": 5,
+          "arrow": "end",
+          "lineType": "straight",
+          "trim": 0
+        }
+      ],
+      "steps": [
+        {
+          "id": "browser",
+          "durationMs": 2500,
+          "caption": "A request starts in the browser.",
+          "nodes": [
+            {
+              "id": "title",
+              "kind": "text",
+              "x": -700,
+              "y": -420,
+              "w": 1400,
+              "h": 100,
+              "text": "How a web request travels",
+              "fontSize": 64,
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "opacity": 1
+            },
+            {
+              "id": "client",
+              "kind": "rect",
+              "x": -820,
+              "y": -100,
+              "w": 360,
+              "h": 200,
+              "cornerRadius": 20,
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 4,
+              "label": "Browser",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 44,
+              "opacity": 1
+            },
+            {
+              "id": "server",
+              "kind": "rect",
+              "x": -180,
+              "y": -100,
+              "w": 360,
+              "h": 200,
+              "cornerRadius": 20,
+              "fill": "#1e293b",
+              "stroke": "#a78bfa",
+              "strokeWidth": 4,
+              "label": "API server",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 44,
+              "opacity": 0
+            },
+            {
+              "id": "db",
+              "kind": "rect",
+              "x": 460,
+              "y": -100,
+              "w": 360,
+              "h": 200,
+              "cornerRadius": 20,
+              "fill": "#1e293b",
+              "stroke": "#34d399",
+              "strokeWidth": 4,
+              "label": "Database",
+              "labelColor": "#f8fafc",
+              "labelFontSize": 44,
+              "opacity": 0
+            }
+          ],
+          "edges": [
+            {
+              "id": "client_to_server",
+              "from": "client",
+              "to": "server",
+              "fromPort": "E",
+              "toPort": "W",
+              "stroke": "#cbd5e1",
+              "width": 5,
+              "arrow": "end",
+              "lineType": "straight",
+              "trim": 0
+            },
+            {
+              "id": "server_to_db",
+              "from": "server",
+              "to": "db",
+              "fromPort": "E",
+              "toPort": "W",
+              "stroke": "#cbd5e1",
+              "width": 5,
+              "arrow": "end",
+              "lineType": "straight",
+              "trim": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "title"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "client"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 400
+            }
+          ]
+        },
+        {
+          "id": "to_server",
+          "delta": true,
+          "durationMs": 2500,
+          "caption": "It travels to the API server.",
+          "nodes": [
+            {
+              "id": "server",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "client_to_server",
+              "trim": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "client_to_server"
+              },
+              "from": {
+                "trim": 0
+              },
+              "to": {
+                "trim": 1
+              },
+              "durationMs": 600,
+              "ease": "ease-out"
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "server"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 600
+            }
+          ]
+        },
+        {
+          "id": "to_db",
+          "delta": true,
+          "durationMs": 2500,
+          "caption": "The server asks the database for the data.",
+          "nodes": [
+            {
+              "id": "db",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "server_to_db",
+              "trim": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "server_to_db"
+              },
+              "from": {
+                "trim": 0
+              },
+              "to": {
+                "trim": 1
+              },
+              "durationMs": 600,
+              "ease": "ease-out"
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "db"
+              },
+              "mode": "fadeIn",
+              "durationMs": 400,
+              "offsetMs": 600
+            }
+          ]
+        },
+        {
+          "id": "answer",
+          "delta": true,
+          "durationMs": 3000,
+          "caption": "The database answers, and the page loads.",
+          "easing": "ease-out",
+          "nodes": [
+            {
+              "id": "db",
+              "fill": "#065f46"
+            },
+            {
+              "id": "client",
+              "fill": "#0c4a6e"
+            }
+          ],
+          "edges": [
+            {
+              "id": "client_to_server",
+              "animationStyle": "ball"
+            },
+            {
+              "id": "server_to_db",
+              "animationStyle": "ball"
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "line_0",
+          "text": "A request starts in the browser.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "line_1",
+          "text": "It travels to the API server.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "line_2",
+          "text": "The server asks the database for the data.",
+          "stepIndex": 2,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "line_3",
+          "text": "The database answers, and the page loads.",
+          "stepIndex": 3,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ]
+}
