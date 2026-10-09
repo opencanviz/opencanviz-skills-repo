@@ -92,6 +92,7 @@ tl = s.timeline([(1961, "Program starts"), (1969, "Moon landing")], at=body)  # 
 before, after = s.panels(["Before", "After"], at=body)       # lay out inside before.content
 pts = s.bullets(["Use 12+ characters", "Never reuse"], at=body)  # reveal one per step
 n = s.counter(2048, at=r, suffix=" MB"); bar = s.progress(0, at=r2)  # .set(bar, value=1) fills it over the step
+# .set(box, fill="#0c4a6e") recolours in 350 ms; .move(box, x=.., y=..) moves in 600 ms
 pie = s.pie([("Rent", 40), ("Food", 25)], at=body, donut=0.55)  # .sweep(pie) reveals it; do not reveal it yourself
 road = s.path([(-600, 0), (0, -200), (600, 0)])              # .follow(parcel, road); .packet(edge) sends a dot
 ```
@@ -99,15 +100,15 @@ road = s.path([(-600, 0), (0, -200), (600, 0)])              # .follow(parcel, r
 What the recipes take care of, and what to keep in mind if you write these kinds by hand:
 
 - **Arrays:** always build them with `scene.array`. It turns openCanviz's index row off (`cellShowIndices: false`; that row resets the canvas alpha, so the array could not fade) and draws the indices as text nodes. `swap` writes the swapped `cellValues` plus an `algoSwap` action of 600 ms from the step start, so the values hop past each other while the narration says so. The hop height is fixed by openCanviz (no field for it). Use distinct values in an array you swap.
-- **Pointers** sit above the cells (`side="top"`); a bottom pointer would cover the index row. A grid pointer covers the cell above its target, so mark grid cells with `color` instead.
-- **Colors** on cells, grid cells and tree/list/graph nodes change in 350 ms from the step start (a `transformTween` whose `to` holds the new `cellColors`, `gridColors` or `nodeColors`). Graph edge colours cannot be timed and take the whole step. A cleared color (`None`) is written as the node's fill hex, because openCanviz keeps a cleared (`null`) cell in its old color for the whole step.
+- **Pointers** sit above the cells (`side="top"`); a bottom pointer would cover the index row. `point` writes the new `pointerTargetIndex` (or row/col) plus a 350 ms `transformTween` on it; without the tween the pointer and its highlight frame crawl across the whole step. A grid pointer covers the cell above its target, so mark grid cells with `color` instead.
+- **Colors** on cells, grid cells and tree/list/graph nodes change in 350 ms from the step start (a `transformTween` whose `to` holds the new `cellColors`, `gridColors` or `nodeColors`). Graph edge colours cannot be timed and take the whole step. Every cell and node gets an explicit hex, never `null`: an uncoloured one is written as the structure's `fill` (default `#1e293b`), because openCanviz keeps a cell tweened to `null` in its old color for the whole step. The validator warns on a `null` in a colour tween.
 - **Code highlight:** the code node carries `"_animatedProps": {"highlightedLines": false}`, the one internal field you should write. Without it openCanviz shows the old and the new lines lit for the whole step. Keep it when you edit a code node.
 - **Paths:** `pathFollow` needs `length` (total px) and `cum` (length so far at each point, from 0) on the path, or the exported video leaves the node where it is. `scene.path` fills them.
 - **Fonts:** each structure kind has its own font field (`cellFontSize`, `nodeFontSize`, `gridCellFontSize`, `labelFontSize`, `fontSize`); without it the text renders at 11 to 14 px. The recipes size every one for the frame.
 - Charts, trees, timelines and code panels size and center themselves in the rect you pass; give them the whole body rect.
 - **Readable floor:** at 1080p landscape, text of 4+ words at least 34 px, code 30, chart ticks and short labels 28, variables 34; in portrait 1.4x that (48, 42, 39, 48). The recipes never go lower: `code()`, `bullets()` and `timeline()` raise when the text cannot fit at the floor, so shorten it (timeline events of 2 to 6 words) or give it a bigger rect. The checker warns on hand-written text under the floor.
 - **Stable layout:** timelines, code panels, bullets, panels and variables are laid out at their final size from step 0, and the camera frames that final layout, so nothing shifts as items appear. `scene.reserve(node, ...)` does the same for your own nodes. `rect.split(0.68)` returns a left and a right rect side by side.
-- **Line charts** draw the line as five overlaid series (`s`, `s_w1` to `s_w4`), because openCanviz draws every series 2 px wide.
+- **Line charts:** openCanviz grows a chart series over the whole step and cannot time it, so `extend` leaves the series at the first point and draws each new stretch as a straight edge through the points (`<id>_run<upto>`, `waypoints` = the points) with a linear 0.6 to 1.4 s `edgeTween` from the step start; the tip dot rides it with a `pathFollow` of the same length, each note fades in as the line reaches its point, and the step lasts at least 1.5 s past the last note so it stays on screen. The axes are the edges `<id>_line` and `<id>_line_2`.
 
 ## Workflow
 
@@ -160,7 +161,7 @@ What the recipes take care of, and what to keep in mind if you write these kinds
 8. Every node needs `id`, `kind`, `x`, `y`, `w`, `h`. Nothing smaller than 10 x 10 px, and nothing under 2 px in either direction: it is not drawn. Draw lines as edges, not thin rects.
 9. Revealing a node: set `"opacity": 1` for it in the step's `nodes` AND add a `fadeIn` or `slideIn*` action. If the snapshot keeps opacity 0, the node fades back out in the next step.
 10. Hiding a node: set `"opacity": 0` and use a `fadeOut` or `slideOut*` action, or list it in `removeNodeIds`. Do not hide with an opacity `transformTween`.
-11. Moving a node: set the new `x`/`y` in the delta step. It tweens across the whole step on its own. For tighter timing add `{"type":"transformTween","target":{"kind":"node","id":".."},"to":{"x":..,"y":..},"durationMs":..,"offsetMs":..}` with the same end values. `from.x` and `from.y` are ignored. Do not use `isRelative`, `dx` or `dy`.
+11. Moving or recolouring a node: set the new `x`/`y` (or `fill`, `stroke`, `color`) in the delta step **and** a short `transformTween` with the same end values; on its own the change plays across the whole step and lags the narration (the validator warns). The helper's `set()` times colours at 350 ms and `move()` / `set(x=..)` positions at 600 ms from the step start (`duration=` / `offset=` to change it, `move(..., duration="step")` for a deliberate slow glide). The tween: `{"type":"transformTween","target":{"kind":"node","id":".."},"to":{"x":..,"y":..},"durationMs":..,"offsetMs":..}` with the same end values. `from.x` and `from.y` are ignored. Do not use `isRelative`, `dx` or `dy`.
 12. An action controls only what it covers: `transformTween` and `edgeTween` cover the keys in `to`; `visibility` covers `opacity` (slides also cover `x`, `y`). Every other change in the step tweens automatically over the full step. Make the snapshot's end values match the action's `to`. A `transformTween` on `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues` or `highlightedLines`, and an `algoSwap`, are timed only when the step has `"easing"` (e.g. `"ease"`); without it the swap snaps and the colour takes the whole step.
 13. Drawing an edge in: start it at `"trim": 0`, set `"trim": 1` in the reveal step's `edges`, and add `{"type":"edgeTween","target":{"kind":"edge","id":".."},"from":{"trim":0},"to":{"trim":1},"durationMs":700}`.
    Draw an edge in only in the same step as its later end node, or after. An arrow that draws while one of its ends is still hidden points at empty space.
@@ -195,7 +196,7 @@ These keep the video readable once captions and arrows are on screen. The helper
 
 - A step lasts `durationMs`; 0 or missing counts as 900. A scene lasts the sum of its steps; scenes play back to back. Once narration is recorded, each step stretches to fit its audio.
 - Inside a step, an action starts at `offsetMs` (default 0) and runs for `durationMs` (visibility default 200). Keep `offsetMs + durationMs` within the step.
-- Numbers and colors that differ from the previous step (`x`, `y`, `w`, `h`, `opacity`, `fontSize`, `value`, `fill`, `stroke`, `color`, `labelColor`) tween over the whole step with the step's `easing` (default `ease`).
+- Numbers and colors that differ from the previous step (`x`, `y`, `w`, `h`, `opacity`, `fontSize`, `value`, `fill`, `stroke`, `color`, `labelColor`) tween over the whole step with the step's `easing` (default `ease`) unless an action covers them. Give every visible colour or position change its own short `transformTween`.
 - `transitions` inside a step, keyed by node id, can be `"instant"` to snap a change or `"fade"` to cross-fade it.
 - Camera: `"camera": {"x": .., "y": .., "zoom": 1.4}` on a step, with `cameraDurationMs`. `x`, `y` is the world point at the center of the view; zoom 1 is 100 percent.
 
@@ -204,7 +205,7 @@ These keep the video readable once captions and arrows are on screen. The helper
 | type | key fields | notes |
 | --- | --- | --- |
 | `visibility` | `mode`, `durationMs`, `offsetMs`, `ease`, `slideDistance` (150) | modes: `fadeIn`, `fadeOut`, `show`, `hide`, `slideInLeft/Right/Up/Down`, `slideOutLeft/Right/Up/Down` |
-| `transformTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `x`, `y`, `w`, `h`, `scaleX`, `scaleY`, `rotationZ`, `opacity`, `fill`, `stroke`, `strokeWidth`, `typeProgress`, `value`, `blur`; algo fields `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues`, `highlightedLines` (step needs `easing`) |
+| `transformTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `x`, `y`, `w`, `h`, `scaleX`, `scaleY`, `rotationZ`, `opacity`, `fill`, `stroke`, `strokeWidth`, `typeProgress`, `value`, `blur`, `color`, `labelColor`, `pointerColor`, `rangeColor`, `pointerTargetIndex`/`Row`/`Col`, `rangeStart`/`End`; algo fields `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues`, `highlightedLines` (step needs `easing`) |
 | `edgeTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `trim`, `trimStart`, `stroke`, `width`, `opacity` |
 | `algoSwap` | `indices` [i, j], `durationMs`, `offsetMs`, `ease` | on an `algo-array`; the step's `cellValues` hold the swapped values; step needs `easing` |
 | `positionTween` | `from`, `to` (points), `durationMs` | prefer the snapshot plus `transformTween` |

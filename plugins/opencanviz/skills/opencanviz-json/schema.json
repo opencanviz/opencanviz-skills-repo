@@ -1306,6 +1306,54 @@
             "type": "integer"
           },
           "description": "Code node lit lines, 1-based. Times this field's change by the tween's offsetMs/durationMs/ease; the step needs \"easing\". Must equal the step's snapshot value."
+        },
+        "color": {
+          "type": "string",
+          "description": "A colour; a transformTween times the change (the helper uses 350 ms)."
+        },
+        "labelColor": {
+          "type": "string",
+          "description": "A colour; a transformTween times the change (the helper uses 350 ms)."
+        },
+        "cylinderTopFill": {
+          "type": "string",
+          "description": "A colour; a transformTween times the change (the helper uses 350 ms)."
+        },
+        "iconBg": {
+          "type": "string",
+          "description": "A colour; a transformTween times the change (the helper uses 350 ms)."
+        },
+        "pointerColor": {
+          "type": "string",
+          "description": "A colour; a transformTween times the change (the helper uses 350 ms)."
+        },
+        "rangeColor": {
+          "type": "string",
+          "description": "A colour; a transformTween times the change (the helper uses 350 ms)."
+        },
+        "textStroke": {
+          "type": "string",
+          "description": "A colour; a transformTween times the change (the helper uses 350 ms)."
+        },
+        "pointerTargetIndex": {
+          "type": "number",
+          "description": "Pointer target cell; a transformTween glides the pointer and its highlight frame there (the helper uses 350 ms)."
+        },
+        "pointerTargetRow": {
+          "type": "number",
+          "description": "Pointer target cell; a transformTween glides the pointer and its highlight frame there (the helper uses 350 ms)."
+        },
+        "pointerTargetCol": {
+          "type": "number",
+          "description": "Pointer target cell; a transformTween glides the pointer and its highlight frame there (the helper uses 350 ms)."
+        },
+        "rangeStart": {
+          "type": "number",
+          "description": "Array bracket ends (cell indices)."
+        },
+        "rangeEnd": {
+          "type": "number",
+          "description": "Array bracket ends (cell indices)."
         }
       }
     },

@@ -356,6 +356,32 @@
               "id": "s1_api_server_to_database",
               "animationStyle": "ball"
             }
+          ],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_database"
+              },
+              "to": {
+                "fill": "#065f46"
+              },
+              "ease": "ease-out",
+              "durationMs": 350
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_browser"
+              },
+              "to": {
+                "fill": "#0c4a6e"
+              },
+              "ease": "ease-out",
+              "durationMs": 350
+            }
           ]
         }
       ],

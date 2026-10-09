@@ -756,7 +756,21 @@
               "fill": "#065f46"
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_protection"
+              },
+              "to": {
+                "fill": "#065f46"
+              },
+              "ease": "ease-out",
+              "durationMs": 350
+            }
+          ]
         }
       ],
       "narration": [

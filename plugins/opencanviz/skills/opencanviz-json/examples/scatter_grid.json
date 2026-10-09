@@ -860,19 +860,19 @@
           ],
           "gridColors": [
             [
-              null,
-              null,
-              null
+              "#1e293b",
+              "#1e293b",
+              "#1e293b"
             ],
             [
-              null,
-              null,
-              null
+              "#1e293b",
+              "#1e293b",
+              "#1e293b"
             ],
             [
-              null,
-              null,
-              null
+              "#1e293b",
+              "#1e293b",
+              "#1e293b"
             ]
           ],
           "gridCellFontSize": 44,
@@ -933,19 +933,19 @@
               ],
               "gridColors": [
                 [
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ],
                 [
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ],
                 [
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ]
               ],
               "gridCellFontSize": 44,
@@ -1006,19 +1006,19 @@
               ],
               "gridColors": [
                 [
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ],
                 [
-                  null,
+                  "#1e293b",
                   "#f59e0b",
-                  null
+                  "#1e293b"
                 ],
                 [
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ]
               ]
             }
@@ -1034,19 +1034,19 @@
               "to": {
                 "gridColors": [
                   [
-                    null,
-                    null,
-                    null
+                    "#1e293b",
+                    "#1e293b",
+                    "#1e293b"
                   ],
                   [
-                    null,
+                    "#1e293b",
                     "#f59e0b",
-                    null
+                    "#1e293b"
                   ],
                   [
-                    null,
-                    null,
-                    null
+                    "#1e293b",
+                    "#1e293b",
+                    "#1e293b"
                   ]
                 ]
               },
@@ -1083,19 +1083,19 @@
               ],
               "gridColors": [
                 [
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ],
                 [
-                  null,
+                  "#1e293b",
                   "#1e293b",
                   "#f59e0b"
                 ],
                 [
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ]
               ]
             }
@@ -1111,19 +1111,19 @@
               "to": {
                 "gridColors": [
                   [
-                    null,
-                    null,
-                    null
+                    "#1e293b",
+                    "#1e293b",
+                    "#1e293b"
                   ],
                   [
-                    null,
+                    "#1e293b",
                     "#1e293b",
                     "#f59e0b"
                   ],
                   [
-                    null,
-                    null,
-                    null
+                    "#1e293b",
+                    "#1e293b",
+                    "#1e293b"
                   ]
                 ]
               },
@@ -1160,18 +1160,18 @@
               ],
               "gridColors": [
                 [
-                  null,
-                  null,
-                  null
-                ],
-                [
-                  null,
-                  null,
+                  "#1e293b",
+                  "#1e293b",
                   "#1e293b"
                 ],
                 [
-                  null,
-                  null,
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
+                ],
+                [
+                  "#1e293b",
+                  "#1e293b",
                   "#22c55e"
                 ]
               ]
@@ -1188,18 +1188,18 @@
               "to": {
                 "gridColors": [
                   [
-                    null,
-                    null,
-                    null
-                  ],
-                  [
-                    null,
-                    null,
+                    "#1e293b",
+                    "#1e293b",
                     "#1e293b"
                   ],
                   [
-                    null,
-                    null,
+                    "#1e293b",
+                    "#1e293b",
+                    "#1e293b"
+                  ],
+                  [
+                    "#1e293b",
+                    "#1e293b",
                     "#22c55e"
                   ]
                 ]

@@ -215,6 +215,20 @@
           "edges": [],
           "actions": [
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_code"
+              },
+              "to": {
+                "highlightedLines": [
+                  1
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
@@ -247,6 +261,20 @@
           "edges": [],
           "actions": [
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_code"
+              },
+              "to": {
+                "highlightedLines": [
+                  2
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
@@ -275,7 +303,23 @@
               "varValue": "2"
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_code"
+              },
+              "to": {
+                "highlightedLines": [
+                  3
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         },
         {
           "id": "s1_step4",
@@ -300,7 +344,24 @@
               "varValue": "6"
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_code"
+              },
+              "to": {
+                "highlightedLines": [
+                  2,
+                  3
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         },
         {
           "id": "s1_step5",
@@ -325,7 +386,24 @@
               "varValue": "24"
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_code"
+              },
+              "to": {
+                "highlightedLines": [
+                  2,
+                  3
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         },
         {
           "id": "s1_step6",
@@ -341,7 +419,23 @@
               ]
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_code"
+              },
+              "to": {
+                "highlightedLines": [
+                  4
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         }
       ],
       "narration": [

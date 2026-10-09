@@ -98,6 +98,15 @@
           "nodeFontSize": 57,
           "fill": "#1e293b",
           "labelColor": "#f8fafc",
+          "nodeColors": {
+            "n_10": "#1e293b",
+            "n_12": "#1e293b",
+            "n_14": "#1e293b",
+            "n_2": "#1e293b",
+            "n_4": "#1e293b",
+            "n_6": "#1e293b",
+            "n_8": "#1e293b"
+          },
           "opacity": 1
         },
         {
@@ -196,6 +205,15 @@
               "nodeFontSize": 57,
               "fill": "#1e293b",
               "labelColor": "#f8fafc",
+              "nodeColors": {
+                "n_10": "#1e293b",
+                "n_12": "#1e293b",
+                "n_14": "#1e293b",
+                "n_2": "#1e293b",
+                "n_4": "#1e293b",
+                "n_6": "#1e293b",
+                "n_8": "#1e293b"
+              },
               "opacity": 1
             },
             {
@@ -257,6 +275,12 @@
             {
               "id": "s1_tree",
               "nodeColors": {
+                "n_10": "#1e293b",
+                "n_12": "#1e293b",
+                "n_14": "#1e293b",
+                "n_2": "#1e293b",
+                "n_4": "#1e293b",
+                "n_6": "#1e293b",
                 "n_8": "#94a3b8"
               }
             },
@@ -275,6 +299,12 @@
               },
               "to": {
                 "nodeColors": {
+                  "n_10": "#1e293b",
+                  "n_12": "#1e293b",
+                  "n_14": "#1e293b",
+                  "n_2": "#1e293b",
+                  "n_4": "#1e293b",
+                  "n_6": "#1e293b",
                   "n_8": "#94a3b8"
                 }
               },
@@ -293,9 +323,13 @@
             {
               "id": "s1_tree",
               "nodeColors": {
-                "n_8": "#94a3b8",
+                "n_10": "#1e293b",
+                "n_12": "#1e293b",
+                "n_14": "#1e293b",
+                "n_2": "#1e293b",
                 "n_4": "#94a3b8",
-                "n_6": "#22c55e"
+                "n_6": "#22c55e",
+                "n_8": "#94a3b8"
               }
             },
             {
@@ -313,9 +347,13 @@
               },
               "to": {
                 "nodeColors": {
-                  "n_8": "#94a3b8",
+                  "n_10": "#1e293b",
+                  "n_12": "#1e293b",
+                  "n_14": "#1e293b",
+                  "n_2": "#1e293b",
                   "n_4": "#94a3b8",
-                  "n_6": "#22c55e"
+                  "n_6": "#22c55e",
+                  "n_8": "#94a3b8"
                 }
               },
               "durationMs": 350,
@@ -404,6 +442,11 @@
           "nodeFontSize": 45,
           "fill": "#1e293b",
           "labelColor": "#f8fafc",
+          "nodeColors": {
+            "l0": "#1e293b",
+            "l1": "#1e293b",
+            "l2": "#1e293b"
+          },
           "opacity": 1
         }
       ],
@@ -460,6 +503,11 @@
               "nodeFontSize": 45,
               "fill": "#1e293b",
               "labelColor": "#f8fafc",
+              "nodeColors": {
+                "l0": "#1e293b",
+                "l1": "#1e293b",
+                "l2": "#1e293b"
+              },
               "opacity": 1
             }
           ],
@@ -629,6 +677,12 @@
           "nodeFontSize": 35,
           "labelFontSize": 24,
           "labelColor": "#f8fafc",
+          "nodeColors": {
+            "g_a": "#1e293b",
+            "g_b": "#1e293b",
+            "g_c": "#1e293b",
+            "g_d": "#1e293b"
+          },
           "opacity": 1
         }
       ],
@@ -717,6 +771,12 @@
               "nodeFontSize": 35,
               "labelFontSize": 24,
               "labelColor": "#f8fafc",
+              "nodeColors": {
+                "g_a": "#1e293b",
+                "g_b": "#1e293b",
+                "g_c": "#1e293b",
+                "g_d": "#1e293b"
+              },
               "opacity": 1
             }
           ],
@@ -755,6 +815,7 @@
               "nodeColors": {
                 "g_a": "#22c55e",
                 "g_b": "#22c55e",
+                "g_c": "#1e293b",
                 "g_d": "#22c55e"
               },
               "edgeColors": {
@@ -775,6 +836,7 @@
                 "nodeColors": {
                   "g_a": "#22c55e",
                   "g_b": "#22c55e",
+                  "g_c": "#1e293b",
                   "g_d": "#22c55e"
                 }
               },

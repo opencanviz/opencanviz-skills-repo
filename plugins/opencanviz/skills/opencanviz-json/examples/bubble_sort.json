@@ -49,11 +49,11 @@
             "9"
           ],
           "cellColors": [
-            null,
-            null,
-            null,
-            null,
-            null
+            "#1e293b",
+            "#1e293b",
+            "#1e293b",
+            "#1e293b",
+            "#1e293b"
           ],
           "cellFontSize": 64,
           "cellShowIndices": false,
@@ -239,11 +239,11 @@
                 "9"
               ],
               "cellColors": [
-                null,
-                null,
-                null,
-                null,
-                null
+                "#1e293b",
+                "#1e293b",
+                "#1e293b",
+                "#1e293b",
+                "#1e293b"
               ],
               "cellFontSize": 64,
               "cellShowIndices": false,
@@ -497,9 +497,9 @@
               "cellColors": [
                 "#f59e0b",
                 "#f59e0b",
-                null,
-                null,
-                null
+                "#1e293b",
+                "#1e293b",
+                "#1e293b"
               ],
               "cellValues": [
                 "2",
@@ -522,9 +522,9 @@
                 "cellColors": [
                   "#f59e0b",
                   "#f59e0b",
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ]
               },
               "durationMs": 350,
@@ -557,9 +557,9 @@
               "cellColors": [
                 "#1e293b",
                 "#1e293b",
-                null,
-                null,
-                null
+                "#1e293b",
+                "#1e293b",
+                "#1e293b"
               ]
             },
             {
@@ -583,10 +583,34 @@
                 "cellColors": [
                   "#1e293b",
                   "#1e293b",
-                  null,
-                  null,
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j"
+              },
+              "to": {
+                "pointerTargetIndex": 1
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j_1"
+              },
+              "to": {
+                "pointerTargetIndex": 2
               },
               "durationMs": 350,
               "ease": "ease-out"
@@ -603,11 +627,11 @@
             {
               "id": "s1_array",
               "cellColors": [
-                null,
-                null,
+                "#1e293b",
+                "#1e293b",
                 "#f59e0b",
                 "#f59e0b",
-                null
+                "#1e293b"
               ],
               "cellValues": [
                 "2",
@@ -636,12 +660,36 @@
               },
               "to": {
                 "cellColors": [
-                  null,
-                  null,
+                  "#1e293b",
+                  "#1e293b",
                   "#f59e0b",
                   "#f59e0b",
-                  null
+                  "#1e293b"
                 ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j"
+              },
+              "to": {
+                "pointerTargetIndex": 2
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j_1"
+              },
+              "to": {
+                "pointerTargetIndex": 3
               },
               "durationMs": 350,
               "ease": "ease-out"
@@ -671,11 +719,11 @@
             {
               "id": "s1_array",
               "cellColors": [
-                null,
-                null,
                 "#1e293b",
                 "#1e293b",
-                null
+                "#1e293b",
+                "#1e293b",
+                "#1e293b"
               ]
             },
             {
@@ -697,12 +745,36 @@
               },
               "to": {
                 "cellColors": [
-                  null,
-                  null,
                   "#1e293b",
                   "#1e293b",
-                  null
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b"
                 ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j"
+              },
+              "to": {
+                "pointerTargetIndex": 3
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_ptr_j_1"
+              },
+              "to": {
+                "pointerTargetIndex": 4
               },
               "durationMs": 350,
               "ease": "ease-out"
@@ -719,10 +791,10 @@
             {
               "id": "s1_array",
               "cellColors": [
-                null,
-                null,
-                null,
-                null,
+                "#1e293b",
+                "#1e293b",
+                "#1e293b",
+                "#1e293b",
                 "#22c55e"
               ],
               "rangeStart": 4,
@@ -745,12 +817,26 @@
               },
               "to": {
                 "cellColors": [
-                  null,
-                  null,
-                  null,
-                  null,
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b",
+                  "#1e293b",
                   "#22c55e"
                 ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_array"
+              },
+              "to": {
+                "rangeStart": 4,
+                "rangeEnd": 4,
+                "rangeColor": "#22c55e"
               },
               "durationMs": 350,
               "ease": "ease-out"

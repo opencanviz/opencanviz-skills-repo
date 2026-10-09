@@ -675,6 +675,19 @@
               "durationMs": 40,
               "offsetMs": 1900,
               "ease": "step"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s2_air_molecules"
+              },
+              "to": {
+                "fill": "#0c4a6e"
+              },
+              "ease": "ease-out",
+              "durationMs": 350,
+              "offsetMs": 700
             }
           ],
           "camera": {
@@ -1191,6 +1204,19 @@
               "durationMs": 40,
               "offsetMs": 2400,
               "ease": "step"
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s3_red_sky"
+              },
+              "to": {
+                "fill": "#7c2d12"
+              },
+              "ease": "ease-out",
+              "durationMs": 350,
+              "offsetMs": 700
             }
           ],
           "camera": {

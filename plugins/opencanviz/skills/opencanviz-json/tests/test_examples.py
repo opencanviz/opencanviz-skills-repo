@@ -661,3 +661,74 @@ class Titles(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NoWholeStepCrawls(unittest.TestCase):
+    """v5 renders: a null colour, an untimed pointer, an untimed fill and the line chart all played over the
+    whole step."""
+
+    def _array(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        arr = s.array([5, 1, 4], at=p.area().centered(900, 300))
+        ptr = s.pointer(arr, 0, label="j")
+        s.step("Show it.").reveal(arr)
+        return p, s, arr, ptr
+
+    def test_colour_tweens_never_hold_null(self):
+        p, s, arr, ptr = self._array()
+        s.step("Mark two.").color(arr, {0: "#f59e0b", 1: "#f59e0b"})
+        s.step("Clear one, mark the next.").color(arr, {0: None, 1: None}).color(arr, {1: "#f59e0b", 2: "#f59e0b"})
+        sc = p.to_dict()["diagrams"][0]
+        tw = [a for st in sc["steps"] for a in st.get("actions", []) if "cellColors" in a.get("to", {})]
+        self.assertEqual(len(tw), 2)
+        for a in tw:
+            self.assertNotIn(None, a["to"]["cellColors"])
+        self.assertEqual(tw[1]["to"]["cellColors"][0], arr.fields["fill"])
+
+    def test_pointer_moves_with_a_short_tween(self):
+        p, s, arr, ptr = self._array()
+        s.step("Next cell.").point(ptr, 1)
+        a = [x for x in acts(p.to_dict()["diagrams"][0], 1) if "pointerTargetIndex" in x.get("to", {})]
+        self.assertEqual(len(a), 1)
+        self.assertEqual(a[0]["durationMs"], oc.POINTER_MS)
+
+    def test_fill_change_is_a_short_tween(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        a, b = p.area().row(2, w=420, h=300)
+        x, y = s.box("A", at=a), s.box("B", at=b)
+        s.step("Both.").reveal([x, y])
+        s.step("Done.").set(x, fill="#0c4a6e").set(y, fill="#065f46")
+        doc = p.to_dict()
+        tw = [t for t in acts(doc["diagrams"][0], 1) if t["type"] == "transformTween"]
+        self.assertEqual({t["target"]["id"] for t in tw}, {x.id, y.id})
+        self.assertTrue(all(t["durationMs"] == oc.FILL_MS for t in tw))
+        errors, warnings = oc.validate(doc)
+        self.assertEqual(errors, [])
+        self.assertFalse([w for w in warnings if "whole" in w], warnings)
+
+    def test_untimed_fill_change_warns(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        x = s.box("A", at=p.area().centered(420, 300))
+        s.step("One.").reveal(x)
+        s.step("Two.").set(x, fill="#0c4a6e")
+        doc = p.to_dict()
+        doc["diagrams"][0]["steps"][1]["actions"] = []
+        _, warnings = oc.validate(doc)
+        self.assertTrue(any("whole" in w and "fill" in w for w in warnings), warnings)
+
+    def test_line_grows_fast_and_holds_the_last_note(self):
+        sc = load_example("line_chart")["diagrams"][0]
+        ids = {e["id"] for e in sc["edges"]}
+        self.assertTrue({"s1_line_line", "s1_line_line_2"} <= ids)   # the axes
+        last = sc["steps"][-1]
+        run = [a for a in last["actions"] if a["type"] == "edgeTween" and "_run" in a["target"]["id"]]
+        self.assertEqual(len(run), 1)
+        self.assertLessEqual(run[0]["durationMs"], oc.GROW_MS)
+        tip = [a for a in last["actions"] if a["type"] == "pathFollow"]
+        self.assertEqual(tip[0]["durationMs"], run[0]["durationMs"])
+        note = [a for a in last["actions"] if a["type"] == "visibility" and "_note" in a["target"]["id"]]
+        end = note[-1].get("offsetMs", 0) + note[-1]["durationMs"]
+        self.assertGreaterEqual(last["durationMs"] - end, oc.NOTE_HOLD)

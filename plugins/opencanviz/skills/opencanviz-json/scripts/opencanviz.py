@@ -136,13 +136,24 @@ VOICES = {"alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "s
 TWEEN_PROPS = {"x", "y", "w", "h", "scaleX", "scaleY", "rotationX", "rotationY", "rotationZ", "opacity", "fill",
                "stroke", "strokeWidth", "strokeTrimStart", "strokeTrimEnd", "typeProgress", "drawProgress",
                "blur", "value", "cellColors", "gridColors", "nodeColors", "cellValues", "gridValues",
-               "highlightedLines"}
+               "highlightedLines", "color", "labelColor", "cylinderTopFill", "iconBg", "pointerColor", "rangeColor",
+               "textStroke", "pointerTargetIndex", "pointerTargetRow", "pointerTargetCol", "rangeStart", "rangeEnd"}
 # Structure fields a transformTween can time: its `to` names the field (the step snapshot holds the value)
 # and the change runs over the tween's offsetMs/durationMs instead of the whole step.
 ALGO_TIMED = {"cellColors", "gridColors", "nodeColors", "cellValues", "gridValues", "highlightedLines"}
 SWAP_MS = 600          # an array swap arcs this long from the step start
 COLOR_MS = 350         # a structure's colors switch this fast from the step start
+POINTER_MS = 350       # a pointer glides to its new cell this fast from the step start
+FILL_MS = 350          # a node's fill / stroke / text colour changes this fast (set() without a duration)
+MOVE_MS = 600          # move() without a duration
 TIMELINE_MS = 600      # a timeline's line grows to the next event this fast
+GROW_MS = 1400         # a line chart's extend() draws its new stretch of line this fast (whole extend)
+NOTE_HOLD = 1500       # ... and holds the last point label this long before the step ends
+# node fields whose change set()/move() time with a short transformTween; a change to one of these with no
+# tween in the step plays across the whole step (the validator warns)
+TIMED_COLORS = {"fill", "stroke", "color", "labelColor", "cylinderTopFill", "iconBg", "pointerColor",
+                "rangeColor", "textStroke"}
+TIMED_GEOM = {"x", "y", "w", "h"}
 
 THEMES = {
     "dark": {"background": "#0f172a", "fill": "#1e293b", "stroke": "#38bdf8", "text": "#f8fafc",
@@ -626,6 +637,16 @@ def _series(m, upto):
     return out
 
 
+def _fill(struct):
+    """The plain cell / node colour openCanviz paints when a structure has no colour set for it."""
+    return struct.fields.get("fill") or "#1e293b"
+
+
+def _cells(struct, colors):
+    fill = _fill(struct)
+    return [c or fill for c in colors]
+
+
 def _r4(v):
     v = round(float(v), 4)
     return int(v) if v == int(v) else v
@@ -821,8 +842,10 @@ class Step:
                     self.remove(part)
         return self
 
-    def set(self, item, **fields):
-        """Change fields from this step on; numbers and colors tween across the step. Not opacity/trim."""
+    def set(self, item, duration=None, offset=None, **fields):
+        """Change fields from this step on. Not opacity/trim. On a node a colour (fill, stroke, color, ...)
+        changes in the first 350 ms and x/y/w/h in 600 ms of the step (a transformTween; pass duration= /
+        offset= to time it yourself); other numbers tween across the step."""
         if isinstance(item, Edge):
             self._own(item, Edge)
             _check_fields(fields, EDGE_FIELDS - {"id", "from", "to"}, "edge %s" % item.id)
@@ -835,10 +858,34 @@ class Step:
             if "opacity" in fields:
                 raise OpenCanvizError("set(%s): use reveal()/hide() to change visibility, not opacity=." % item.id)
             self.node_patch.setdefault(item.id, {}).update(fields)
+            self._timed_fields(item, fields, duration, offset)
         return self
 
+    def _timed_fields(self, node, fields, duration=None, offset=None, ease="ease-out"):
+        """A short transformTween for the colour and geometry fields in fields (merged into one already
+        aimed at node in this step), so they do not crawl across the whole step."""
+        to = {k: v for k, v in fields.items() if k in TIMED_COLORS | TIMED_GEOM}
+        if not to:
+            return
+        ms = duration if duration is not None else (MOVE_MS if TIMED_GEOM & set(to) else FILL_MS)
+        for a in self.actions:
+            if a.get("type") == "transformTween" and a["target"]["id"] == node.id and not a.get("from") \
+                    and offset is None and not a.get("offsetMs") and a.get("durationMs") == ms:
+                a["to"].update(to)
+                return
+        act = {"type": "transformTween", "target": {"kind": "node", "id": node.id}, "to": to}
+        if ease:
+            act["ease"] = ease
+        if duration is None and offset is None:
+            act["durationMs"] = ms
+            self.actions.append(act)
+            self._tail = max(self._tail, ms)
+        else:
+            self._action(act, ms, offset)
+
     def move(self, node, x=None, y=None, w=None, h=None, at=None, duration=None, offset=None, ease="ease-out"):
-        """Move/resize a node. Without duration it tweens over the whole step; with duration a transformTween runs."""
+        """Move/resize a node with a transformTween: 600 ms from the step start by default, or duration= /
+        offset= (duration="step" glides across the whole step, e.g. a packet riding a slow arrow)."""
         self._own(node, Node)
         if at is not None:
             x, y, w, h = at
@@ -846,12 +893,25 @@ class Step:
         if not to:
             raise OpenCanvizError("move(%s): give x/y/w/h or at=Rect." % node.id)
         self.node_patch.setdefault(node.id, {}).update(to)
-        if duration is not None:
-            act = {"type": "transformTween", "target": {"kind": "node", "id": node.id}, "to": dict(to)}
-            if ease:
-                act["ease"] = ease
-            self._action(act, duration, offset)
+        act = {"type": "transformTween", "target": {"kind": "node", "id": node.id}, "to": dict(to)}
+        if ease:
+            act["ease"] = ease
+        if duration == "step":
+            self._whole_step(act, offset or 0)
+        else:
+            self._action(act, MOVE_MS if duration is None else duration, offset)
         return self
+
+    def _whole_step(self, act, start=0):
+        """Add act running from start to the end of the step (its duration is filled at compile time)."""
+        act["durationMs"] = 1
+        if start:
+            act["offsetMs"] = start
+        self.actions.append(act)
+
+        def hook(snap, t0, sd, adj, a=act, s0=start):
+            a["durationMs"] = max(1, int(sd["durationMs"]) - s0)
+        self.hooks.append(hook)
 
     def typewrite(self, node, duration=1200, offset=None):
         """Type a text node's text in (typeProgress 0 -> 1)."""
@@ -939,12 +999,17 @@ class Step:
             if t is not None:
                 self.reveal(t, duration=300, offset=0)
                 self._patch(t, y=m["top"][i])
+                # the bar grows over the whole step (openCanviz cannot time chartBars); its value rides it
+                self._whole_step({"type": "transformTween", "target": {"kind": "node", "id": t.id},
+                                  "to": {"y": m["top"][i]}, "ease": self.easing or "ease"})
                 self._count_over_step(t)
         return self
 
     def extend(self, chart, upto=None):
-        """Line chart: draw the line on to point index upto (default: the last point) over this step.
-        Notes attached to points up to there fade in as the line reaches them."""
+        """Line chart: draw the line on to point index upto (default: the last point). The new stretch draws
+        in about 1.4 s from the step start (an edge drawn along the points, so it is timed, unlike a chart
+        series, which openCanviz always grows over the whole step); the dot rides its tip and each note
+        fades in as the line reaches its point. The step then holds the last note for 1.5 s."""
         self._after_first("extend", chart)
         m = self._recipe(chart, "line", "extend")
         pts = m["points"]
@@ -952,14 +1017,33 @@ class Step:
         if not m["shown"] < upto < len(pts):
             raise OpenCanvizError("extend(%s): upto must be past the last shown point (%d) and at most %d."
                                   % (chart.id, m["shown"], len(pts) - 1))
-        m["shown"] = upto
-        self._patch(chart, chartSeries=_series(m, upto))
-        X, Y = m["px"](*pts[upto])
-        self._patch(m["tip"], x=_clean(X - m["tip_d"] / 2.0), y=_clean(Y - m["tip_d"] / 2.0))
+        first, m["shown"] = m["shown"], upto
+        P = [m["px"](*p) for p in pts[first:upto + 1]]
+        cum = [0.0]
+        for (x0, y0), (x1, y1) in zip(P, P[1:]):
+            cum.append(cum[-1] + math.hypot(x1 - x0, y1 - y0))
+        ms = int(min(GROW_MS, max(600, 350 * (len(P) - 1))))
+        sc = self.scene
+        run = sc.line(P[0], P[-1], chart, color=m["color"], width=m["width"],
+                      id="%s_run%d" % (chart.id[len(sc.prefix):], upto))
+        if len(P) > 2:
+            run.fields.update(lineType="elbowed", cornerRadius=0,
+                              waypoints=[{"x": _clean(x), "y": _clean(y)} for x, y in P])
+        m.setdefault("runs", []).append(run)
+        self.draw(run, duration=ms, offset=0, ease="linear")
+        pid = sc.path(P, id="%s_tip%d" % (chart.id[len(sc.prefix):], upto))
+        self.follow(m["tip"], pid, duration=ms, offset=0, ease="linear")
+        end = ms
         for i, t in sorted(m["notes"].items()):
-            if i <= upto and not t.meta.get("shown"):
+            if first < i <= upto and not t.meta.get("shown"):
                 t.meta["shown"] = True
-                self._late_reveal(t)
+                at = int(ms * cum[i - first] / (cum[-1] or 1))
+                self.reveal(t, duration=300, offset=max(0, at - 150))
+                end = max(end, at + 150 + NOTE_HOLD)
+            elif i <= first and not t.meta.get("shown"):
+                t.meta["shown"] = True
+                self.reveal(t, duration=300, offset=0)
+        self._tail = max(self._tail, end)
         return self
 
     def scatter_to(self, chart, points, colors=None):
@@ -1021,44 +1105,35 @@ class Step:
                                   % struct.id)
         colors = colors or {}
         if kind == "algo-array":
-            old = list(m["colors"])
             if reset:
                 m["colors"] = [None] * len(m["colors"])
             for i, c in colors.items():
                 m["colors"][i] = c
-            # openCanviz keeps a cleared (null) cell in its old color for the whole step, so a cell cleared
-            # here gets the plain fill color instead, which fades back over the step
-            fill = struct.fields.get("fill")
-            self._patch(struct, cellColors=[fill if (c is None and o is not None) else c
-                                            for c, o in zip(m["colors"], old)])
+            # never a null target: openCanviz keeps a cell tweened to null in its old colour for the whole
+            # step, so a cleared cell gets the array's own fill and clears as the new colours land
+            self._patch(struct, cellColors=_cells(struct, m["colors"]))
             self._timed(struct, "cellColors")
         elif kind == "algo-grid":
-            old = [list(r) for r in m["colors"]]
             if reset:
                 m["colors"] = [[None] * len(r) for r in m["colors"]]
             for (r, c), col in colors.items():
                 m["colors"][r][c] = col
-            fill = struct.fields.get("fill")
-            self._patch(struct, gridColors=[[fill if (c is None and o is not None) else c for c, o in zip(r, ro)]
-                                            for r, ro in zip(m["colors"], old)])
+            self._patch(struct, gridColors=[_cells(struct, r) for r in m["colors"]])
             self._timed(struct, "gridColors")
         else:
-            cleared = {}
             if reset:
-                cleared = {nid: struct.fields.get("fill") or struct.scene.project.colors["fill"] for nid in m["colors"]}
                 m["colors"], m["edge_colors"] = {}, {}
             for k, c in colors.items():
                 nid = m["ids"].get(str(k))
                 if nid is None:
                     raise OpenCanvizError("color(%s): no node %r." % (struct.id, k))
                 if c is None:
-                    if nid in m["colors"]:
-                        cleared[nid] = struct.fields.get("fill") or struct.scene.project.colors["fill"]
                     m["colors"].pop(nid, None)
                 else:
                     m["colors"][nid] = c
-                    cleared.pop(nid, None)
-            self._patch(struct, nodeColors=dict(m["colors"], **cleared))
+            # every node gets an explicit colour (its plain fill when uncoloured), never a missing or null one
+            fill = _fill(struct)
+            self._patch(struct, nodeColors={nid: m["colors"].get(nid, fill) for nid in sorted(set(m["ids"].values()))})
             self._timed(struct, "nodeColors")
             if edges:
                 for (a, b), c in edges.items():
@@ -1070,12 +1145,20 @@ class Step:
         return self
 
     def point(self, pointer, at):
-        """Move a pointer: an array index, a tree / list / graph value, or a grid (row, col). It glides."""
+        """Move a pointer: an array index, a tree / list / graph value, or a grid (row, col). On an array or
+        grid it glides to the new cell in the first 350 ms of the step."""
         self._own(pointer, Node)
         m = pointer.meta.get("pointer")
         if m is None:
             raise OpenCanvizError("point(%s): use it on a node from scene.pointer()." % pointer.id)
-        self._patch(pointer, **_pointer_target(m["target"], at))
+        to = _pointer_target(m["target"], at)
+        self._patch(pointer, **to)
+        num = {k: v for k, v in to.items() if k in ("pointerTargetIndex", "pointerTargetRow", "pointerTargetCol")}
+        if num:
+            # without a tween the pointer (and its highlight frame) crawls across the whole step
+            self.actions.append({"type": "transformTween", "target": {"kind": "node", "id": pointer.id},
+                                 "to": num, "durationMs": POINTER_MS, "ease": "ease-out"})
+            self._tail = max(self._tail, POINTER_MS)
         return self
 
     def bracket(self, array, start, end, label=None, color=None):
@@ -1084,6 +1167,10 @@ class Step:
         th = self.scene.project.colors
         col = color or th["muted"]
         self._patch(array, rangeStart=start, rangeEnd=end, rangeColor=col, rangeLabel="")
+        self.actions.append({"type": "transformTween", "target": {"kind": "node", "id": array.id},
+                             "to": {"rangeStart": start, "rangeEnd": end, "rangeColor": col}, "durationMs": COLOR_MS,
+                             "ease": "ease-out"})
+        self._tail = max(self._tail, COLOR_MS)
         t = m.get("range_text")
         if label:
             f = array.fields
@@ -1100,6 +1187,7 @@ class Step:
                     t.meta["hidden"] = False
                     self.reveal(t, duration=400, offset=0)
                 self._patch(t, text=label, x=_clean(x0), w=_clean(x1 - x0), color=col)
+                self._timed_fields(t, {"x": _clean(x0), "w": _clean(x1 - x0), "color": col})
         elif t is not None and not t.meta.get("hidden"):
             t.meta["hidden"] = True
             self.hide(t, offset=0)
@@ -1140,6 +1228,7 @@ class Step:
             if not 1 <= ln <= m["lines"]:
                 raise OpenCanvizError("highlight(%s): line %r is outside 1..%d." % (code.id, ln, m["lines"]))
         self._patch(code, highlightedLines=[ln - 1 for ln in flat])
+        self._timed(code, "highlightedLines")
         return self
 
     def activate(self, lifeline, start, end):
@@ -1586,6 +1675,7 @@ class Scene:
                         stroke=self.scene_background(), strokeWidth=4, noGlow=True)
         chart.parts.append(dot)
         m["tip"], m["px"], m["tip_d"] = dot, px, D
+        m["width"] = 6 if not self._portrait else 7
         tf = font or self._small_font()
         nf = max(self._floor("body"), tf + 6)
         for i, txt in sorted((notes or {}).items()):
@@ -1629,7 +1719,7 @@ class Scene:
         # openCanviz's own index row resets the canvas alpha, so with it on the array ignores opacity and
         # cannot fade in or out; draw the indices as text nodes instead
         node = self.node("algo-array", None, x=at.x, y=y, w=at.w, h=h, id=id, cellValues=[str(v) for v in values],
-                         cellColors=[None] * n, cellFontSize=fs, cellShowIndices=False, fill=th["fill"],
+                         cellColors=[th["fill"]] * n, cellFontSize=fs, cellShowIndices=False, fill=th["fill"],
                          stroke=th["muted"], labelColor=th["text"], noGlow=True)
         if indices:
             for i in range(n):
@@ -1701,6 +1791,7 @@ class Scene:
                          nodeSpacing=_clean(sp_k * r), levelHeight=_clean(lv_k * r), nodeFontSize=font or int(r * 0.9),
                          fill=self.project.colors["fill"], labelColor=self.project.colors["text"])
         node.meta["struct"] = {"ids": ids, "colors": {}, "edge_colors": {}, "edge_ids": {}}
+        node.fields["nodeColors"] = {nid: _fill(node) for nid in sorted(set(ids.values()))}
         return node
 
     def linked_list(self, values, at, capacity=None, font=None, id="list"):
@@ -1717,6 +1808,7 @@ class Scene:
         m = {"values": vals, "capacity": cap, "ids": {v: "l%d" % i for i, v in enumerate(vals)}, "colors": {},
              "edge_colors": {}, "edge_ids": {}}
         node.meta["list"] = node.meta["struct"] = m
+        node.fields["nodeColors"] = {nid: _fill(node) for nid in sorted(set(m["ids"].values()))}
         return node
 
     def graph(self, nodes, edges, at, directed=False, font=None, radius=None, id="graph"):
@@ -1742,6 +1834,7 @@ class Scene:
                          graphDirected=bool(directed), nodeFontSize=font or int(r * 0.8), labelFontSize=24,
                          labelColor=self.project.colors["text"])
         node.meta["struct"] = {"ids": ids, "colors": {}, "edge_colors": {}, "edge_ids": eids}
+        node.fields["nodeColors"] = {nid: _fill(node) for nid in sorted(set(ids.values()))}
         return node
 
     def grid(self, rows, at, font=None, id="grid"):
@@ -1750,7 +1843,7 @@ class Scene:
         nr, nc = len(vals), max(len(r) for r in vals)
         fs = font or int(max(20, min(44, at.h / nr * 0.45, at.w / nc * 0.35)))
         node = self.node("algo-grid", None, at=at, id=id, gridValues=[list(r) for r in vals],
-                         gridColors=[[None] * nc for _ in vals], gridCellFontSize=fs,
+                         gridColors=[[self.project.colors["fill"]] * nc for _ in vals], gridCellFontSize=fs,
                          gridIndexFontSize=max(18, int(fs * 0.5)), fill=self.project.colors["fill"],
                          labelColor=self.project.colors["text"])
         m = {"values": vals, "colors": [[None] * nc for _ in vals]}
@@ -3103,6 +3196,36 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                 W("%s: %s changes typeProgress with no transformTween, so the text jumps instead of typing. Tween "
                   "it: {\"type\":\"transformTween\",\"from\":{\"typeProgress\":0},\"to\":{\"typeProgress\":1}}."
                   % (P, p.get("id")))
+        # a visible node's colour / position change with no tween of its own plays across the whole step
+        timed_keys = {}
+        for a in acts:
+            if isinstance(a, dict) and a.get("type") in ("transformTween", "pathFollow"):
+                ks = set((a.get("to") or {}) if a.get("type") == "transformTween" else TIMED_GEOM)
+                timed_keys.setdefault((a.get("target") or {}).get("id"), set()).update(ks)
+        slow = TIMED_COLORS | TIMED_GEOM | ALGO_TIMED - {"cellValues", "gridValues"} | \
+            {"pointerTargetIndex", "pointerTargetRow", "pointerTargetCol"}
+        for p in (st.get("nodes") or []) if k > 0 else []:
+            if not isinstance(p, dict) or p.get("id") not in before_n:
+                continue
+            was = before_n[p["id"]]
+            if (was.get("opacity", 1) or 0) <= 0.01 or (p.get("opacity", was.get("opacity", 1)) or 0) <= 0.01:
+                continue
+            keys = sorted(x for x in p if x in slow and p[x] != was.get(x) and x not in timed_keys.get(p["id"], ()))
+            if keys and once(("slow", p["id"], k)):
+                W("%s: %s changes %s with no tween of its own, so the change plays across the whole %d ms step. Add "
+                  "a transformTween with a short durationMs (350 ms for a colour, 600 ms for a move) whose to "
+                  "repeats the new value; the Python helper's set()/move()/point() do this." % (P, p["id"],
+                                                                                     ", ".join(keys), dur))
+        for a in acts:
+            if isinstance(a, dict) and a.get("type") == "transformTween":
+                to = a.get("to") or {}
+                cells = [to.get("cellColors")] if isinstance(to.get("cellColors"), list) else []
+                cells += [r for r in (to.get("gridColors") or []) if isinstance(r, list)]
+                if any(c is None for r in cells for c in r) or (isinstance(to.get("nodeColors"), dict) and
+                                                                None in to["nodeColors"].values()):
+                    W("%s: a colour tween on %s has a null cell; openCanviz keeps a cell tweened to null in its old "
+                      "colour for the whole step. Write the plain fill (the array's \"fill\", default #1e293b) "
+                      "instead." % (P, (a.get("target") or {}).get("id")))
         last_et = {}
         for a in acts:
             if isinstance(a, dict) and a.get("type") == "edgeTween":

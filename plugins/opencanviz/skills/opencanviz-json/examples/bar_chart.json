@@ -734,6 +734,18 @@
               },
               "mode": "fadeIn",
               "durationMs": 300
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val0"
+              },
+              "to": {
+                "y": -306
+              },
+              "ease": "ease",
+              "durationMs": 4400
             }
           ]
         },
@@ -790,6 +802,18 @@
               },
               "mode": "fadeIn",
               "durationMs": 300
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val1"
+              },
+              "to": {
+                "y": -177.5
+              },
+              "ease": "ease",
+              "durationMs": 3700
             }
           ]
         },
@@ -858,6 +882,18 @@
               "durationMs": 300
             },
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val2"
+              },
+              "to": {
+                "y": -20
+              },
+              "ease": "ease",
+              "durationMs": 2500
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
@@ -867,6 +903,18 @@
               "durationMs": 300
             },
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val3"
+              },
+              "to": {
+                "y": -3.9
+              },
+              "ease": "ease",
+              "durationMs": 2500
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
@@ -874,6 +922,18 @@
               },
               "mode": "fadeIn",
               "durationMs": 300
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_bars_val4"
+              },
+              "to": {
+                "y": 41
+              },
+              "ease": "ease",
+              "durationMs": 2500
             }
           ]
         }
