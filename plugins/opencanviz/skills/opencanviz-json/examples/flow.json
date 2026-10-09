@@ -17,8 +17,8 @@
         {
           "id": "s1_how_a_web_request_travel",
           "kind": "text",
-          "x": -840,
-          "y": -480,
+          "x": -1150,
+          "y": -590,
           "w": 1680,
           "h": 110,
           "text": "How a web request travels",
@@ -114,12 +114,13 @@
           "id": "s1_step0",
           "durationMs": 2900,
           "caption": "A request starts in the browser.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_how_a_web_request_travel",
               "kind": "text",
-              "x": -840,
-              "y": -480,
+              "x": -1150,
+              "y": -590,
               "w": 1680,
               "h": 110,
               "text": "How a web request travels",
@@ -232,8 +233,8 @@
             }
           ],
           "camera": {
-            "x": -60,
-            "y": -188.5,
+            "x": -310,
+            "y": -110,
             "zoom": 1
           },
           "cameraDurationMs": 0
@@ -243,10 +244,16 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "It travels to the API server.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_api_server",
               "opacity": 1
+            },
+            {
+              "id": "s1_how_a_web_request_travel",
+              "x": -840,
+              "y": -590
             }
           ],
           "edges": [
@@ -284,11 +291,24 @@
               "ease": "ease-out",
               "durationMs": 600,
               "offsetMs": 1100
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_how_a_web_request_travel"
+              },
+              "to": {
+                "x": -840,
+                "y": -590
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
           ],
           "camera": {
             "x": 0,
-            "y": -188.5,
+            "y": -110,
             "zoom": 1
           },
           "cameraDurationMs": 700,
@@ -299,10 +319,16 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "The server asks the database for the data.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_database",
               "opacity": 1
+            },
+            {
+              "id": "s1_how_a_web_request_travel",
+              "x": -840,
+              "y": -475
             }
           ],
           "edges": [
@@ -340,11 +366,24 @@
               "ease": "ease-out",
               "durationMs": 600,
               "offsetMs": 1100
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_how_a_web_request_travel"
+              },
+              "to": {
+                "x": -840,
+                "y": -475
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
           ],
           "camera": {
             "x": 0,
-            "y": 0,
+            "y": 5,
             "zoom": 1
           },
           "cameraDurationMs": 700,

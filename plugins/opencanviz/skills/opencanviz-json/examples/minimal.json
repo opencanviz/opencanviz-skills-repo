@@ -15,10 +15,27 @@
     {
       "nodes": [
         {
+          "id": "s1_from_idea_to_video",
+          "kind": "text",
+          "x": -1250,
+          "y": -383,
+          "w": 1680,
+          "h": 110,
+          "text": "From idea to video",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
           "id": "s1_idea",
           "kind": "rect",
           "x": -620,
-          "y": -198,
+          "y": -123,
           "w": 420,
           "h": 240,
           "label": "Idea",
@@ -34,7 +51,7 @@
           "id": "s1_video",
           "kind": "rect",
           "x": 200,
-          "y": -198,
+          "y": -123,
           "w": 420,
           "h": 240,
           "label": "Video",
@@ -68,12 +85,30 @@
           "id": "s1_step0",
           "durationMs": 2900,
           "caption": "Every video starts with an idea.",
+          "easing": "ease",
           "nodes": [
+            {
+              "id": "s1_from_idea_to_video",
+              "kind": "text",
+              "x": -1250,
+              "y": -383,
+              "w": 1680,
+              "h": 110,
+              "text": "From idea to video",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
             {
               "id": "s1_idea",
               "kind": "rect",
               "x": -620,
-              "y": -198,
+              "y": -123,
               "w": 420,
               "h": 240,
               "label": "Idea",
@@ -89,7 +124,7 @@
               "id": "s1_video",
               "kind": "rect",
               "x": 200,
-              "y": -198,
+              "y": -123,
               "w": 420,
               "h": 240,
               "label": "Video",
@@ -123,15 +158,25 @@
               "type": "visibility",
               "target": {
                 "kind": "node",
-                "id": "s1_idea"
+                "id": "s1_from_idea_to_video"
               },
               "mode": "fadeIn",
               "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_idea"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
             }
           ],
           "camera": {
             "x": -410,
-            "y": 0,
+            "y": 97,
             "zoom": 1
           },
           "cameraDurationMs": 0
@@ -141,10 +186,16 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "openCanviz turns it into a video.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_video",
               "opacity": 1
+            },
+            {
+              "id": "s1_from_idea_to_video",
+              "x": -840,
+              "y": -383
             }
           ],
           "edges": [
@@ -182,11 +233,24 @@
               "ease": "ease-out",
               "durationMs": 700,
               "offsetMs": 1100
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_from_idea_to_video"
+              },
+              "to": {
+                "x": -840,
+                "y": -383
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
           ],
           "camera": {
             "x": 0,
-            "y": 0,
+            "y": 97,
             "zoom": 1
           },
           "cameraDurationMs": 700,

@@ -304,6 +304,7 @@
           "id": "s1_step0",
           "durationMs": 3300,
           "caption": "Which languages do the most people speak?",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_most_spoken_languages_to",
@@ -592,23 +593,6 @@
           ],
           "actions": [
             {
-              "type": "edgeTween",
-              "target": {
-                "kind": "edge",
-                "id": "s1_bars_line"
-              },
-              "from": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "to": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "durationMs": 300,
-              "ease": "linear"
-            },
-            {
               "type": "visibility",
               "target": {
                 "kind": "node",
@@ -702,6 +686,7 @@
           "delta": true,
           "durationMs": 4400,
           "caption": "English leads with about one and a half billion speakers.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_bars",
@@ -757,6 +742,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "Mandarin follows with about one point one billion.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_bars",
@@ -812,6 +798,7 @@
           "delta": true,
           "durationMs": 2500,
           "caption": "Then Hindi, Spanish and Arabic.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_bars",

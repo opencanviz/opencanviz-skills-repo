@@ -122,6 +122,7 @@
           "id": "s1_step0",
           "durationMs": 3700,
           "caption": "Looking for 6 in a binary search tree.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_a_binary_search_tree",
@@ -251,6 +252,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "6 is less than 8, so go left.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_tree",
@@ -263,13 +265,30 @@
               "pointerTreeNodeId": "n_4"
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_tree"
+              },
+              "to": {
+                "nodeColors": {
+                  "n_8": "#94a3b8"
+                }
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         },
         {
           "id": "s1_step2",
           "delta": true,
           "durationMs": 4400,
           "caption": "6 is more than 4, so go right. Found it.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_tree",
@@ -284,7 +303,25 @@
               "pointerTreeNodeId": "n_6"
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_tree"
+              },
+              "to": {
+                "nodeColors": {
+                  "n_8": "#94a3b8",
+                  "n_4": "#94a3b8",
+                  "n_6": "#22c55e"
+                }
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         }
       ],
       "narration": [
@@ -326,7 +363,7 @@
           "id": "s2_a_linked_list",
           "kind": "text",
           "x": -840,
-          "y": -480,
+          "y": -390,
           "w": 1680,
           "h": 110,
           "text": "A linked list",
@@ -376,12 +413,13 @@
           "id": "s2_step0",
           "durationMs": 3300,
           "caption": "Each node points to the next one.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_a_linked_list",
               "kind": "text",
               "x": -840,
-              "y": -480,
+              "y": -390,
               "w": 1680,
               "h": 110,
               "text": "A linked list",
@@ -449,7 +487,7 @@
           ],
           "camera": {
             "x": 0,
-            "y": -100,
+            "y": 90,
             "zoom": 1
           },
           "cameraDurationMs": 0
@@ -459,6 +497,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "Adding at the tail links one more node.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_list",
@@ -599,6 +638,7 @@
           "id": "s3_step0",
           "durationMs": 2500,
           "caption": "Four places joined by roads.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s3_a_graph",
@@ -708,6 +748,7 @@
           "delta": true,
           "durationMs": 4100,
           "caption": "One route from A to D goes through B.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s3_graph",
@@ -722,7 +763,25 @@
               }
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s3_graph"
+              },
+              "to": {
+                "nodeColors": {
+                  "g_a": "#22c55e",
+                  "g_b": "#22c55e",
+                  "g_d": "#22c55e"
+                }
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         }
       ],
       "narration": [

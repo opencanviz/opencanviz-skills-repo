@@ -118,8 +118,8 @@ EDGE_FIELDS = {
 
 LABEL_KEYS = {"label", "labelColor", "labelFontSize", "labelPosition", "labelPositionT", "labelBgColor",
               "opacity", "labelOffset", "labelOffsetX", "labelOffsetY", "labelBgPadding", "labelFontWeight"}
-LABEL_POP = 60         # a labeled arrow's label appears this fast once its line is drawn (an opaque chip)
-TWIN_FADE = 300        # ... while the unlabeled line under it fades out over this
+LABEL_POP = 40         # a labeled arrow appears whole (ease "step": its chip opaque from the first frame) ...
+TWIN_FADE = 40         # ... on the same frame as the unlabeled line under it goes (ease "step")
 
 INTERNAL_FIELDS = {"_selected", "_animatedProps", "illuOf", "imageFailed", "_addedNodeIds", "_removedNodeIds",
                    "_addedEdgeIds", "_removedEdgeIds", "audioData", "audioUrl", "audioDurationMs", "words"}
@@ -135,7 +135,14 @@ TRANSITION_KINDS = {
 VOICES = {"alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse"}
 TWEEN_PROPS = {"x", "y", "w", "h", "scaleX", "scaleY", "rotationX", "rotationY", "rotationZ", "opacity", "fill",
                "stroke", "strokeWidth", "strokeTrimStart", "strokeTrimEnd", "typeProgress", "drawProgress",
-               "blur", "value"}
+               "blur", "value", "cellColors", "gridColors", "nodeColors", "cellValues", "gridValues",
+               "highlightedLines"}
+# Structure fields a transformTween can time: its `to` names the field (the step snapshot holds the value)
+# and the change runs over the tween's offsetMs/durationMs instead of the whole step.
+ALGO_TIMED = {"cellColors", "gridColors", "nodeColors", "cellValues", "gridValues", "highlightedLines"}
+SWAP_MS = 600          # an array swap arcs this long from the step start
+COLOR_MS = 350         # a structure's colors switch this fast from the step start
+TIMELINE_MS = 600      # a timeline's line grows to the next event this fast
 
 THEMES = {
     "dark": {"background": "#0f172a", "fill": "#1e293b", "stroke": "#38bdf8", "text": "#f8fafc",
@@ -153,6 +160,7 @@ TEXT_PAD = 8           # breathing room inside a text node, top and bottom
 LABEL_PAD = 10         # openCanviz default label padding
 EDGE_GAP = 8           # an edge starts this far from its node
 MIN_LINK_GAP = 100     # an unlabeled arrow: 84 px of visible line plus the end gaps
+LABEL_EDGE = 120       # an edge label chip keeps this far from the left and right sides of the frame
 LABEL_LINE = 120       # visible line a labeled arrow keeps beside its label chip (60 px each side)
 SIDE_MARGIN = 120      # left/right margin of project.area() in landscape (80 in portrait and square)
 FOLLOW_MS = 800        # follow-camera pan length
@@ -561,22 +569,6 @@ def _tline(fs, lh=LINE_H):
     return int(math.ceil(fs * lh + 2 * TEXT_PAD + 2))
 
 
-def _hold_first_edge_tweens(sd):
-    """Step 0 has no earlier state, so before a delayed edgeTween starts openCanviz shows the edge as
-    the snapshot has it (drawn). Hold each edge at its first tween's start values until that tween runs."""
-    first = {}
-    for a in sd.get("actions") or []:
-        if a.get("type") == "edgeTween" and a.get("from"):
-            eid = a["target"]["id"]
-            if eid not in first or a.get("offsetMs", 0) < first[eid].get("offsetMs", 0):
-                first[eid] = a
-    holds = [{"type": "edgeTween", "target": {"kind": "edge", "id": eid}, "from": dict(a["from"]),
-              "to": dict(a["from"]), "durationMs": a["offsetMs"], "ease": "linear"}
-             for eid, a in first.items() if a.get("offsetMs", 0) > 0]
-    if holds:
-        sd["actions"] = holds + sd["actions"]
-
-
 def _fmt_num(v, decimals=0, prefix="", suffix=""):
     return "%s%s%s" % (prefix, ("{:,.%df}" % decimals).format(v), suffix)
 
@@ -779,8 +771,8 @@ class Step:
         """Draw an arrow in (trim 0 -> 1). Both end nodes must be visible by the end of this step.
 
         A labeled arrow is drawn by an unlabeled twin line (id <edge>_line); once the line is fully
-        drawn the labeled edge appears on top of it at once (60 ms, so its opaque chip masks the line
-        straight away) and the twin fades out under it (300 ms). openCanviz puts a label at the middle
+        drawn, the labeled edge replaces it on one frame (a "step" ease, so the label chip is opaque from
+        its first frame and the line never shows through it). openCanviz puts a label at the middle
         of the drawn part, so a label drawn with its line slides along with the tip and shows before the
         arrow does."""
         self._own(edge, Edge)
@@ -804,10 +796,10 @@ class Step:
         done = start + duration
         self.actions.append({"type": "edgeTween", "target": {"kind": "edge", "id": edge.id},
                              "from": {"trim": 1, "opacity": 0}, "to": {"trim": 1, "opacity": shown},
-                             "durationMs": LABEL_POP, "offsetMs": done, "ease": "linear"})
+                             "durationMs": LABEL_POP, "offsetMs": done, "ease": "step"})
         self.actions.append({"type": "edgeTween", "target": {"kind": "edge", "id": edge.twin_id},
                              "from": {"trim": 1, "opacity": shown}, "to": {"trim": 1, "opacity": 0},
-                             "durationMs": TWIN_FADE, "offsetMs": done})
+                             "durationMs": TWIN_FADE, "offsetMs": done, "ease": "step"})
         self._tail = max(self._tail, done + TWIN_FADE)
         return self
 
@@ -962,6 +954,8 @@ class Step:
                                   % (chart.id, m["shown"], len(pts) - 1))
         m["shown"] = upto
         self._patch(chart, chartSeries=_series(m, upto))
+        X, Y = m["px"](*pts[upto])
+        self._patch(m["tip"], x=_clean(X - m["tip_d"] / 2.0), y=_clean(Y - m["tip_d"] / 2.0))
         for i, t in sorted(m["notes"].items()):
             if i <= upto and not t.meta.get("shown"):
                 t.meta["shown"] = True
@@ -981,9 +975,9 @@ class Step:
         return self
 
     def swap(self, array, i, j):
-        """Array: swap cells i and j; the two values arc past each other over the whole step (with the
-        step's easing). Swap disjoint pairs only within one step. (An algoSwap action is not used: the
-        exported video snaps it.)"""
+        """Array: swap cells i and j; the two values arc past each other in the first 600 ms of the step
+        (an algoSwap action). Swap disjoint pairs only within one step; they run together. The arc height
+        is fixed by openCanviz (0.8 x cell height, at most 30 px)."""
         self._after_first("swap", array)
         m = self._recipe(array, "array", "swap")
         v = m["values"]
@@ -999,12 +993,26 @@ class Step:
         used |= {i, j}
         v[i], v[j] = v[j], v[i]
         self._patch(array, cellValues=list(v))
+        self.actions.append({"type": "algoSwap", "target": {"kind": "node", "id": array.id}, "indices": [i, j],
+                             "durationMs": SWAP_MS, "ease": "ease"})
+        self._tail = max(self._tail, SWAP_MS)
         return self
+
+    def _timed(self, node, field, ms=COLOR_MS):
+        """Run this step's change to a structure field over ms from the step start, not the whole step."""
+        for a in self.actions:
+            if a.get("type") == "transformTween" and a["target"]["id"] == node.id and field in a.get("to", {}):
+                a["to"][field] = self.node_patch[node.id][field]
+                return
+        self.actions.append({"type": "transformTween", "target": {"kind": "node", "id": node.id},
+                             "to": {field: self.node_patch[node.id][field]}, "durationMs": ms, "ease": "ease-out"})
+        self._tail = max(self._tail, ms)
 
     def color(self, struct, colors=None, edges=None, reset=False):
         """Color parts of a structure from this step on (cleared with None, or all with reset=True):
         array {index: color}, tree / linked list / graph {value: color} (graph edges={(a, b): color}),
-        grid {(row, col): color}. The colors switch at the start of the step."""
+        grid {(row, col): color}. The colors change in the first 350 ms of the step (graph edge colors take
+        the whole step: openCanviz cannot time them)."""
         self._own(struct, Node)
         kind = struct.fields.get("kind")
         m = struct.meta.get("struct")
@@ -1023,6 +1031,7 @@ class Step:
             fill = struct.fields.get("fill")
             self._patch(struct, cellColors=[fill if (c is None and o is not None) else c
                                             for c, o in zip(m["colors"], old)])
+            self._timed(struct, "cellColors")
         elif kind == "algo-grid":
             old = [list(r) for r in m["colors"]]
             if reset:
@@ -1032,6 +1041,7 @@ class Step:
             fill = struct.fields.get("fill")
             self._patch(struct, gridColors=[[fill if (c is None and o is not None) else c for c, o in zip(r, ro)]
                                             for r, ro in zip(m["colors"], old)])
+            self._timed(struct, "gridColors")
         else:
             cleared = {}
             if reset:
@@ -1049,6 +1059,7 @@ class Step:
                     m["colors"][nid] = c
                     cleared.pop(nid, None)
             self._patch(struct, nodeColors=dict(m["colors"], **cleared))
+            self._timed(struct, "nodeColors")
             if edges:
                 for (a, b), c in edges.items():
                     eid = m["edge_ids"].get((str(a), str(b))) or m["edge_ids"].get((str(b), str(a)))
@@ -1142,8 +1153,8 @@ class Step:
         return self
 
     def event(self, timeline, i=None):
-        """Timeline: bring in the next event (or event i): its dot, year and text appear and the line grows
-        to it over the step."""
+        """Timeline: bring in the next event (or event i): the line grows to it in the first 600 ms of the
+        step and its dot, year and text fade in as the line arrives."""
         m = self._recipe(timeline, "timeline", "event")
         i = m["shown"] + 1 if i is None else i
         if not m["shown"] < i < len(m["events"]):
@@ -1154,12 +1165,21 @@ class Step:
             self._after_first("event", timeline)
         m["shown"] = i
         ev = m["events"][i]
-        self.reveal(ev, duration=500, offset=0)
         f = timeline.fields
-        if m["vertical"]:
-            self.move(timeline, h=max(12, m["pos"][i] - f["y"] + 6))
-        else:
-            self.move(timeline, w=max(12, m["pos"][i] - f["x"] + 6))
+        key, base = ("h", "y") if m["vertical"] else ("w", "x")
+        size = max(12, m["pos"][i] - f[base] + 6)
+        old = m.get("size", 12)
+        m["size"] = size
+        if i == 0 or abs(size - old) < 1:
+            self.reveal(ev, duration=500, offset=0)
+            self._patch(timeline, **{key: size})
+            return self
+        # the line grows in 600 ms from the step start and the event fades in as the line reaches it
+        self._patch(timeline, **{key: size})
+        self.actions.append({"type": "transformTween", "target": {"kind": "node", "id": timeline.id},
+                             "from": {key: old}, "to": {key: size}, "durationMs": TIMELINE_MS, "ease": "ease-out"})
+        self.reveal(ev, duration=300, offset=TIMELINE_MS - 300)
+        self._tail = max(self._tail, TIMELINE_MS)
         return self
 
     def sweep(self, pie):
@@ -1282,6 +1302,23 @@ class Scene:
         n.fields["fontSize"] = fontSize
         return n
 
+    def title(self, text, h=110, **kw):
+        """The scene's title across the top of the safe area. Returns (title node, body Rect under it).
+        Reveal the title in the first step. With the follow camera the title stays put on screen and the
+        content is centered under it."""
+        band, body = self.project.area().cut_top(h)
+        n = self.text(text, at=band, fontWeight=700, **kw)
+        n.meta["title"] = True
+        return n, body
+
+    def _is_title(self, n, A):
+        """A title: made by scene.title(), or a bold one-line text across most of the top of the frame."""
+        f = n.fields
+        if n.meta.get("title"):
+            return True
+        return f.get("kind") == "text" and _is_bold(f.get("fontWeight")) and f.get("w", 0) >= 0.6 * A.w and \
+            f.get("y", 1e9) <= A.y + 0.15 * A.h and f.get("h", 1e9) <= 200 and not n.parts
+
     def icon(self, ref, at=None, **kw):
         """An Iconify icon, e.g. icon("mdi:database", at=rect). Loads when the project opens in the editor."""
         if ":" not in ref:
@@ -1381,7 +1418,9 @@ class Scene:
             if inside and lab:
                 cx, cy = _path_mid(pts)
                 lw, lh = label_width(lab, lfs), label_height(lfs)
-                inside = A.x - 1 <= cx - lw / 2 and cx + lw / 2 <= A.x + A.w + 1 and \
+                lx0 = max(A.x, -self.project.width / 2.0 + LABEL_EDGE)
+                lx1 = min(A.x + A.w, self.project.width / 2.0 - LABEL_EDGE)
+                inside = lx0 - 1 <= cx - lw / 2 and cx + lw / 2 <= lx1 + 1 and \
                     A.y - 1 <= cy - lh / 2 and cy + lh / 2 <= A.y + A.h + 1
             if inside:
                 best = f
@@ -1521,7 +1560,8 @@ class Scene:
                    x_title=None, y_title=None, notes=None, font=None, fmt=None, id="line"):
         """A line that draws itself left to right. points = [(x, y), ...] in data units, sorted by x.
         Axes, tick labels and titles are readable text nodes. notes = {point index: "text"} labels a point
-        when the line reaches it. Reveal the chart, then step.extend(chart, upto) one or more times."""
+        when the line reaches it. A dot marks the line's current end. Reveal the chart, then
+        step.extend(chart, upto) one or more times."""
         if len(points) < 2:
             raise OpenCanvizError("line_chart(): give at least two points.")
         xs, ys = [p[0] for p in points], [p[1] for p in points]
@@ -1538,6 +1578,14 @@ class Scene:
         uy = (y_range[1] - y_range[0]) / float(ay0 - ay1 or 1) * 1.6
         m["offsets"] = [(0, 0), (0, uy), (0, -uy), (ux, 0), (-ux, 0)]
         chart.fields["chartSeries"] = _series(m, 0)
+        # a dot on the line's current end, so a chart showing one point is not empty axes; it rides the
+        # tip of the line as extend() draws it on (both tween over the step with the step's easing)
+        D = 26 if not self._portrait else 34
+        X0, Y0 = px(*points[0])
+        dot = self.node("circle", None, x=X0 - D / 2.0, y=Y0 - D / 2.0, w=D, h=D, id=id + "_tip", fill=col,
+                        stroke=self.scene_background(), strokeWidth=4, noGlow=True)
+        chart.parts.append(dot)
+        m["tip"], m["px"], m["tip_d"] = dot, px, D
         tf = font or self._small_font()
         nf = max(self._floor("body"), tf + 6)
         for i, txt in sorted((notes or {}).items()):
@@ -1860,10 +1908,10 @@ class Scene:
                     body_h = max(int(math.ceil(2 * fs * LINE_H + 2 * TEXT_PAD + 2)), int(body_h - (block - at.h) / 2))
                     half = yh + 8 + body_h
                     block = 2 * (half + D / 2.0 + 12)
-                cy = at.y + max(0, (at.h - block) / 2.0) + half + D / 2.0 + 12
+                cy = at.y + min(40, max(0, (at.h - block) / 2.0)) + half + D / 2.0 + 12
             else:
                 block = yh + 14 + D + 20 + body_h
-                cy = at.y + max(0, (at.h - block) / 2.0) + yh + 14 + D / 2.0
+                cy = at.y + min(40, max(0, (at.h - block) / 2.0)) + yh + 14 + D / 2.0
             for i in range(n):
                 if alt:
                     pos.append(at.x + tw / 2.0 + (at.w - tw) * i / float(n - 1))
@@ -2231,8 +2279,9 @@ class Scene:
                 sd["delta"] = True
             sd["durationMs"] = dur
             sd["caption"] = st.caption
-            if st.easing:
-                sd["easing"] = st.easing
+            # openCanviz times algoSwap and algo-field tweens only when the step names its easing;
+            # without it a swap snaps and a colour change takes the whole step
+            sd["easing"] = st.easing or "ease"
             if k == 0:
                 for nf in snap_nodes:
                     nf.update(npatch.get(nf["id"], {}))
@@ -2265,7 +2314,6 @@ class Scene:
                 narration.append({"id": "%sn%d" % (self.prefix, k), "text": str(st.narration), "stepIndex": k,
                                   "voice": {"provider": "openai", "voiceId": v, "voiceName": v.capitalize()}})
         self._follow(steps)
-        _hold_first_edge_tweens(steps[0])
         snap = {n["id"]: n for n in steps[0]["nodes"]}
         t0 = 0
         for st, sd in zip(self.steps, steps):
@@ -2298,6 +2346,11 @@ class Scene:
         nodes, edges = {}, {}
         cur = (0.0, 0.0)
         keep = self._reserved_ids()
+        # titles stay fixed on screen: each pan moves them with the camera, and the content is centered
+        # in the safe area under them
+        titles = {n.id: (n.fields["x"], n.fields["y"], n.fields["y"] + n.fields["h"]) for n in self.nodes
+                  if self._is_title(n, A)}
+        tpos = {tid: (t[0], t[1]) for tid, t in titles.items()}
         for k, sd in enumerate(steps):
             if k == 0:
                 nodes = {n["id"]: dict(n) for n in sd["nodes"]}
@@ -2311,15 +2364,29 @@ class Scene:
                     nodes.setdefault(p["id"], {}).update(p)
                 for p in sd["edges"]:
                     edges.setdefault(p["id"], {}).update(p)
-            box = _visible_bbox(nodes, edges)
+            shown_t = [t for t in titles if t in nodes and (nodes[t].get("opacity", 1) or 0) > 0.01]
+            body_nodes = {i: n for i, n in nodes.items() if i not in titles}
+            box = _visible_bbox(body_nodes, edges)
+            held = [n for i, n in body_nodes.items() if i in keep and all(_num(n.get(k)) for k in ("x", "y", "w", "h"))]
+            if box is None and held:
+                box = (1e9, 1e9, -1e9, -1e9)
+            area = (A.x, A.y, A.x + A.w, A.y + A.h)
             if box is None:
-                continue
-            held = [n for i, n in nodes.items() if i in keep and all(_num(n.get(k)) for k in ("x", "y", "w", "h"))]
+                box = _visible_bbox(nodes, edges)    # a title card alone: center it
+                if box is None:
+                    continue
+                shown_t = []
+            elif shown_t:
+                area = (A.x, max(titles[t][2] for t in shown_t) + 30, A.x + A.w, A.y + A.h)
             if held:
                 xs = [x for n in held for x in _ink_x(n)]
                 box = (min([box[0]] + xs), min([box[1]] + [n["y"] for n in held]),
                        max([box[2]] + xs), max([box[3]] + [n["y"] + n["h"] for n in held]))
-            target = _center_camera(box, (A.x, A.y, A.x + A.w, A.y + A.h))
+            target = _center_camera(box, area)
+            if shown_t and box[3] - box[1] <= area[3] - area[1]:
+                # sit the content close under the title, not in the middle of a tall empty band
+                top = box[1] - target[1]
+                target = (target[0], round(target[1] + max(0, top - area[1] - 120), 1))
             if math.hypot(target[0] - cur[0], target[1] - cur[1]) < 40:
                 continue
             cam = {"camera": {"x": _clean(target[0]), "y": _clean(target[1]), "zoom": 1}}
@@ -2346,6 +2413,28 @@ class Scene:
                 if off:
                     cam["cameraOffsetMs"] = off
             sd.update(cam)
+            for tid in shown_t:
+                ax, ay = titles[tid][0], titles[tid][1]
+                new = (_clean(ax + target[0]), _clean(ay + target[1]))
+                if new == tpos[tid]:
+                    continue
+                tpos[tid] = new
+                nodes[tid].update(x=new[0], y=new[1])
+                if k == 0:
+                    for nf in sd["nodes"]:
+                        if nf["id"] == tid:
+                            nf.update(x=new[0], y=new[1])
+                    continue
+                pn = next((nf for nf in sd["nodes"] if nf["id"] == tid), None)
+                if pn is None:
+                    pn = {"id": tid}
+                    sd["nodes"].append(pn)
+                pn.update(x=new[0], y=new[1])
+                act = {"type": "transformTween", "target": {"kind": "node", "id": tid},
+                       "to": {"x": new[0], "y": new[1]}, "durationMs": cam["cameraDurationMs"], "ease": "ease"}
+                if cam.get("cameraOffsetMs"):
+                    act["offsetMs"] = cam["cameraOffsetMs"]
+                sd.setdefault("actions", []).append(act)
             cur = target
 
 
@@ -2499,6 +2588,30 @@ def _walk_fields(obj, where, errors):
             _walk_fields(v, "%s[%d]" % (where, i), errors)
 
 
+def _opens_with_title(sc, ab):
+    """True when a big or bold text node shows in the top third of the frame in the first two steps."""
+    nodes = {n.get("id"): dict(n) for n in sc.get("nodes") or [] if isinstance(n, dict)}
+    floor = font_floor("body", ab["width"], ab["height"])
+    for st in (sc.get("steps") or [])[:2]:
+        if not isinstance(st, dict):
+            continue
+        for n in st.get("nodes") or []:
+            if isinstance(n, dict):
+                nodes.setdefault(n.get("id"), {}).update(n)
+        cam = st.get("camera") if isinstance(st.get("camera"), dict) else {}
+        oy = (cam.get("y") or 0) if _num(cam.get("y")) else 0
+        for n in nodes.values():
+            if n.get("kind") != "text" or (n.get("opacity", 1) or 0) <= 0.01 or not _num(n.get("y")) \
+                    or not _num(n.get("h")) or not str(n.get("text", "")).strip():
+                continue
+            big = _is_bold(n.get("fontWeight")) or (n.get("fontSize") or 0) >= 1.5 * floor
+            if big and n["y"] + n["h"] / 2.0 - oy <= ab["y"] + ab["height"] / 3.0:
+                return True
+            if big and (n.get("fontSize") or 0) >= 1.5 * floor:
+                return True        # a title card in the middle of the frame
+    return False
+
+
 def validate(doc):
     """Check a document against the SKILL.md rules. Returns (errors, warnings), each a list of strings."""
     errors, warnings = [], []
@@ -2536,6 +2649,9 @@ def validate(doc):
                     E("transitions[%d]: kind must be one of %s, or null for a cut." % (i, sorted(TRANSITION_KINDS)))
                 elif not (_num(t.get("durationMs")) and t["durationMs"] > 0):
                     E("transitions[%d]: durationMs must be > 0." % i)
+        if scenes and isinstance(scenes[0], dict) and ab and not _opens_with_title(scenes[0], ab):
+            W("scene 1: the video does not open with a title. Show a short bold title at the top in the first "
+              "step (the Python helper: title, body = scene.title(\"...\")), or a title card.")
         names = doc.get("sceneNames")
         if names is not None and (not isinstance(names, list) or len(names) != len(scenes)):
             W("sceneNames should have one name per scene.")
@@ -2651,9 +2767,16 @@ def _visible_bbox(nodes, edges):
         a, b = vis.get(e.get("from")), vis.get(e.get("to"))
         if not a or not b or (e.get("trim", 1) or 0) <= 0.01 or (e.get("opacity", 1) or 0) <= 0.01:
             continue
-        for x, y in edge_path(e, a, b):
+        pts = edge_path(e, a, b)
+        for x, y in pts:
             xs.append(x)
             ys.append(y)
+        if e.get("label") and "fromXY" not in e and len(pts) > 1:
+            cx, cy = _path_mid(pts)
+            lfs = e.get("labelFontSize", 12)
+            lw, lh = label_width(e["label"], lfs), label_height(lfs)
+            xs += [cx - lw / 2.0, cx + lw / 2.0]
+            ys += [cy - lh / 2.0, cy + lh / 2.0]
     return min(xs), min(ys), max(xs), max(ys)
 
 
@@ -2747,7 +2870,7 @@ def _node_field_checks(n, where, E, W):
 
 def _overlap_ok(a, b):
     """Pairs that are meant to overlap: text over a chart, a lifeline or a progress bar, a glyph on a progress
-    bar, pie wedges sharing a center, and any pair where one node is a thin line (12 px or less)."""
+    bar, pie wedges sharing a center, a small dot on a chart, and any pair where one node is a thin line (12 px or less)."""
     ka, kb = a.get("kind"), b.get("kind")
     kinds = {ka, kb}
     if min(a["w"], a["h"], b["w"], b["h"]) <= 12:
@@ -2759,6 +2882,8 @@ def _overlap_ok(a, b):
         return True
     if kinds == {"glyph", "progress"}:
         return True
+    if "circle" in kinds and (ka in under or kb in under) and min(a["w"], b["w"]) <= 40:
+        return True        # a marker dot on a chart (the line chart's tip)
     return False
 
 
@@ -3001,6 +3126,11 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                 for key, val in to.items():
                     if key not in TWEEN_PROPS:
                         E("%s: transformTween to.%s is not a tween property." % (P, key))
+                    if key in ALGO_TIMED:
+                        if nodes[tid].get(key) != val:
+                            E("%s: transformTween on %s times %s, but its to.%s differs from the step's %s; give the "
+                              "same value in both (the tween only sets the timing)." % (P, tid, key, key, key))
+                        continue
                     cur = nodes[tid].get(key, 1 if key in ("opacity", "typeProgress", "scaleX", "scaleY") else None)
                     if cur is not None and _num(val) and _num(cur) and abs(cur - val) > 0.01:
                         E("%s: transformTween on %s ends at %s=%g but the step sets %g; make the step's value match "
@@ -3032,6 +3162,24 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                       % (P, a.get("pathId")))
             elif t not in ("positionTween", "pathAnimate", "algoSwap", "containerTransform", "voiceOver"):
                 E("%s: unknown action type %r." % (P, t))
+            if t in ("positionTween", "pathFollow", "algoSwap", "containerTransform") and tid not in nodes:
+                E("%s: %s targets unknown node %s." % (P, t, tid))
+            if t == "pathAnimate" and tid not in edges:
+                E("%s: pathAnimate targets unknown edge %s." % (P, tid))
+            if t == "algoSwap" and tid in nodes:
+                ix = a.get("indices")
+                vals = nodes[tid].get("cellValues") or []
+                if not (isinstance(ix, list) and len(ix) == 2 and all(isinstance(i, int) and 0 <= i < len(vals) for i in ix)
+                        and ix[0] != ix[1]):
+                    E("%s: algoSwap on %s needs \"indices\": [i, j], two different cells of its cellValues." % (P, tid))
+                elif len(before_n.get(tid, {}).get("cellValues") or []) == len(vals) and \
+                        before_n[tid]["cellValues"][ix[0]] != vals[ix[1]]:
+                    E("%s: algoSwap on %s swaps cells %d and %d, but the step's cellValues do not hold them swapped; "
+                      "put the swapped values in this step's snapshot." % (P, tid, ix[0], ix[1]))
+            if (t == "algoSwap" or (t == "transformTween" and ALGO_TIMED & set(a.get("to") or {}))) \
+                    and not st.get("easing"):
+                E("%s: a %s on %s is timed only when the step has \"easing\" (e.g. \"ease\"); without it openCanviz "
+                  "snaps a swap and spreads a colour change over the whole step." % (P, t, tid))
             if t in ("visibility", "transformTween", "positionTween", "pathFollow") and tgt.get("kind") != "node":
                 E("%s: %s target must be {\"kind\":\"node\",\"id\":...}." % (P, t))
             if t == "edgeTween" and tgt.get("kind") != "edge":
@@ -3085,6 +3233,14 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                     E("%s: arrow %s starts drawing at %d ms but its end %s only starts to appear at %d ms, so it "
                       "draws toward empty space. Reveal %s first (or at the same offset), then draw the arrow."
                       % (P, e.get("id"), a.get("offsetMs") or 0, end, starts[end], end))
+        c = st.get("camera")
+        if ab and isinstance(c, dict) and all(_num(c.get(x)) for x in ("x", "y", "zoom")):
+            view = (c["x"], c["y"], c["zoom"])
+        # where the frame is: the artboard, moved by a zoom-1 camera pan (what the video shows)
+        fx0, fy0 = ab["x"] if ab else 0, ab["y"] if ab else 0
+        if ab and view and abs(view[2] - 1) <= 0.05:
+            fx0 += view[0] - (ab["x"] + ab["width"] / 2.0)
+            fy0 += view[1] - (ab["y"] + ab["height"] / 2.0)
         for nid, n in nodes.items():
             if not all(_num(n.get(x)) for x in ("x", "y", "w", "h")):
                 E("%s: node %s needs numeric x, y, w, h." % (P, nid))
@@ -3096,10 +3252,12 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                   % (P, nid, n["w"], n["h"]))
             if nid not in vis_nodes:
                 continue
-            if ab and (n["x"] < ab["x"] - 1 or n["y"] < ab["y"] - 1 or n["x"] + n["w"] > ab["x"] + ab["width"] + 1
-                       or n["y"] + n["h"] > ab["y"] + ab["height"] + 1):
-                E("%s: node %s (x=%g y=%g w=%g h=%g) sticks out of the artboard (%g,%g %gx%g); move it inside."
-                  % (P, nid, n["x"], n["y"], n["w"], n["h"], ab["x"], ab["y"], ab["width"], ab["height"]))
+            ix0, ix1 = _ink_x(n) if (fx0, fy0) != (ab["x"], ab["y"]) else (n["x"], n["x"] + n["w"])
+            if ab and (ix0 < fx0 - 1 or n["y"] < fy0 - 1 or ix1 > fx0 + ab["width"] + 1
+                       or n["y"] + n["h"] > fy0 + ab["height"] + 1):
+                E("%s: node %s (x=%g y=%g w=%g h=%g) sticks out of the frame (%g,%g %gx%g: the artboard moved by "
+                  "the camera); move it inside." % (P, nid, n["x"], n["y"], n["w"], n["h"], fx0, fy0, ab["width"],
+                                                     ab["height"]))
             why = text_overflow(n)
             if why:
                 W("%s: text in %s will likely overflow: %s. Enlarge the box, lower the font size or shorten it."
@@ -3128,9 +3286,6 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                 elif _overlap(a, b) and not inside and once(("ov", a["id"], b["id"])):
                     W("%s: %s and %s overlap; move them apart or put one fully inside the other."
                       % (P, a["id"], b["id"]))
-        c = st.get("camera")
-        if ab and isinstance(c, dict) and all(_num(c.get(x)) for x in ("x", "y", "zoom")):
-            view = (c["x"], c["y"], c["zoom"])
         if ab and view:
             later = [n for i, n in nodes.items() if i in ever and n.get("kind") not in ("group", "algo-pointer")
                      and not n.get("parentId") and all(_num(n.get(x)) for x in ("x", "y", "w", "h"))]
@@ -3239,11 +3394,37 @@ def _screen_checks(P, ab, captions, nodes, edges, vis, cam, W, once, later=None)
             span = max((box[2] - box[0]) / max(1.0, fb[2] - fb[0]), (box[3] - box[1]) / max(1.0, fb[3] - fb[1]))
             if math.hypot(fx - acx, fy - acy) <= 0.15 * H_ and (span >= 0.5 or all(n.get("kind") == "text" for n in vis)):
                 off = 0
+    if off > 0.15 * H_:
+        # under a title: the content is horizontally centered and starts close under it
+        tl = [n for n in vis if n.get("kind") == "text" and _is_bold(n.get("fontWeight")) and n["w"] >= 0.5 * W_
+              and n["y"] - sy <= ab["y"] + 0.2 * H_ and n["h"] <= 200]
+        rest = {n["id"]: n for n in vis if n not in tl}
+        b2 = _visible_bbox(rest, edges) if tl and rest else None
+        if b2 is not None:
+            gap = (b2[1] - sy) - max(n["y"] + n["h"] - sy for n in tl)
+            if abs((b2[0] + b2[2]) / 2.0 - sx - acx) <= 0.1 * H_ and -10 <= gap <= 200:
+                off = 0
     if off > 0.15 * H_ and once(("center", P)):
         W("%s: what shows sits %d px off the center of the safe area (%s); center it, or pan the camera to it "
           "(the Python helper's follow camera does this per step)." % (P, off, "%s%s" % (
               "high" if bcy < acy - 0.1 * H_ else "low" if bcy > acy + 0.1 * H_ else "",
               " left" if bcx < acx - 0.1 * H_ else " right" if bcx > acx + 0.1 * H_ else "")))
+    vis_ids = {n["id"] for n in vis}
+    byid = {n["id"]: n for n in vis}
+    for eid, e in edges.items():
+        if not e.get("label") or "fromXY" in e or e.get("from") not in vis_ids or e.get("to") not in vis_ids:
+            continue
+        if (e.get("trim", 1) or 0) <= 0.01 or (e.get("opacity", 1) or 0) <= 0.01:
+            continue
+        pts = edge_path(e, byid[e["from"]], byid[e["to"]])
+        if len(pts) < 2:
+            continue
+        cx = _path_mid(pts)[0] - sx
+        lw = label_width(e["label"], e.get("labelFontSize", 12))
+        d = min(cx - lw / 2.0 - ab["x"], ab["x"] + W_ - cx - lw / 2.0)
+        if d < LABEL_EDGE - 1 and once(("lside", eid)):
+            W("%s: edge %s's label comes within %d px of the side of the frame; keep %d px (move the nodes in, "
+              "shorten the label, or route the arrow on another side)." % (P, eid, d, LABEL_EDGE))
     side = 100 if W_ > H_ else 60
     for n in vis:
         if n.get("kind") == "text":

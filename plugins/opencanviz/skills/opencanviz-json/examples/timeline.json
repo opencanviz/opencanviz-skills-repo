@@ -301,6 +301,7 @@
           "id": "s1_step0",
           "durationMs": 5600,
           "caption": "In 1961 the United States set out to land people on the Moon.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_the_apollo_program",
@@ -646,6 +647,7 @@
           "delta": true,
           "durationMs": 5200,
           "caption": "In 1967 a fire killed the Apollo 1 crew during a test.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_timeline",
@@ -667,13 +669,29 @@
           "edges": [],
           "actions": [
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_timeline"
+              },
+              "from": {
+                "w": 12.033333333333303
+              },
+              "to": {
+                "w": 289.3666666666667
+              },
+              "durationMs": 600,
+              "ease": "ease-out"
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
                 "id": "s1_timeline_dot1"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -682,7 +700,8 @@
                 "id": "s1_timeline_year1"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -691,7 +710,8 @@
                 "id": "s1_timeline_text1"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             }
           ]
         },
@@ -700,6 +720,7 @@
           "delta": true,
           "durationMs": 5200,
           "caption": "In 1968 Apollo 8 became the first crewed flight around the Moon.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_timeline",
@@ -721,13 +742,29 @@
           "edges": [],
           "actions": [
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_timeline"
+              },
+              "from": {
+                "w": 289.3666666666667
+              },
+              "to": {
+                "w": 566.7
+              },
+              "durationMs": 600,
+              "ease": "ease-out"
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
                 "id": "s1_timeline_dot2"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -736,7 +773,8 @@
                 "id": "s1_timeline_year2"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -745,7 +783,8 @@
                 "id": "s1_timeline_text2"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             }
           ]
         },
@@ -754,6 +793,7 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "In July 1969 Apollo 11 landed.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_timeline",
@@ -775,13 +815,29 @@
           "edges": [],
           "actions": [
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_timeline"
+              },
+              "from": {
+                "w": 566.7
+              },
+              "to": {
+                "w": 844.0333333333334
+              },
+              "durationMs": 600,
+              "ease": "ease-out"
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
                 "id": "s1_timeline_dot3"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -790,7 +846,8 @@
                 "id": "s1_timeline_year3"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -799,7 +856,8 @@
                 "id": "s1_timeline_text3"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             }
           ]
         },
@@ -808,6 +866,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "Apollo 17 made the last landing in 1972.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_timeline",
@@ -829,13 +888,29 @@
           "edges": [],
           "actions": [
             {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_timeline"
+              },
+              "from": {
+                "w": 844.0333333333334
+              },
+              "to": {
+                "w": 1121.3666666666668
+              },
+              "durationMs": 600,
+              "ease": "ease-out"
+            },
+            {
               "type": "visibility",
               "target": {
                 "kind": "node",
                 "id": "s1_timeline_dot4"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -844,7 +919,8 @@
                 "id": "s1_timeline_year4"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             },
             {
               "type": "visibility",
@@ -853,7 +929,8 @@
                 "id": "s1_timeline_text4"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 300,
+              "offsetMs": 300
             }
           ]
         }

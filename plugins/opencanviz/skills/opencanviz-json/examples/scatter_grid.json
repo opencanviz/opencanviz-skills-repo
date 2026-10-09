@@ -303,6 +303,7 @@
           "id": "s1_step0",
           "durationMs": 2500,
           "caption": "Each dot is one customer.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_grouping_customers_by_sp",
@@ -583,40 +584,6 @@
           ],
           "actions": [
             {
-              "type": "edgeTween",
-              "target": {
-                "kind": "edge",
-                "id": "s1_scatter_line"
-              },
-              "from": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "to": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "durationMs": 300,
-              "ease": "linear"
-            },
-            {
-              "type": "edgeTween",
-              "target": {
-                "kind": "edge",
-                "id": "s1_scatter_line_2"
-              },
-              "from": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "to": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "durationMs": 300,
-              "ease": "linear"
-            },
-            {
               "type": "visibility",
               "target": {
                 "kind": "node",
@@ -758,6 +725,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "They settle into two groups: casual and loyal.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_scatter",
@@ -920,6 +888,7 @@
           "id": "s2_step0",
           "durationMs": 4800,
           "caption": "The top row and the left column each have one path.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_counting_paths_across_a",
@@ -1014,6 +983,7 @@
           "delta": true,
           "durationMs": 5200,
           "caption": "Each cell adds the cell above and the cell to its left.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_grid",
@@ -1053,13 +1023,44 @@
               ]
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s2_grid"
+              },
+              "to": {
+                "gridColors": [
+                  [
+                    null,
+                    null,
+                    null
+                  ],
+                  [
+                    null,
+                    "#f59e0b",
+                    null
+                  ],
+                  [
+                    null,
+                    null,
+                    null
+                  ]
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         },
         {
           "id": "s2_step2",
           "delta": true,
           "durationMs": 3300,
           "caption": "Keep filling, one cell at a time.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_grid",
@@ -1099,13 +1100,44 @@
               ]
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s2_grid"
+              },
+              "to": {
+                "gridColors": [
+                  [
+                    null,
+                    null,
+                    null
+                  ],
+                  [
+                    null,
+                    "#1e293b",
+                    "#f59e0b"
+                  ],
+                  [
+                    null,
+                    null,
+                    null
+                  ]
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         },
         {
           "id": "s2_step3",
           "delta": true,
           "durationMs": 3300,
           "caption": "The corner holds the answer: six paths.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_grid",
@@ -1145,7 +1177,37 @@
               ]
             }
           ],
-          "edges": []
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s2_grid"
+              },
+              "to": {
+                "gridColors": [
+                  [
+                    null,
+                    null,
+                    null
+                  ],
+                  [
+                    null,
+                    null,
+                    "#1e293b"
+                  ],
+                  [
+                    null,
+                    null,
+                    "#22c55e"
+                  ]
+                ]
+              },
+              "durationMs": 350,
+              "ease": "ease-out"
+            }
+          ]
         }
       ],
       "narration": [

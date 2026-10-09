@@ -1279,6 +1279,33 @@
         },
         "value": {
           "type": "number"
+        },
+        "cellColors": {
+          "type": "array",
+          "description": "algo-array cell colours. Times this field's change by the tween's offsetMs/durationMs/ease; the step needs \"easing\". Must equal the step's snapshot value."
+        },
+        "gridColors": {
+          "type": "array",
+          "description": "algo-grid cell colours (rows of colours). Times this field's change by the tween's offsetMs/durationMs/ease; the step needs \"easing\". Must equal the step's snapshot value."
+        },
+        "nodeColors": {
+          "type": "object",
+          "description": "Tree/list/graph node colours by node key. Times this field's change by the tween's offsetMs/durationMs/ease; the step needs \"easing\". Must equal the step's snapshot value."
+        },
+        "cellValues": {
+          "type": "array",
+          "description": "algo-array values. Times this field's change by the tween's offsetMs/durationMs/ease; the step needs \"easing\". Must equal the step's snapshot value."
+        },
+        "gridValues": {
+          "type": "array",
+          "description": "algo-grid values (rows). Times this field's change by the tween's offsetMs/durationMs/ease; the step needs \"easing\". Must equal the step's snapshot value."
+        },
+        "highlightedLines": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Code node lit lines, 1-based. Times this field's change by the tween's offsetMs/durationMs/ease; the step needs \"easing\". Must equal the step's snapshot value."
         }
       }
     },

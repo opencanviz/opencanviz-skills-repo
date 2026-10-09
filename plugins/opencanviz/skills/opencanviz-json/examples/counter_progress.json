@@ -18,7 +18,7 @@
           "id": "s1_uploading_a_video",
           "kind": "text",
           "x": -840,
-          "y": -480,
+          "y": -134.5,
           "w": 1680,
           "h": 110,
           "text": "Uploading a video",
@@ -52,7 +52,7 @@
           "countSuffix": " MB",
           "fontSize": 96,
           "opacity": 0,
-          "countStartMs": 2900
+          "countStartMs": 3600
         },
         {
           "id": "s1_progress",
@@ -74,12 +74,13 @@
           "id": "s1_step0",
           "durationMs": 2900,
           "caption": "A two gigabyte video starts uploading.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_uploading_a_video",
               "kind": "text",
               "x": -840,
-              "y": -480,
+              "y": -134.5,
               "w": 1680,
               "h": 110,
               "text": "Uploading a video",
@@ -113,7 +114,7 @@
               "countSuffix": " MB",
               "fontSize": 96,
               "opacity": 0,
-              "countStartMs": 2900
+              "countStartMs": 3600
             },
             {
               "id": "s1_progress",
@@ -153,7 +154,7 @@
           ],
           "camera": {
             "x": 0,
-            "y": -79.2,
+            "y": 345.5,
             "zoom": 1
           },
           "cameraDurationMs": 0
@@ -163,6 +164,7 @@
           "delta": true,
           "durationMs": 3500,
           "caption": "The bytes stream up while the bar fills.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_progress",
@@ -171,6 +173,11 @@
             {
               "id": "s1_count_2_048_mb",
               "opacity": 1
+            },
+            {
+              "id": "s1_uploading_a_video",
+              "x": -840,
+              "y": -524.2
             }
           ],
           "edges": [],
@@ -182,9 +189,30 @@
                 "id": "s1_count_2_048_mb"
               },
               "mode": "fadeIn",
-              "durationMs": 500
+              "durationMs": 500,
+              "offsetMs": 700
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_uploading_a_video"
+              },
+              "to": {
+                "x": -840,
+                "y": -524.2
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
-          ]
+          ],
+          "camera": {
+            "x": 0,
+            "y": -44.2,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
         }
       ],
       "narration": [

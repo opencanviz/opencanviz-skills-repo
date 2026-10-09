@@ -17,7 +17,7 @@
         {
           "id": "s1_a_parcel_on_its_way",
           "kind": "text",
-          "x": -840,
+          "x": -1170,
           "y": -480,
           "w": 1680,
           "h": 110,
@@ -114,11 +114,12 @@
           "id": "s1_step0",
           "durationMs": 2500,
           "caption": "A parcel leaves the shop.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_a_parcel_on_its_way",
               "kind": "text",
-              "x": -840,
+              "x": -1170,
               "y": -480,
               "w": 1680,
               "h": 110,
@@ -252,8 +253,8 @@
             }
           ],
           "camera": {
-            "x": -249,
-            "y": -100,
+            "x": -330,
+            "y": 0,
             "zoom": 1
           },
           "cameraDurationMs": 0
@@ -263,6 +264,7 @@
           "delta": true,
           "durationMs": 3300,
           "caption": "A truck carries it to the hub.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_parcel",
@@ -290,10 +292,16 @@
           "delta": true,
           "durationMs": 4000,
           "caption": "From the hub it goes out for delivery.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_home",
               "opacity": 1
+            },
+            {
+              "id": "s1_a_parcel_on_its_way",
+              "x": -840,
+              "y": -480
             }
           ],
           "edges": [
@@ -350,11 +358,24 @@
               },
               "durationMs": 1500,
               "offsetMs": 1900
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_a_parcel_on_its_way"
+              },
+              "to": {
+                "x": -840,
+                "y": -480
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
           ],
           "camera": {
             "x": 0,
-            "y": -100,
+            "y": 0,
             "zoom": 1
           },
           "cameraDurationMs": 700,

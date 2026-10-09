@@ -134,6 +134,7 @@
           "id": "s1_step0",
           "durationMs": 4400,
           "caption": "Here is the same page before and after a cache.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_adding_a_cache",
@@ -267,6 +268,7 @@
           "delta": true,
           "durationMs": 4400,
           "caption": "Before, every request went all the way to the database.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_panel_before",
@@ -318,6 +320,7 @@
           "delta": true,
           "durationMs": 3300,
           "caption": "After, most requests are answered from memory.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_panel_after",

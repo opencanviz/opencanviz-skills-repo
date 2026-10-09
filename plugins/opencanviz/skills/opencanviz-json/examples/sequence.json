@@ -246,6 +246,7 @@
           "id": "s1_step0",
           "durationMs": 3300,
           "caption": "Three parts take part in a login.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_what_happens_when_you_lo",
@@ -521,6 +522,7 @@
           "delta": true,
           "durationMs": 3300,
           "caption": "The browser sends the username and password.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_msg_post_login_text",
@@ -569,6 +571,7 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "The server looks the user up.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_msg_find_user_text",
@@ -617,6 +620,7 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "The database sends the row back.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_life_server",
@@ -674,6 +678,7 @@
           "delta": true,
           "durationMs": 3300,
           "caption": "The server answers with a session cookie.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_msg_session_cookie_text",

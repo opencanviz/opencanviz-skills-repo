@@ -55,27 +55,28 @@ import sys; sys.path.insert(0, "<skill folder>/scripts")
 from opencanviz import Project
 p = Project("Title", aspect="16:9")              # or "9:16", "1:1"; theme="light"; voice="nova"
 s = p.scene("Scene name")                          # transition="crossfade" joins it to the previous scene
-cells = p.area().flow(3, labels=["asks", "reads"]) # also row/column/stack/grid/cut_top; gaps fit the labels
+title, body = s.title("How a request is served")   # every video opens with a title; body = the rest of p.area()
+cells = body.flow(3, labels=["asks", "reads"])     # also row/column/stack/grid/cut_top; gaps fit the labels
 a, b = s.box("Client", at=cells[0]), s.node("cylinder", "DB", at=cells[1])
 link = s.arrow(a, b, "asks")                       # route="below": skip arrow on its own lane; route="around": closes a cycle
-s.step("Caption, also the narration.").reveal(a)   # .hide .move .set .typewrite .camera .focus .remove .wait
+s.step("Caption, also the narration.").reveal(title).reveal(a)  # .hide .move .set .typewrite .camera .focus .remove .wait
 s.step("Next beat.").reveal(b).draw(link)          # reveal a node before drawing an arrow to it
 p.save("out.json")                                 # validates; raises with a fix hint and writes nothing on error
 ```
 
-`p.area()` is the artboard minus the margin and the caption band. `rect.cut_top(h)` returns `(band, rest)` but `rect.cut_bottom(h)` returns `(rest, band)`; two visible nodes on the same rect are refused. Fonts are fitted to their boxes. Ids get the `s1_` prefix. Step durations follow the narration length. The camera follows what is visible so each step's content sits centered in the safe area, a lone first node included (`Project(..., follow=False)` turns this off, as does any explicit `.camera`). `draw()` on a labeled edge draws an unlabeled copy (`<id>_line`) and fades the label in once the line is drawn. Rows keep 120 px side margins in landscape. To check a file written by hand, run `python3 scripts/opencanviz.py check out.json`.
+`p.area()` is the artboard minus the margin and the caption band. `rect.cut_top(h)` returns `(band, rest)` but `rect.cut_bottom(h)` returns `(rest, band)`; two visible nodes on the same rect are refused. Fonts are fitted to their boxes. Ids get the `s1_` prefix. Step durations follow the narration length. The camera follows what is visible so each step's content sits centered in the safe area, a lone first node included (`Project(..., follow=False)` turns this off, as does any explicit `.camera`). A title from `s.title` stays fixed on screen while the camera moves, and the content is centred under it. The checker warns when the first scene does not open with a title. `draw()` on a labeled edge draws an unlabeled copy (`<id>_line`); when the line is done the label appears with its opaque chip at once and the copy goes in the same frame. Rows keep 120 px side margins in landscape. To check a file written by hand, run `python3 scripts/opencanviz.py check out.json`.
 
 ## Recipes
 
 Each recipe is a `scene.*` call that builds the visual inside a rect and `step.*` calls that animate it. They write only fields openCanviz plays and exports correctly, so use them rather than writing these node kinds by hand. Reveal the visual first (`step.reveal(node)`), then animate it in a later step: a recipe action in step 0 raises, because a change cannot tween before the scene has a previous state.
 
 ```python
-title_area, body = p.area().cut_top(110)
+title, body = s.title("Bubble sort")                          # reveal it in step 0
 chart = s.bar_chart([("Python", 49), ("Java", 30)], at=body, suffix="M")  # labels, baseline, counting values
 s.step("Two languages.").reveal(chart)
 s.step("Python grows first.").grow(chart, 0)                 # one bar; grow(chart) grows the rest
 line = s.line_chart(pts, at=body, x_ticks=[1800, 1900, 2000], y_ticks=[0, 4, 8], y_title="billions",
-                    notes={3: "2 billion"})                  # .extend(line, upto) draws on to a point
+                    notes={3: "2 billion"})                  # .extend(line, upto) draws on to a point; a dot marks the tip
 arr = s.array([5, 2, 8], at=body.inset(140, 40))             # .swap(arr, 0, 1) .color(arr, {0: c}) .bracket(arr, 2, 2, "sorted")
 j = s.pointer(arr, 0, label="j")                             # .point(j, 1); also tree/list/graph values, grid (r, c)
 tree = s.tree({"8": ["4", "12"], "4": ["2", "6"]}, at=body)  # sized for you; .color(tree, {"4": c})
@@ -87,7 +88,7 @@ r_box, i_box = right.column(2, gap=40, h=120)
 code = s.code(source, at=left)                               # .highlight(code, 3), 1-based lines
 i = s.variable("i", 1, at=i_box)                             # .assign(i, 2); box only as wide as name + value
 web, api = s.sequence(["Browser", "Server"], at=body)        # m = s.message(web, api, "GET /"); .draw(m)
-tl = s.timeline([(1961, "Program starts"), (1969, "Moon landing")], at=body)  # .event(tl) once per event; 4+ alternate above/below
+tl = s.timeline([(1961, "Program starts"), (1969, "Moon landing")], at=body)  # .event(tl) once per event: the bar grows in 600 ms, the new dot lands as it ends; 4+ alternate
 before, after = s.panels(["Before", "After"], at=body)       # lay out inside before.content
 pts = s.bullets(["Use 12+ characters", "Never reuse"], at=body)  # reveal one per step
 n = s.counter(2048, at=r, suffix=" MB"); bar = s.progress(0, at=r2)  # .set(bar, value=1) fills it over the step
@@ -97,9 +98,9 @@ road = s.path([(-600, 0), (0, -200), (600, 0)])              # .follow(parcel, r
 
 What the recipes take care of, and what to keep in mind if you write these kinds by hand:
 
-- **Arrays:** always build them with `scene.array`. It turns openCanviz's index row off (`cellShowIndices: false`; that row resets the canvas alpha, so the array could not fade) and draws the indices as text nodes. Swaps change `cellValues` and openCanviz slides the two values past each other; there is no `algoSwap` action, because the exported video snaps it. Use distinct values in an array you swap.
+- **Arrays:** always build them with `scene.array`. It turns openCanviz's index row off (`cellShowIndices: false`; that row resets the canvas alpha, so the array could not fade) and draws the indices as text nodes. `swap` writes the swapped `cellValues` plus an `algoSwap` action of 600 ms from the step start, so the values hop past each other while the narration says so. The hop height is fixed by openCanviz (no field for it). Use distinct values in an array you swap.
 - **Pointers** sit above the cells (`side="top"`); a bottom pointer would cover the index row. A grid pointer covers the cell above its target, so mark grid cells with `color` instead.
-- **Colors** on cells and structure nodes switch on at the start of the step. A cleared color (`None`) is written as the node's fill hex, because openCanviz keeps a cleared (`null`) cell in its old color for the whole step.
+- **Colors** on cells, grid cells and tree/list/graph nodes change in 350 ms from the step start (a `transformTween` whose `to` holds the new `cellColors`, `gridColors` or `nodeColors`). Graph edge colours cannot be timed and take the whole step. A cleared color (`None`) is written as the node's fill hex, because openCanviz keeps a cleared (`null`) cell in its old color for the whole step.
 - **Code highlight:** the code node carries `"_animatedProps": {"highlightedLines": false}`, the one internal field you should write. Without it openCanviz shows the old and the new lines lit for the whole step. Keep it when you edit a code node.
 - **Paths:** `pathFollow` needs `length` (total px) and `cum` (length so far at each point, from 0) on the path, or the exported video leaves the node where it is. `scene.path` fills them.
 - **Fonts:** each structure kind has its own font field (`cellFontSize`, `nodeFontSize`, `gridCellFontSize`, `labelFontSize`, `fontSize`); without it the text renders at 11 to 14 px. The recipes size every one for the frame.
@@ -160,7 +161,7 @@ What the recipes take care of, and what to keep in mind if you write these kinds
 9. Revealing a node: set `"opacity": 1` for it in the step's `nodes` AND add a `fadeIn` or `slideIn*` action. If the snapshot keeps opacity 0, the node fades back out in the next step.
 10. Hiding a node: set `"opacity": 0` and use a `fadeOut` or `slideOut*` action, or list it in `removeNodeIds`. Do not hide with an opacity `transformTween`.
 11. Moving a node: set the new `x`/`y` in the delta step. It tweens across the whole step on its own. For tighter timing add `{"type":"transformTween","target":{"kind":"node","id":".."},"to":{"x":..,"y":..},"durationMs":..,"offsetMs":..}` with the same end values. `from.x` and `from.y` are ignored. Do not use `isRelative`, `dx` or `dy`.
-12. An action controls only what it covers: `transformTween` and `edgeTween` cover the keys in `to`; `visibility` covers `opacity` (slides also cover `x`, `y`). Every other change in the step tweens automatically over the full step. Make the snapshot's end values match the action's `to`.
+12. An action controls only what it covers: `transformTween` and `edgeTween` cover the keys in `to`; `visibility` covers `opacity` (slides also cover `x`, `y`). Every other change in the step tweens automatically over the full step. Make the snapshot's end values match the action's `to`. A `transformTween` on `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues` or `highlightedLines`, and an `algoSwap`, are timed only when the step has `"easing"` (e.g. `"ease"`); without it the swap snaps and the colour takes the whole step.
 13. Drawing an edge in: start it at `"trim": 0`, set `"trim": 1` in the reveal step's `edges`, and add `{"type":"edgeTween","target":{"kind":"edge","id":".."},"from":{"trim":0},"to":{"trim":1},"durationMs":700}`.
    Draw an edge in only in the same step as its later end node, or after. An arrow that draws while one of its ends is still hidden points at empty space.
 14. Edge line width is `width`. `strokeWidth` is for node outlines only.
@@ -185,7 +186,7 @@ These keep the video readable once captions and arrows are on screen. The helper
 28. **Edge labels are readable.** `labelFontSize` at least 22 in landscape and 28 in portrait, with `"labelBgColor"` set to the background color so the label masks the line behind it.
 29. **Gaps leave a real arrow.** Between two connected nodes leave at least 100 px. For a labeled edge leave the label chip (characters x 0.6 x `labelFontSize` + 24; vertical links: font size x 1.2 + 10) plus 120 px of visible line, so the chip never covers most of the arrow. When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
 30. **No edge crosses a node.** An edge may not pass over any node except its two ends. Join neighbours, and send a skip connection along its own lane: `"fromPort": "S", "toPort": "S", "lineType": "elbowed"` (or `N`/`N`) with nothing in the lane.
-31. **Labels appear after their line.** The engine puts a label at the middle of the drawn part, so it slides with the tip and shows before the arrow. For a labeled edge, add an unlabeled copy (`<id>_line`, same ends, no label fields) listed before it: the copy starts at `"trim": 0, "opacity": 1` and draws in with `{"trim":0}` to `{"trim":1}`. The labeled edge sits at `"trim": 1, "opacity": 0` and fades in once the line is done: `{"type":"edgeTween","from":{"trim":1,"opacity":0},"to":{"trim":1,"opacity":1},"durationMs":300,"offsetMs":<end of the draw>}`. Then fade the copy to opacity 0. The helper's `draw()` writes all of this. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
+31. **Labels appear after their line.** The engine puts a label at the middle of the drawn part, so it slides with the tip and shows before the arrow. For a labeled edge, add an unlabeled copy (`<id>_line`, same ends, no label fields) listed before it: the copy starts at `"trim": 0, "opacity": 1` and draws in with `{"trim":0}` to `{"trim":1}`. The labeled edge sits at `"trim": 1, "opacity": 0` and switches on once the line is done: `{"type":"edgeTween","from":{"trim":1,"opacity":0},"to":{"trim":1,"opacity":1},"durationMs":40,"offsetMs":<end of the draw>,"ease":"step"}`, so the chip is opaque from its first frame (openCanviz draws the chip at the edge's opacity, and a slow fade shows the line through it). Switch the copy to opacity 0 with the same offset and `"ease":"step"`. The helper's `draw()` writes all of this. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
 32. **Reveal before you draw.** Within a step, an arrow's `edgeTween` starts no earlier than the reveal of the node it points to (same or later `offsetMs`).
 33. **Center what shows.** At every step the visible content's center sits within 15% of the frame height of the safe area's center. Lay the group out centered, or add a step `camera` (`x`, `y` = content center minus safe-area center, `zoom` 1) that pans as the content grows. A lone first node starts centered, not in a corner.
 34. **Cycles close.** For a cycle topic (water cycle, feedback loop, Krebs cycle), join the last node back to the first with an elbowed arrow around the outside of the group (`S`/`S` or `N`/`N`, label below or above the lane), not through the middle. In Python: `s.arrow(last, first, "repeats", route="around")`.
@@ -203,8 +204,9 @@ These keep the video readable once captions and arrows are on screen. The helper
 | type | key fields | notes |
 | --- | --- | --- |
 | `visibility` | `mode`, `durationMs`, `offsetMs`, `ease`, `slideDistance` (150) | modes: `fadeIn`, `fadeOut`, `show`, `hide`, `slideInLeft/Right/Up/Down`, `slideOutLeft/Right/Up/Down` |
-| `transformTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `x`, `y`, `w`, `h`, `scaleX`, `scaleY`, `rotationZ`, `opacity`, `fill`, `stroke`, `strokeWidth`, `typeProgress`, `value`, `blur` |
+| `transformTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `x`, `y`, `w`, `h`, `scaleX`, `scaleY`, `rotationZ`, `opacity`, `fill`, `stroke`, `strokeWidth`, `typeProgress`, `value`, `blur`; algo fields `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues`, `highlightedLines` (step needs `easing`) |
 | `edgeTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `trim`, `trimStart`, `stroke`, `width`, `opacity` |
+| `algoSwap` | `indices` [i, j], `durationMs`, `offsetMs`, `ease` | on an `algo-array`; the step's `cellValues` hold the swapped values; step needs `easing` |
 | `positionTween` | `from`, `to` (points), `durationMs` | prefer the snapshot plus `transformTween` |
 | `pathFollow` | `pathId`, `from`, `to` (0..1), `rotateToTangent` | path lives in the scene's `paths` with `points`, `length` and `cum` |
 
@@ -244,7 +246,7 @@ Full field lists and enums are in `schema.json`.
 | Label chip wider than the gap | A 30 px stub of arrow under a label | Chip width + 120 px of gap |
 | Nodes filled from the top-left | Bottom half of the frame empty | Center the group, or pan the camera to it |
 | Boxes and arrows for a chart, a sort, a timeline or code | A generic diagram that teaches nothing | Pick the visual from the table at the top |
-| `cellShowIndices` left on, or an `algoSwap` action | The array cannot fade; the swap snaps in the export | `scene.array` and `step.swap` |
+| `cellShowIndices` left on, or an `algoSwap` in a step without `easing` | The array cannot fade; the swap snaps | `scene.array` and `step.swap` |
 | Delta step with edges and no nodes | Every node blanks for that step | List one node too |
 | Edge without `animationStyle` | Marching dashes forever | `"animationStyle": "none"` |
 | `glow: 0`, `sketchMode`, `kind: "icon"`, lottie | Ignored or broken in the export | `noGlow: true`, plain style, `kind: "svg"` |
@@ -253,7 +255,7 @@ Full field lists and enums are in `schema.json`.
 ## Checklist before you answer
 
 - [ ] Parses as JSON and validates against `schema.json`.
-- [ ] `title` and a full `artboard` are present.
+- [ ] `title` and a full `artboard` are present, and the first scene opens with an on-screen title.
 - [ ] Every scene has `nodes`, `edges` and at least one step; the scene lists equal step 0.
 - [ ] Steps after 0 have `"delta": true` and only changed fields.
 - [ ] All ids unique per scene and stable; every edge end exists.

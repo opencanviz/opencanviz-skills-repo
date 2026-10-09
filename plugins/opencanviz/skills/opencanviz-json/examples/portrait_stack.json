@@ -211,6 +211,7 @@
           "id": "s1_step0",
           "durationMs": 3300,
           "caption": "How does a vaccine train your body?",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_how_a_vaccine_trains_you",
@@ -427,6 +428,7 @@
           "delta": true,
           "durationMs": 4800,
           "caption": "A vaccine shows your body a harmless piece of a germ.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_vaccine",
@@ -457,8 +459,9 @@
         {
           "id": "s1_step2",
           "delta": true,
-          "durationMs": 2800,
+          "durationMs": 2600,
           "caption": "Immune cells study its shape.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_immune_cells",
@@ -520,9 +523,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 60,
+              "durationMs": 40,
               "offsetMs": 1900,
-              "ease": "linear"
+              "ease": "step"
             },
             {
               "type": "edgeTween",
@@ -538,8 +541,9 @@
                 "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 300,
-              "offsetMs": 1900
+              "durationMs": 40,
+              "offsetMs": 1900,
+              "ease": "step"
             }
           ],
           "camera": {
@@ -555,6 +559,7 @@
           "delta": true,
           "durationMs": 3300,
           "caption": "They make antibodies that fit that shape.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_antibodies",
@@ -616,9 +621,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 60,
+              "durationMs": 40,
               "offsetMs": 1900,
-              "ease": "linear"
+              "ease": "step"
             },
             {
               "type": "edgeTween",
@@ -634,8 +639,9 @@
                 "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 300,
-              "offsetMs": 1900
+              "durationMs": 40,
+              "offsetMs": 1900,
+              "ease": "step"
             }
           ],
           "camera": {
@@ -651,6 +657,7 @@
           "delta": true,
           "durationMs": 4800,
           "caption": "Your body remembers it, so the real germ is stopped fast.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_protection",
@@ -712,9 +719,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 60,
+              "durationMs": 40,
               "offsetMs": 1900,
-              "ease": "linear"
+              "ease": "step"
             },
             {
               "type": "edgeTween",
@@ -730,8 +737,9 @@
                 "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 300,
-              "offsetMs": 1900
+              "durationMs": 40,
+              "offsetMs": 1900,
+              "ease": "step"
             }
           ],
           "camera": {
@@ -747,6 +755,7 @@
           "delta": true,
           "durationMs": 2500,
           "caption": "That memory is your protection.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_protection",

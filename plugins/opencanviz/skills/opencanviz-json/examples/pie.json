@@ -226,6 +226,7 @@
           "id": "s1_step0",
           "durationMs": 2900,
           "caption": "Where does a working day go?",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_how_a_developer_spends_a",
@@ -457,6 +458,7 @@
           "delta": true,
           "durationMs": 3500,
           "caption": "Only about a third of it is spent writing code.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_pie_coding",
@@ -513,6 +515,11 @@
             {
               "id": "s1_pie_keytext3",
               "opacity": 1
+            },
+            {
+              "id": "s1_how_a_developer_spends_a",
+              "x": -998.5,
+              "y": -475
             }
           ],
           "edges": [],
@@ -636,11 +643,24 @@
               "mode": "fadeIn",
               "durationMs": 400,
               "offsetMs": 700
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_how_a_developer_spends_a"
+              },
+              "to": {
+                "x": -998.5,
+                "y": -475
+              },
+              "durationMs": 700,
+              "ease": "ease"
             }
           ],
           "camera": {
-            "x": -121.5,
-            "y": 0,
+            "x": -158.5,
+            "y": 5,
             "zoom": 1
           },
           "cameraDurationMs": 700,

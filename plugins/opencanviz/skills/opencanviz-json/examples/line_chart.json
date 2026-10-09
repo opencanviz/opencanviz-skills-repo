@@ -494,6 +494,19 @@
           "opacity": 1
         },
         {
+          "id": "s1_line_tip",
+          "kind": "circle",
+          "x": -762.4,
+          "y": 154.1,
+          "w": 26,
+          "h": 26,
+          "fill": "#f59e0b",
+          "stroke": "#0f172a",
+          "strokeWidth": 4,
+          "noGlow": true,
+          "opacity": 1
+        },
+        {
           "id": "s1_line_note3",
           "kind": "text",
           "x": 3.8,
@@ -575,6 +588,7 @@
           "id": "s1_step0",
           "durationMs": 3700,
           "caption": "In 1800 there were about one billion people.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_world_population_since_1",
@@ -1056,6 +1070,19 @@
               "opacity": 1
             },
             {
+              "id": "s1_line_tip",
+              "kind": "circle",
+              "x": -762.4,
+              "y": 154.1,
+              "w": 26,
+              "h": 26,
+              "fill": "#f59e0b",
+              "stroke": "#0f172a",
+              "strokeWidth": 4,
+              "noGlow": true,
+              "opacity": 1
+            },
+            {
               "id": "s1_line_note3",
               "kind": "text",
               "x": 3.8,
@@ -1133,40 +1160,6 @@
             }
           ],
           "actions": [
-            {
-              "type": "edgeTween",
-              "target": {
-                "kind": "edge",
-                "id": "s1_line_line"
-              },
-              "from": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "to": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "durationMs": 300,
-              "ease": "linear"
-            },
-            {
-              "type": "edgeTween",
-              "target": {
-                "kind": "edge",
-                "id": "s1_line_line_2"
-              },
-              "from": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "to": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "durationMs": 300,
-              "ease": "linear"
-            },
             {
               "type": "visibility",
               "target": {
@@ -1331,6 +1324,16 @@
               "mode": "fadeIn",
               "durationMs": 500,
               "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_line_tip"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 300
             }
           ]
         },
@@ -1339,6 +1342,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "It took until 1927 to reach two billion.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_line",
@@ -1596,6 +1600,11 @@
               ]
             },
             {
+              "id": "s1_line_tip",
+              "x": 105.4,
+              "y": 104.5
+            },
+            {
               "id": "s1_line_note3",
               "opacity": 1
             }
@@ -1619,6 +1628,7 @@
           "delta": true,
           "durationMs": 5000,
           "caption": "Then growth sped up: eight billion by 2022.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_line",
@@ -1874,6 +1884,11 @@
                   ]
                 }
               ]
+            },
+            {
+              "id": "s1_line_tip",
+              "x": 754.5,
+              "y": -193.1
             },
             {
               "id": "s1_line_note10",

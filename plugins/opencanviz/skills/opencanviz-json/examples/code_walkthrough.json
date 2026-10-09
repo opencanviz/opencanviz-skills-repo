@@ -17,8 +17,8 @@
         {
           "id": "s1_how_factorial_4_runs",
           "kind": "text",
-          "x": -840,
-          "y": -480,
+          "x": -933.5,
+          "y": -475,
           "w": 1680,
           "h": 110,
           "text": "How factorial(4) runs",
@@ -91,12 +91,13 @@
           "id": "s1_step0",
           "durationMs": 5200,
           "caption": "Here is a function that multiplies the numbers from 1 to n.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_how_factorial_4_runs",
               "kind": "text",
-              "x": -840,
-              "y": -480,
+              "x": -933.5,
+              "y": -475,
               "w": 1680,
               "h": 110,
               "text": "How factorial(4) runs",
@@ -187,7 +188,7 @@
           ],
           "camera": {
             "x": -93.5,
-            "y": -56,
+            "y": 5,
             "zoom": 1
           },
           "cameraDurationMs": 0
@@ -197,6 +198,7 @@
           "delta": true,
           "durationMs": 2200,
           "caption": "result starts at 1.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_code",
@@ -228,6 +230,7 @@
           "delta": true,
           "durationMs": 4100,
           "caption": "The loop runs i from 2 up to n.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_code",
@@ -259,6 +262,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "result becomes 1 times 2, which is 2.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_code",
@@ -278,6 +282,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "Next i is 3, and result becomes 6.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_code",
@@ -302,6 +307,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "Then i is 4, and result becomes 24.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_code",
@@ -326,6 +332,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "The loop ends, and the function returns 24.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_code",

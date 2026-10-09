@@ -125,6 +125,7 @@
           "id": "s1_step0",
           "durationMs": 3700,
           "caption": "Three rules make a password hard to crack.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_three_rules_for_a_good_p",
@@ -249,6 +250,7 @@
           "delta": true,
           "durationMs": 2000,
           "caption": "Length matters most.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_point1_glyph",
@@ -286,6 +288,7 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "Reuse turns one leak into many.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_point2_glyph",
@@ -323,6 +326,7 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "A manager remembers them for you.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_point3_glyph",

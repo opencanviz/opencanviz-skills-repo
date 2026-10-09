@@ -79,6 +79,7 @@
           "id": "s1_step0",
           "durationMs": 4800,
           "caption": "Why is the sky blue?",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_sun",
@@ -161,6 +162,7 @@
           "delta": true,
           "durationMs": 2900,
           "caption": "Sunlight, air, and a little physics.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s1_sunlight_air_and_a_littl",
@@ -341,6 +343,7 @@
           "id": "s2_step0",
           "durationMs": 4800,
           "caption": "Sunlight holds every color.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_sunlight",
@@ -487,6 +490,7 @@
           "delta": true,
           "durationMs": 3700,
           "caption": "Air molecules scatter short blue waves the most.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_air_molecules",
@@ -548,9 +552,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 60,
+              "durationMs": 40,
               "offsetMs": 1900,
-              "ease": "linear"
+              "ease": "step"
             },
             {
               "type": "edgeTween",
@@ -566,8 +570,9 @@
                 "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 300,
-              "offsetMs": 1900
+              "durationMs": 40,
+              "offsetMs": 1900,
+              "ease": "step"
             }
           ],
           "camera": {
@@ -583,6 +588,7 @@
           "delta": true,
           "durationMs": 4800,
           "caption": "That scattered blue reaches your eye from all over the sky.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s2_air_molecules",
@@ -648,9 +654,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 60,
+              "durationMs": 40,
               "offsetMs": 1900,
-              "ease": "linear"
+              "ease": "step"
             },
             {
               "type": "edgeTween",
@@ -666,8 +672,9 @@
                 "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 300,
-              "offsetMs": 1900
+              "durationMs": 40,
+              "offsetMs": 1900,
+              "ease": "step"
             }
           ],
           "camera": {
@@ -858,6 +865,7 @@
           "id": "s3_step0",
           "durationMs": 4100,
           "caption": "At noon, light crosses a thin layer of air.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s3_noon",
@@ -1000,40 +1008,6 @@
           ],
           "actions": [
             {
-              "type": "edgeTween",
-              "target": {
-                "kind": "edge",
-                "id": "s3_noon_to_blue_sky_line"
-              },
-              "from": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "to": {
-                "trim": 0,
-                "opacity": 1
-              },
-              "durationMs": 1000,
-              "ease": "linear"
-            },
-            {
-              "type": "edgeTween",
-              "target": {
-                "kind": "edge",
-                "id": "s3_noon_to_blue_sky"
-              },
-              "from": {
-                "trim": 1,
-                "opacity": 0
-              },
-              "to": {
-                "trim": 1,
-                "opacity": 0
-              },
-              "durationMs": 1700,
-              "ease": "linear"
-            },
-            {
               "type": "visibility",
               "target": {
                 "kind": "node",
@@ -1084,9 +1058,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 60,
+              "durationMs": 40,
               "offsetMs": 1700,
-              "ease": "linear"
+              "ease": "step"
             },
             {
               "type": "edgeTween",
@@ -1102,8 +1076,9 @@
                 "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 300,
-              "offsetMs": 1700
+              "durationMs": 40,
+              "offsetMs": 1700,
+              "ease": "step"
             }
           ],
           "camera": {
@@ -1118,6 +1093,7 @@
           "delta": true,
           "durationMs": 8600,
           "caption": "At sunset it crosses much more, so the blue scatters away.",
+          "easing": "ease",
           "nodes": [
             {
               "id": "s3_red_sky",
@@ -1194,9 +1170,9 @@
                 "trim": 1,
                 "opacity": 1
               },
-              "durationMs": 60,
+              "durationMs": 40,
               "offsetMs": 2400,
-              "ease": "linear"
+              "ease": "step"
             },
             {
               "type": "edgeTween",
@@ -1212,8 +1188,9 @@
                 "trim": 1,
                 "opacity": 0
               },
-              "durationMs": 300,
-              "offsetMs": 2400
+              "durationMs": 40,
+              "offsetMs": 2400,
+              "ease": "step"
             }
           ],
           "camera": {

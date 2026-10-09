@@ -98,6 +98,7 @@
       "id": "s1_step0",
       "durationMs": 2500,
       "caption": "Three habits of fast teams.",
+      "easing": "ease",
       "nodes": [
         {
           "id": "s1_3_habits_of_fast_teams",
@@ -200,6 +201,7 @@
       "delta": true,
       "durationMs": 2200,
       "caption": "One: ship small changes.",
+      "easing": "ease",
       "nodes": [
         {
           "id": "s1_progress",
@@ -228,6 +230,7 @@
       "delta": true,
       "durationMs": 2900,
       "caption": "Two: review them the same day.",
+      "easing": "ease",
       "nodes": [
         {
           "id": "s1_progress",
@@ -256,6 +259,7 @@
       "delta": true,
       "durationMs": 2900,
       "caption": "Three: let tests catch the mistakes.",
+      "easing": "ease",
       "nodes": [
         {
           "id": "s1_progress",

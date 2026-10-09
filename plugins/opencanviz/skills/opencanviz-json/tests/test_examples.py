@@ -24,9 +24,13 @@ except ImportError:
     HAVE_JSONSCHEMA = False
 
 
-def clean(doc):
+UNTITLED = "does not open with a title"
+
+
+def clean(doc, titled=False):
+    """Every problem in doc; the small test scenes have no title, so that warning is left out unless titled."""
     errors, warnings = oc.validate(doc)
-    return errors + warnings + (oc.schema_errors(doc) or [])
+    return errors + [w for w in warnings if titled or UNTITLED not in w] + (oc.schema_errors(doc) or [])
 
 
 class ExampleTests(unittest.TestCase):
@@ -141,7 +145,7 @@ class BuilderRefuses(unittest.TestCase):
         a, m, b = [s2.box(t, at=c) for t, c in zip("AMB", cells)]
         skip = s2.arrow(a, b, route="below")
         s2.step("Three boxes and an arrow that goes around the middle one.").reveal(a).reveal(m).reveal(b).draw(skip)
-        p2.save(os.path.join(tempfile.mkdtemp(), "x.json"))
+        self.assertEqual(clean(p2.to_dict()), [])
 
     def test_labeled_edge_hidden_until_drawn(self):
         p, s, ra, rb = small_project()
@@ -526,6 +530,111 @@ class RecipeShapes(unittest.TestCase):
         lo = min(n["x"] for n in pts)
         hi = max(n["x"] + n["w"] for n in pts)
         self.assertLess(abs((lo + hi) / 2 - (ab["x"] + ab["width"] / 2)), ab["width"] * 0.08)
+
+
+def acts(sc, k):
+    return sc["steps"][k].get("actions", [])
+
+
+class ShortTimedChanges(unittest.TestCase):
+    def test_swap_is_a_short_algo_swap(self):
+        sc = load_example("bubble_sort")["diagrams"][0]
+        sw = [a for st in sc["steps"] for a in st.get("actions", []) if a["type"] == "algoSwap"]
+        self.assertTrue(sw)
+        self.assertTrue(all(a["durationMs"] == oc.SWAP_MS for a in sw))
+
+    def test_colour_change_is_a_short_tween(self):
+        sc = load_example("bubble_sort")["diagrams"][0]
+        tw = [a for st in sc["steps"] for a in st.get("actions", [])
+              if a["type"] == "transformTween" and "cellColors" in a.get("to", {})]
+        self.assertTrue(tw)
+        self.assertTrue(all(a["durationMs"] == oc.COLOR_MS for a in tw))
+
+    def test_timeline_bar_grows_before_the_new_dot(self):
+        sc = load_example("timeline")["diagrams"][0]
+        for k in range(2, len(sc["steps"])):
+            a = acts(sc, k)
+            grow = [x for x in a if x["type"] == "transformTween" and "from" in x]
+            self.assertTrue(grow, k)
+            self.assertEqual(grow[0]["durationMs"], oc.TIMELINE_MS)
+            reveal_end = max(x.get("offsetMs", 0) + x.get("durationMs", 0) for x in a
+                             if x["type"] in ("fadeIn", "visibility"))
+            self.assertLessEqual(reveal_end, oc.TIMELINE_MS)
+
+    def test_line_chart_has_a_moving_tip(self):
+        sc = load_example("line_chart")["diagrams"][0]
+        tip = [n for n in sc["nodes"] if n["id"].endswith("_tip")]
+        self.assertEqual(len(tip), 1)
+        xs = {n["x"] for st in sc["steps"] for n in st["nodes"] if n["id"] == tip[0]["id"]}
+        self.assertGreater(len(xs), 1)
+
+    def test_no_tweens_to_missing_edges(self):
+        for path in sorted(glob.glob(os.path.join(ROOT, "examples", "*.json"))):
+            doc = json.load(open(path))
+            for sc in doc.get("diagrams", []):
+                ids = {e["id"] for e in sc["edges"]}
+                for st in sc["steps"]:
+                    for a in st.get("actions", []):
+                        if a.get("target", {}).get("kind") == "edge":
+                            self.assertIn(a["target"]["id"], ids, path)
+
+    def test_action_on_a_missing_id_is_an_error(self):
+        doc = load_example("bubble_sort")
+        sc = doc["diagrams"][0]
+        sc["steps"][1].setdefault("actions", []).append(
+            {"type": "algoSwap", "target": {"kind": "node", "id": "nope"}, "indices": [0, 1], "durationMs": 600})
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("nope" in e for e in errors), errors)
+
+    def test_timed_colour_must_match_the_snapshot(self):
+        doc = load_example("bubble_sort")
+        sc = doc["diagrams"][0]
+        for st in sc["steps"]:
+            for a in st.get("actions", []):
+                if a["type"] == "transformTween" and "cellColors" in a.get("to", {}):
+                    a["to"]["cellColors"] = ["#123456"] * len(a["to"]["cellColors"])
+                    errors, _ = oc.validate(doc)
+                    self.assertTrue(errors)
+                    return
+        self.fail("no colour tween")
+
+    def test_labeled_arrow_pops_its_label(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        ca, cb = p.area().row(2, w=440, h=300)
+        x = s.box("A", at=ca)
+        y = s.box("B", at=cb)
+        e = s.arrow(x, y, label="go")
+        s.step("A and B.").reveal(x).reveal(y)
+        s.step("A goes to B.").draw(e)
+        eases = {a.get("ease") for st in p.to_dict()["diagrams"][0]["steps"] for a in st.get("actions", [])
+                 if a["type"] == "edgeTween"}
+        self.assertIn("step", eases)
+
+
+class Titles(unittest.TestCase):
+    def test_untitled_video_warns(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        b = s.box("A", at=p.area().centered(440, 300))
+        s.step("A box.").reveal(b)
+        _, warnings = oc.validate(p.to_dict())
+        self.assertTrue(any(UNTITLED in w for w in warnings), warnings)
+
+    def test_title_stays_put_on_screen(self):
+        sc = load_example("code_walkthrough")["diagrams"][0]
+        nodes = {n["id"]: dict(n) for n in sc["nodes"]}
+        tid = next(i for i, n in nodes.items() if n.get("meta", {}).get("title")
+                   or (n.get("kind") == "text" and str(n.get("fontWeight")) == "700"))
+        cam, seen = (0, 0), set()
+        for st in sc["steps"]:
+            for n in st["nodes"]:
+                nodes.setdefault(n["id"], {}).update(n)
+            if st.get("camera"):
+                cam = (st["camera"]["x"], st["camera"]["y"])
+            t = nodes[tid]
+            seen.add((round(t["x"] - cam[0]), round(t["y"] - cam[1])))
+        self.assertEqual(len(seen), 1, seen)
 
 
 if __name__ == "__main__":
