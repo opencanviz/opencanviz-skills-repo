@@ -1289,6 +1289,24 @@ def edge_path(e, a, b):
     return [pa, (pa[0], pb[1]), pb]
 
 
+def _ink_x(n):
+    """Left and right x of what a node draws. A text node's box is often the full width of the frame,
+    so its ink (the longest line, placed by textAlign) is used instead."""
+    x0, x1 = n["x"], n["x"] + n["w"]
+    if n.get("kind") != "text" or not _num(n.get("fontSize")):
+        return x0, x1
+    bold = str(n.get("fontWeight", 400)) in ("600", "700", "800", "900", "bold")
+    longest = max([len(s) for s in str(n.get("text", "")).split("\n")] or [0])
+    ink = min(n["w"], longest * (0.6 if bold else CHAR_W) * n["fontSize"])
+    align = n.get("textAlign", "center")
+    if align == "left":
+        return x0, x0 + ink
+    if align == "right":
+        return x1 - ink, x1
+    mid = (x0 + x1) / 2.0
+    return mid - ink / 2.0, mid + ink / 2.0
+
+
 def _visible_bbox(nodes, edges):
     """(x0, y0, x1, y1) of the visible nodes and drawn arrows, or None when nothing shows."""
     vis = {i: n for i, n in nodes.items() if (n.get("opacity", 1) or 0) > 0.01
@@ -1297,7 +1315,7 @@ def _visible_bbox(nodes, edges):
         return None
     xs, ys = [], []
     for n in vis.values():
-        xs += [n["x"], n["x"] + n["w"]]
+        xs += list(_ink_x(n))
         ys += [n["y"], n["y"] + n["h"]]
     for e in edges.values():
         a, b = vis.get(e.get("from")), vis.get(e.get("to"))

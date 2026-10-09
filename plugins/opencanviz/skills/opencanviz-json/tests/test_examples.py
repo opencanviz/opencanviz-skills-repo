@@ -283,6 +283,18 @@ class LayoutOnScreen(unittest.TestCase):
         self.assertAlmostEqual(a["y"] + a["h"] / 2 - cam["y"], cy, delta=2)
         self.assertEqual(clean(doc), [])
 
+    def test_full_width_title_does_not_hide_an_off_center_node(self):
+        p = oc.Project("t")
+        s = p.scene("t")
+        top, body = p.area().cut_top(110)
+        cells = body.row(3, labels=["asks", "reads"])
+        t = s.text("A short title", at=top, fontWeight=700)
+        a = s.box("Browser", at=cells[0])
+        s.step("Browser alone, under a title.").reveal(t).reveal(a)
+        st0 = p.to_dict()["diagrams"][0]["steps"][0]
+        self.assertIn("camera", st0)            # the title box spans the frame, its ink does not
+        self.assertLess(st0["camera"]["x"], -100)
+
     def test_off_center_steps_are_flagged_without_follow(self):
         _, warnings = oc.validate(self.chain(follow=False).to_dict())
         self.assertTrue(any("off the center" in w for w in warnings), warnings)

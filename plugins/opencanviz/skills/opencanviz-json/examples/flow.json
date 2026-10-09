@@ -224,7 +224,7 @@
             }
           ],
           "camera": {
-            "x": 0,
+            "x": -60,
             "y": -188.5,
             "zoom": 1
           },
@@ -273,7 +273,14 @@
               "durationMs": 600,
               "offsetMs": 400
             }
-          ]
+          ],
+          "camera": {
+            "x": 0,
+            "y": -188.5,
+            "zoom": 1
+          },
+          "cameraDurationMs": 800,
+          "cameraEasing": "ease"
         },
         {
           "id": "s1_step2",
