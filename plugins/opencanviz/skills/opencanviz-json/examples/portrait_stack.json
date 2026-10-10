@@ -29,6 +29,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 72,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -45,6 +46,7 @@
           "strokeWidth": 3,
           "cornerRadius": 16,
           "labelFontSize": 48,
+          "zIndex": 2,
           "opacity": 0
         },
         {
@@ -61,6 +63,7 @@
           "strokeWidth": 3,
           "cornerRadius": 16,
           "labelFontSize": 48,
+          "zIndex": 3,
           "opacity": 0
         },
         {
@@ -77,6 +80,7 @@
           "strokeWidth": 3,
           "cornerRadius": 16,
           "labelFontSize": 48,
+          "zIndex": 4,
           "opacity": 0
         },
         {
@@ -93,6 +97,7 @@
           "strokeWidth": 3,
           "cornerRadius": 16,
           "labelFontSize": 48,
+          "zIndex": 5,
           "opacity": 0
         }
       ],
@@ -228,6 +233,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 72,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -244,6 +250,7 @@
               "strokeWidth": 3,
               "cornerRadius": 16,
               "labelFontSize": 48,
+              "zIndex": 2,
               "opacity": 0
             },
             {
@@ -260,6 +267,7 @@
               "strokeWidth": 3,
               "cornerRadius": 16,
               "labelFontSize": 48,
+              "zIndex": 3,
               "opacity": 0
             },
             {
@@ -276,6 +284,7 @@
               "strokeWidth": 3,
               "cornerRadius": 16,
               "labelFontSize": 48,
+              "zIndex": 4,
               "opacity": 0
             },
             {
@@ -292,6 +301,7 @@
               "strokeWidth": 3,
               "cornerRadius": 16,
               "labelFontSize": 48,
+              "zIndex": 5,
               "opacity": 0
             }
           ],

@@ -29,6 +29,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 54,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -59,6 +60,7 @@
           "cellShowIndices": false,
           "labelColor": "#f8fafc",
           "noGlow": true,
+          "zIndex": 2,
           "opacity": 1
         },
         {
@@ -76,6 +78,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 28,
+          "zIndex": 3,
           "opacity": 1
         },
         {
@@ -93,6 +96,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 28,
+          "zIndex": 4,
           "opacity": 1
         },
         {
@@ -110,6 +114,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 28,
+          "zIndex": 5,
           "opacity": 1
         },
         {
@@ -127,6 +132,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 28,
+          "zIndex": 6,
           "opacity": 1
         },
         {
@@ -144,6 +150,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 28,
+          "zIndex": 7,
           "opacity": 1
         },
         {
@@ -160,6 +167,7 @@
           "pointerArrowSize": 20,
           "pointerSidePosition": "top",
           "pointerTargetIndex": 0,
+          "zIndex": 8,
           "opacity": 1
         },
         {
@@ -176,6 +184,7 @@
           "pointerArrowSize": 20,
           "pointerSidePosition": "top",
           "pointerTargetIndex": 1,
+          "zIndex": 9,
           "opacity": 1
         },
         {
@@ -193,6 +202,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 32,
+          "zIndex": 10,
           "opacity": 0
         }
       ],
@@ -219,6 +229,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 54,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -249,6 +260,7 @@
               "cellShowIndices": false,
               "labelColor": "#f8fafc",
               "noGlow": true,
+              "zIndex": 2,
               "opacity": 1
             },
             {
@@ -266,6 +278,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 28,
+              "zIndex": 3,
               "opacity": 1
             },
             {
@@ -283,6 +296,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 28,
+              "zIndex": 4,
               "opacity": 1
             },
             {
@@ -300,6 +314,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 28,
+              "zIndex": 5,
               "opacity": 1
             },
             {
@@ -317,6 +332,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 28,
+              "zIndex": 6,
               "opacity": 1
             },
             {
@@ -334,6 +350,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 28,
+              "zIndex": 7,
               "opacity": 1
             },
             {
@@ -350,6 +367,7 @@
               "pointerArrowSize": 20,
               "pointerSidePosition": "top",
               "pointerTargetIndex": 0,
+              "zIndex": 8,
               "opacity": 1
             },
             {
@@ -366,6 +384,7 @@
               "pointerArrowSize": 20,
               "pointerSidePosition": "top",
               "pointerTargetIndex": 1,
+              "zIndex": 9,
               "opacity": 1
             },
             {
@@ -383,6 +402,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 32,
+              "zIndex": 10,
               "opacity": 0
             }
           ],

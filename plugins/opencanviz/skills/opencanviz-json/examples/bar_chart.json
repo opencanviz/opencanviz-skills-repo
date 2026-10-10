@@ -29,6 +29,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 58,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -74,6 +75,7 @@
           "chartBarSpacing": 92.1,
           "chartBarColor": "#38bdf8",
           "labelColor": "#f8fafc",
+          "zIndex": 2,
           "opacity": 1
         },
         {
@@ -91,6 +93,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 32,
+          "zIndex": 3,
           "opacity": 1
         },
         {
@@ -112,6 +115,7 @@
           "countIsInt": true,
           "countSuffix": "M",
           "fontSize": 34,
+          "zIndex": 4,
           "opacity": 0,
           "countStartMs": 3300,
           "countDurationMs": 4400
@@ -131,6 +135,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 32,
+          "zIndex": 5,
           "opacity": 1
         },
         {
@@ -152,6 +157,7 @@
           "countIsInt": true,
           "countSuffix": "M",
           "fontSize": 34,
+          "zIndex": 6,
           "opacity": 0,
           "countStartMs": 7700,
           "countDurationMs": 3700
@@ -171,6 +177,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 32,
+          "zIndex": 7,
           "opacity": 1
         },
         {
@@ -192,6 +199,7 @@
           "countIsInt": true,
           "countSuffix": "M",
           "fontSize": 34,
+          "zIndex": 8,
           "opacity": 0,
           "countStartMs": 11400,
           "countDurationMs": 2500
@@ -211,6 +219,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 32,
+          "zIndex": 9,
           "opacity": 1
         },
         {
@@ -232,6 +241,7 @@
           "countIsInt": true,
           "countSuffix": "M",
           "fontSize": 34,
+          "zIndex": 10,
           "opacity": 0,
           "countStartMs": 11400,
           "countDurationMs": 2500
@@ -251,6 +261,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 32,
+          "zIndex": 11,
           "opacity": 1
         },
         {
@@ -272,6 +283,7 @@
           "countIsInt": true,
           "countSuffix": "M",
           "fontSize": 34,
+          "zIndex": 12,
           "opacity": 0,
           "countStartMs": 11400,
           "countDurationMs": 2500
@@ -321,6 +333,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 58,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -366,6 +379,7 @@
               "chartBarSpacing": 92.1,
               "chartBarColor": "#38bdf8",
               "labelColor": "#f8fafc",
+              "zIndex": 2,
               "opacity": 1
             },
             {
@@ -383,6 +397,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 32,
+              "zIndex": 3,
               "opacity": 1
             },
             {
@@ -404,6 +419,7 @@
               "countIsInt": true,
               "countSuffix": "M",
               "fontSize": 34,
+              "zIndex": 4,
               "opacity": 0,
               "countStartMs": 3300,
               "countDurationMs": 4400
@@ -423,6 +439,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 32,
+              "zIndex": 5,
               "opacity": 1
             },
             {
@@ -444,6 +461,7 @@
               "countIsInt": true,
               "countSuffix": "M",
               "fontSize": 34,
+              "zIndex": 6,
               "opacity": 0,
               "countStartMs": 7700,
               "countDurationMs": 3700
@@ -463,6 +481,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 32,
+              "zIndex": 7,
               "opacity": 1
             },
             {
@@ -484,6 +503,7 @@
               "countIsInt": true,
               "countSuffix": "M",
               "fontSize": 34,
+              "zIndex": 8,
               "opacity": 0,
               "countStartMs": 11400,
               "countDurationMs": 2500
@@ -503,6 +523,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 32,
+              "zIndex": 9,
               "opacity": 1
             },
             {
@@ -524,6 +545,7 @@
               "countIsInt": true,
               "countSuffix": "M",
               "fontSize": 34,
+              "zIndex": 10,
               "opacity": 0,
               "countStartMs": 11400,
               "countDurationMs": 2500
@@ -543,6 +565,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 32,
+              "zIndex": 11,
               "opacity": 1
             },
             {
@@ -564,6 +587,7 @@
               "countIsInt": true,
               "countSuffix": "M",
               "fontSize": 34,
+              "zIndex": 12,
               "opacity": 0,
               "countStartMs": 11400,
               "countDurationMs": 2500

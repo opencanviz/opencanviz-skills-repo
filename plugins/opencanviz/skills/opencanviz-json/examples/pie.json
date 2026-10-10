@@ -29,6 +29,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 60,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -45,6 +46,7 @@
           "endAngle": -90,
           "noGlow": true,
           "innerRadius": 0.55,
+          "zIndex": 2,
           "opacity": 0
         },
         {
@@ -61,6 +63,7 @@
           "endAngle": -90,
           "noGlow": true,
           "innerRadius": 0.55,
+          "zIndex": 3,
           "opacity": 0
         },
         {
@@ -77,6 +80,7 @@
           "endAngle": -90,
           "noGlow": true,
           "innerRadius": 0.55,
+          "zIndex": 4,
           "opacity": 0
         },
         {
@@ -93,6 +97,7 @@
           "endAngle": -90,
           "noGlow": true,
           "innerRadius": 0.55,
+          "zIndex": 5,
           "opacity": 0
         },
         {
@@ -107,6 +112,7 @@
           "strokeWidth": 3,
           "cornerRadius": 6,
           "noGlow": true,
+          "zIndex": 6,
           "opacity": 0
         },
         {
@@ -124,6 +130,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 40,
+          "zIndex": 7,
           "opacity": 0
         },
         {
@@ -138,6 +145,7 @@
           "strokeWidth": 3,
           "cornerRadius": 6,
           "noGlow": true,
+          "zIndex": 8,
           "opacity": 0
         },
         {
@@ -155,6 +163,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 40,
+          "zIndex": 9,
           "opacity": 0
         },
         {
@@ -169,6 +178,7 @@
           "strokeWidth": 3,
           "cornerRadius": 6,
           "noGlow": true,
+          "zIndex": 10,
           "opacity": 0
         },
         {
@@ -186,6 +196,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 40,
+          "zIndex": 11,
           "opacity": 0
         },
         {
@@ -200,6 +211,7 @@
           "strokeWidth": 3,
           "cornerRadius": 6,
           "noGlow": true,
+          "zIndex": 12,
           "opacity": 0
         },
         {
@@ -217,6 +229,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 40,
+          "zIndex": 13,
           "opacity": 0
         }
       ],
@@ -243,6 +256,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 60,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -259,6 +273,7 @@
               "endAngle": -90,
               "noGlow": true,
               "innerRadius": 0.55,
+              "zIndex": 2,
               "opacity": 0
             },
             {
@@ -275,6 +290,7 @@
               "endAngle": -90,
               "noGlow": true,
               "innerRadius": 0.55,
+              "zIndex": 3,
               "opacity": 0
             },
             {
@@ -291,6 +307,7 @@
               "endAngle": -90,
               "noGlow": true,
               "innerRadius": 0.55,
+              "zIndex": 4,
               "opacity": 0
             },
             {
@@ -307,6 +324,7 @@
               "endAngle": -90,
               "noGlow": true,
               "innerRadius": 0.55,
+              "zIndex": 5,
               "opacity": 0
             },
             {
@@ -321,6 +339,7 @@
               "strokeWidth": 3,
               "cornerRadius": 6,
               "noGlow": true,
+              "zIndex": 6,
               "opacity": 0
             },
             {
@@ -338,6 +357,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 40,
+              "zIndex": 7,
               "opacity": 0
             },
             {
@@ -352,6 +372,7 @@
               "strokeWidth": 3,
               "cornerRadius": 6,
               "noGlow": true,
+              "zIndex": 8,
               "opacity": 0
             },
             {
@@ -369,6 +390,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 40,
+              "zIndex": 9,
               "opacity": 0
             },
             {
@@ -383,6 +405,7 @@
               "strokeWidth": 3,
               "cornerRadius": 6,
               "noGlow": true,
+              "zIndex": 10,
               "opacity": 0
             },
             {
@@ -400,6 +423,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 40,
+              "zIndex": 11,
               "opacity": 0
             },
             {
@@ -414,6 +438,7 @@
               "strokeWidth": 3,
               "cornerRadius": 6,
               "noGlow": true,
+              "zIndex": 12,
               "opacity": 0
             },
             {
@@ -431,6 +456,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 40,
+              "zIndex": 13,
               "opacity": 0
             }
           ],

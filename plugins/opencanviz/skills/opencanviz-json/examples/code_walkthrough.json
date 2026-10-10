@@ -29,6 +29,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 60,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -56,6 +57,7 @@
           "_animatedProps": {
             "highlightedLines": false
           },
+          "zIndex": 2,
           "opacity": 1
         },
         {
@@ -69,6 +71,7 @@
           "varValue": "-",
           "labelFontSize": 47,
           "labelColor": "#f8fafc",
+          "zIndex": 3,
           "opacity": 0
         },
         {
@@ -82,6 +85,7 @@
           "varValue": "-",
           "labelFontSize": 47,
           "labelColor": "#f8fafc",
+          "zIndex": 4,
           "opacity": 0
         }
       ],
@@ -108,6 +112,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 60,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -135,6 +140,7 @@
               "_animatedProps": {
                 "highlightedLines": false
               },
+              "zIndex": 2,
               "opacity": 1
             },
             {
@@ -148,6 +154,7 @@
               "varValue": "-",
               "labelFontSize": 47,
               "labelColor": "#f8fafc",
+              "zIndex": 3,
               "opacity": 0
             },
             {
@@ -161,6 +168,7 @@
               "varValue": "-",
               "labelFontSize": 47,
               "labelColor": "#f8fafc",
+              "zIndex": 4,
               "opacity": 0
             }
           ],

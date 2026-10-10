@@ -31,13 +31,22 @@ Boxes and arrows are for flows, systems and processes only. Everything else has 
 | One big number, a percentage done | Counter, progress bar | `counter`, `progress` / `set` | `counter_progress` |
 | Something travelling a route | A node on a path, a packet on an arrow | `path` / `follow`, `packet` | `path_follow` |
 | A title, a claim, a list of words | Kinetic type: written on, typed, popped, staggered | `text`, `lines` / `reveal(style=...)`, `reveal_lines` | `kinetic_text` |
+| One big word as the opening beat | Letters that pop in and blow apart | `letters` / `pop`, `hide(style="scatter")` | `motion_presets` |
+| Hashing, a token ring, a round-robin, a clock | A ring with dots and owned arcs; keys walk to their owner | `ring`, `ring.dot`, `ring.arc` / `walk`, `reveal(arc, "draw")` | `motion_presets` |
+| Rows of facts, a lookup, before and after values | A table revealed column by column, changed cells tinted | `table` / `stagger(tbl.column(c))`, `tint` | `motion_presets` |
+| Two or three headline numbers compared | Bars that wipe in with big numbers | `compare_bars` / `stagger(bars, "wipe")`, `pop(numbers)` | `motion_presets` |
+| Traffic on a link, requests flowing | Dots streaming down an arrow | `arrow` / `draw`, `stream` | `motion_presets` |
+| An equation, a proof, a derivation | LaTeX lines one per step; the changed term flashes | `math`, `math_row`, `derivation` / `stagger`, `emphasize(t, "flash")` | `math_plot` |
+| A function, a rate of change, an area | A plot: curve draws on, area, a point and tangent that ride it | `plot`, `plot.curve/area/point/tangent/legend` / `reveal(curve, "draw")`, `ride` | `math_plot` |
+| Triangles, angles, sets, matrices, numbers on a line | Geometry, Venn, matrix, number line | `poly`, `angle_mark`, `side_label`, `venn`, `matrix`, `number_line` | `math_plot` |
 
-Do not fade everything in. A video where every node uses the same fade looks like a slide deck. Write titles on (`style="write"`), type subtitles and terminal text (`"type"`), pop a number or a key word (`"pop"`), stagger a list (`reveal_lines`), and join scenes with a transition that says what changed (see Scene transitions).
+Do not fade everything in. A video where every node uses the same fade looks like a slide deck. Write titles on (`style="write"`), type subtitles and terminal text (`"type"`), pop a number or a key word (`"pop"`), stagger a list (`reveal_lines`), and join scenes with a transition that says what changed (see Scene transitions and Motion presets).
 
 ## Files in this skill
 
 - `schema.json`: the JSON Schema (draft 2020-12), the same as https://opencanviz.com/schema/v1.json. Validate every file against it.
 - `scripts/opencanviz.py`: a Python 3.9+ builder and validator (standard library only; also checks `schema.json` when `jsonschema` is installed).
+- `scripts/tex2svg.js`: LaTeX to SVG for `scene.math()`, `math_row()` and `derivation()`. Needs `node` and `mathjax-full` (`npm i mathjax-full`, or set `MATHJAX_PATH` to a `node_modules` folder that has it). Only the math calls need it; they raise with the install line when it is missing.
 - `examples/minimal.json`: two boxes, one arrow, two steps. The smallest correct project.
 - `examples/flow.json`: a four-step 16:9 flow diagram with a title, captions and narration.
 - `examples/two_scenes.json`: two scenes, a crossfade, a typewriter title, a skip arrow on its own lane, a removed edge and a camera zoom.
@@ -46,6 +55,8 @@ Do not fade everything in. A video where every node uses the same fade looks lik
 - `examples/portrait_stack.json`: a 9:16 Short with a vertical chain of cards and labeled arrows.
 - `examples/kinetic_text.json`: text entrances (write-on, type, staggered lines, pop) plus a colour wipe and a morph between scenes.
 - Recipe examples, one per visual in the table above: `bar_chart`, `line_chart`, `scatter_grid`, `pie`, `bubble_sort`, `data_structures`, `code_walkthrough`, `sequence`, `timeline`, `before_after`, `bullets`, `counter_progress`, `path_follow`.
+- `examples/motion_presets.json`: every motion preset (entrances, emphasis, exits), kinetic letters, a ring with a walking key, a stream, a table and comparison bars.
+- `examples/math_plot.json`: a derivation whose changed term flashes, a plot with a riding tangent, a triangle, a matrix, a number line and a Venn diagram (needs mathjax-full to rebuild).
 - Each example has a matching `.py` that writes it. `tests/test_examples.py` runs them all.
 
 Read the example closest to the request before you write. Copy its structure, not its content. Every example passes the schema, the rules below, and plays correctly in openCanviz.
@@ -57,7 +68,7 @@ Human docs: https://opencanviz.com/docs/json-overview, https://opencanviz.com/do
 ```python
 import sys; sys.path.insert(0, "<skill folder>/scripts")
 from opencanviz import Project
-p = Project("Title", aspect="16:9")              # or "9:16", "1:1"; theme="light"; voice="nova"
+p = Project("Title", aspect="16:9")              # or "9:16", "1:1"; theme="light"; voice="nova"; sfx="soft"; stage="steady"
 s = p.scene("Scene name")                          # transition="crossfade" joins it to the previous scene
 title, body = s.title("How a request is served")   # every video opens with a title; body = the rest of p.area()
 cells = body.flow(3, labels=["asks", "reads"])     # also row/column/stack/grid/cut_top; gaps fit the labels
@@ -101,6 +112,14 @@ n = s.counter(2048, at=r, suffix=" MB"); bar = s.progress(0, at=r2)  # .set(bar,
 # .set(box, fill="#0c4a6e") recolours in 350 ms; .move(box, x=.., y=..) moves in 600 ms
 pie = s.pie([("Rent", 40), ("Food", 25)], at=body, donut=0.55)  # .sweep(pie) reveals it; do not reveal it yourself
 road = s.path([(-600, 0), (0, -200), (600, 0)])              # .follow(parcel, road); .packet(edge) sends a dot
+word = s.letters("HASHING", cx=0, cy=-200, size=170)          # one text node per letter: .pop(word, stagger=45, from_="edges"); .hide(word, style="scatter")
+ring = s.ring(center=(0, -30), r=340)                        # .reveal(ring.node, style="zoom")
+srv = ring.dot(30, size=60, color="#38bdf8", label="A")      # angle in degrees, 0 = top, clockwise; ring.place_on_ring(node, angle) puts any node on it
+arc = ring.arc(260, 30, color="#38bdf8")                     # the span a server owns: .reveal(arc, style="draw")
+key = ring.dot(80, size=30, label="k1")                      # .walk(key, ring, 150, absorb_into=srv) walks clockwise, then absorbs
+tbl = s.table([["key", "hash"], ["k1", "9"]], at=body)       # .stagger(tbl.column(1), "pop", gap=120); .tint(tbl.cells[1][1:], "#ef4444")
+bars = s.compare_bars([("mod N", 75, "#ef4444"), ("ring", 25, "#22c55e")], at=r, unit="%")  # .reveal(bars.labels).stagger(bars.bars, "wipe").pop(bars.numbers, offset=500)
+link = s.arrow(a, b)                                         # .draw(link) then .stream(link, n=4): requests flowing
 ```
 
 What the recipes take care of, and what to keep in mind if you write these kinds by hand:
@@ -142,6 +161,42 @@ A text typed in a later step must sit at `"opacity": 0` until that step: openCan
 
 Not supported in exported videos, so do not hand-roll them: a `blur` tween (only the editor draws it) and `drawProgress` / `wipeAxis` wipes on text (they wipe image nodes only; a text node appears whole). The helper raises on `style="blur"` and `style="wipe"` for text.
 
+## Motion presets
+
+`step.reveal(n, style=...)`, `step.emphasize(n, style=...)` and `step.hide(n, style=...)` take these presets; `step.stagger(nodes, style, gap=180)` runs any entrance one after another and `step.pop(nodes, stagger=40, from_=...)` pops a group. Each one was render-checked in the openCanviz export renderer.
+
+| Preset | Look | When to use it | Default timing |
+| --- | --- | --- | --- |
+| `reveal "fade"` | Fades in | Supporting detail, a label, anything secondary | 500 ms |
+| `reveal "slide"` | Rises 60 px while fading in | A label or caption-like line | 500 ms, ease-out |
+| `reveal "rise"` | A soft 50 px rise | A subtitle under a title, a quiet follow-up | 450 ms, ease-out |
+| `reveal "drop"` | Falls 220 px in with a bounce | Something arriving: a new server, a new item | 700 ms, bounce |
+| `reveal "zoom"` | Settles from 1.6x | The scene's centrepiece, a ring, a big shape | 500 ms, ease-out |
+| `reveal "wipe"` | Grows from its left edge (a box, a bar) or is uncovered left to right (an equation, an image) | A bar that measures, an equation being written | 600 ms (900 ms on an image or equation) |
+| `reveal "draw"` | An svg path, curve or arc draws itself on | Curves, outlines, arcs, triangles | 900 ms (800 ms on an arc) |
+| `reveal "pop"` / `pop(...)` | Scales up from 0.35 with a `back` overshoot; `from_="below"`, `"edges"`, `"scatter"` or `None` | A number, a key word, a group landing together | 500 ms, 40 ms stagger |
+| `emphasize "pulse"` / `pulse(n, scale=1.08)` | Scales up and back | "Look at this one" | 440 ms |
+| `emphasize "shake"` | Side to side | An error, a rejection, a cache miss | 300 ms |
+| `emphasize "wiggle"` | A small rotation | Playful attention | 400 ms |
+| `emphasize "flash"` | Its fill (or text colour, or a highlighter behind an equation term) flashes to `color` and back | A changed term, the answer | 800 ms |
+| `emphasize "nudge"` | A 40 px push right and back | "This one moves next" | 500 ms |
+| `tint(nodes, color)` | Recolours and stays | Cells that changed, a state that is now different | 350 ms |
+| `hide "fade"` | Fades out | The default exit | 400 ms |
+| `hide "slide"` | Leaves to the right | Moving on, "next" | 400 ms |
+| `hide "shrink"` | Scales to 0.6 as it fades | Something removed or rejected | 400 ms |
+| `hide "absorb"` (`into=`) | Flies into another node and fades | A key reaching its server, an item consumed | 500 ms |
+| `hide "scatter"` | A list of letters or nodes blows apart from their centre | Ending a title beat | 380 ms, 28 ms apart |
+
+How to use them:
+
+- **One emphasis per beat.** Pulse, flash or shake one thing in a step, not three. Emphasize only what is already on screen.
+- **Match the entrance to its meaning.** Drop for an arrival, zoom for the centrepiece, wipe for a bar that measures or an equation being written, draw for a curve or arc, pop for numbers, fade for support.
+- **Vary the entrances.** Do not open every scene the same way; mix a pop, a zoom, a draw and a stagger across a video.
+- `step.walk(dot, ring, to_angle, absorb_into=server)` moves a ring dot (and its label) along the ring, then absorbs it. `step.ride(dot, plot, fn, x0, x1, tangent=tan)` moves a point along a curve with its tangent.
+- `step.stream(edge, n=3)` sends dots down a drawn arrow, 220 ms apart.
+
+Not supported in exported videos, so the helper refuses them: a blur entrance, a wipe on a text node (use `"type"`), a glow tween (use `"pulse"` or `"flash"`), `rotateToTangent` on a path follow (it is not applied), a `mathTex` node without its `imageData` (the formula is compiled to an image by the helper), and a wipe on a turned node (`rotationZ`; a wipe moves the pivot to the left edge, so use `"fade"` or `"zoom"`).
+
 ## Scene transitions
 
 `transitions[i]` joins scene `i` to scene `i+1`: `{"kind": "<kind>", "durationMs": 600}`. All 22 kinds render in the export. The transition is centred on the boundary (half before, half after).
@@ -161,8 +216,36 @@ Not supported in exported videos, so do not hand-roll them: a `blur` tween (only
 - Morph: `{"kind": "morph", "durationMs": 800}` plus `"morphKey": "job"` on one node in each scene. Pairing falls back to the node id, and ids differ per scene (`s2_job`, `s3_job`), so without a shared `morphKey` nothing morphs; the checker reports that as an error.
 - A scene's own ground: put `"background": "#1e1b4b"` and `"bg": {"kind": "solid"}` on the scene. openCanviz ignores `background` without `bg`. The helper writes both for `p.scene(..., background=...)`.
 - In Python: `p.scene("Next", transition="pushLeft", transition_ms=600)`, `transition=None` for a hard cut, `color="#f59e0b"` with a colour wipe, and `s.box(..., morph_key="job")` on both sides of a morph.
+- **Steady stage:** `Project(..., stage="steady")` keeps the camera still (no follow) and joins scenes with 300 ms crossfades by default, so a video reads as one stage whose content changes. Use it for explainers built around one diagram (a ring, a plot, a table). Leave the default `stage="follow"` for videos that move through many separate layouts.
+- **Sound effects:** `Project(..., sfx="soft")` writes `"sfxPack": "soft"` at the top level (`soft`, `playful`, `retro`, `mech` or `off`), the sound-effect pack openCanviz plays with the video; anything else is refused. `soft` suits explainers, `playful` kids and social, `off` silence.
 
 Inside a step, the per-node `transitions` map takes `"fade"` (cross-fade the change) and `"instant"` (snap it). `"flip-x"` and `"flip-y"` are in the schema but play as a plain tween, so do not use them.
+
+## Math and graphs
+
+Formulas are LaTeX compiled to SVG images by `scripts/tex2svg.js` (node plus `mathjax-full`; `npm i mathjax-full` or `MATHJAX_PATH=<node_modules>`). The output is an ordinary image node, so it plays in every openCanviz export. If node or mathjax-full is missing, the math calls raise with the install line; do not hand-write a `mathTex` node.
+
+```python
+eq = s.math(r"\frac{d}{dx} x^2 = 2x", at=r, size=64)            # .reveal(eq, style="wipe") writes it on left to right
+row = s.math_row([r"a^2", r"+", r"b^2", r"=", r"c^2"], at=r)      # one node per term on one baseline: .stagger(row, "fade", gap=300)
+lines = s.derivation([[r"f(x) =", r"x^2"], [r"f'(x) =", r"2x"]], at=body, size=72, align="eq")
+#   one line per step: .stagger(lines[i], "fade", gap=300); the changed term: .emphasize(lines[i][1], "flash", color="#f59e0b")
+pl = s.plot(r, (-3, 3), (-1, 9), x_ticks=[-2, 0, 2], y_ticks=[0, 4, 8], grid=True, x_label="x", y_label="y")
+curve = pl.curve(lambda x: x * x)                                # .reveal(curve, style="draw")
+shade = pl.area(lambda x: x * x, 0, 2)                           # area under the curve, a see-through fill
+dot = pl.point(-2, 4); tan = pl.tangent(lambda x: x * x, -2)     # .pop([dot]).reveal(tan, style="zoom"); .ride(dot, pl, fn, -2, 2, tangent=tan)
+key = pl.legend([("y = x squared", "#38bdf8"), ("tangent", "#f59e0b")], at=side)
+tri = s.poly([A, B, C]); s.angle_mark(B, A, C, label="θ"); s.side_label(A, B, "4")  # .reveal(tri, style="draw")
+mat = s.matrix([["1", "0"], ["0", "1"]], at=r)                   # .tint(mat.row(0), "#f59e0b")
+nl = s.number_line(r, 0, 5, 1); m = nl.point(3)                  # .pop([m])
+venn = s.venn(["A", "B"], at=r)                                  # .pop(venn, stagger=200); circles are see-through
+```
+
+- One derivation line per step, and flash the term that changed in that step (one flash per beat). `align="eq"` lines the equals signs up when each line is written as `[lhs, rhs]`.
+- `size=` is the letter height in px; 56 to 80 reads well at 1080p. Math raises when it does not fit its rect.
+- A distance or lookup table is a `table`; a matrix is a `matrix` (no header row).
+- Draw curves and outlines on (`"draw"`), wipe equations (`"wipe"`), pop points and set circles.
+- The tangent is a 10 px bar (the export drops anything under 10 px); reveal it with `"zoom"` or `"fade"`, never `"wipe"`.
 
 ## Workflow
 
@@ -201,7 +284,7 @@ Inside a step, the per-node `transitions` map takes `"fade"` (cross-fade the cha
 }
 ```
 
-`transitions[i]` joins scene `i` to scene `i+1`; use `null` for a hard cut. A one-scene file may instead put `nodes`, `edges`, `steps` and `narration` at the top level. `$schema` is optional and ignored by Import.
+`transitions[i]` joins scene `i` to scene `i+1`; use `null` for a hard cut. An optional top-level `"sfxPack"` (`soft`, `playful`, `retro`, `mech`, `off`) picks the sound-effect pack. A one-scene file may instead put `nodes`, `edges`, `steps` and `narration` at the top level. `$schema` is optional and ignored by Import.
 
 ## Hard rules
 
@@ -215,7 +298,7 @@ Inside a step, the per-node `transitions` map takes `"fade"` (cross-fade the cha
 8. Every node needs `id`, `kind`, `x`, `y`, `w`, `h`. Nothing smaller than 10 x 10 px, and nothing under 2 px in either direction: it is not drawn. Draw lines as edges, not thin rects.
 9. Revealing a node: set `"opacity": 1` for it in the step's `nodes` AND add a `fadeIn` or `slideIn*` action. If the snapshot keeps opacity 0, the node fades back out in the next step.
 10. Hiding a node: set `"opacity": 0` and use a `fadeOut` or `slideOut*` action, or list it in `removeNodeIds`. Do not hide with an opacity `transformTween`.
-11. Moving or recolouring a node: set the new `x`/`y` (or `fill`, `stroke`, `color`) in the delta step **and** a short `transformTween` with the same end values; on its own the change plays across the whole step and lags the narration (the validator warns). The helper's `set()` times colours at 350 ms and `move()` / `set(x=..)` positions at 600 ms from the step start (`duration=` / `offset=` to change it, `move(..., duration="step")` for a deliberate slow glide). The tween: `{"type":"transformTween","target":{"kind":"node","id":".."},"to":{"x":..,"y":..},"durationMs":..,"offsetMs":..}` with the same end values. `from.x` and `from.y` are ignored. Do not use `isRelative`, `dx` or `dy`.
+11. Moving or recolouring a node: set the new `x`/`y` (or `fill`, `stroke`, `color`) in the delta step **and** a short `transformTween` with the same end values; on its own the change plays across the whole step and lags the narration (the validator warns). The helper's `set()` times colours at 350 ms and `move()` / `set(x=..)` positions at 600 ms from the step start (`duration=` / `offset=` to change it, `move(..., duration="step")` for a deliberate slow glide). The tween: `{"type":"transformTween","target":{"kind":"node","id":".."},"to":{"x":..,"y":..},"durationMs":..,"offsetMs":..}` with the same end values. `from.x` and `from.y` are ignored. Use `isRelative`, `dx` and `dy` only on an entrance (a node fading in in the same step, with no `x`/`y` in `to`): it travels from home minus (`dx`, `dy`) to home, and home stays in the snapshot. Anywhere else they misplace the node; the validator errors.
 12. An action controls only what it covers: `transformTween` and `edgeTween` cover the keys in `to`; `visibility` covers `opacity` (slides also cover `x`, `y`). Every other change in the step tweens automatically over the full step. Make the snapshot's end values match the action's `to`. A `transformTween` on `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues` or `highlightedLines`, and an `algoSwap`, are timed only when the step has `"easing"` (e.g. `"ease"`); without it the swap snaps and the colour takes the whole step.
 13. Drawing an edge in: start it at `"trim": 0`, set `"trim": 1` in the reveal step's `edges`, and add `{"type":"edgeTween","target":{"kind":"edge","id":".."},"from":{"trim":0},"to":{"trim":1},"durationMs":700}`.
    Draw an edge in only in the same step as its later end node, or after. An arrow that draws while one of its ends is still hidden points at empty space.
@@ -230,21 +313,24 @@ Inside a step, the per-node `transitions` map takes `"fade"` (cross-fade the cha
 22. One-color iconify icons (`mdi:`, `lucide:`, `tabler:` ...) render black unless the node has `"iconStyle": "solid"` and a `fill` hex. Multicolor sets (`logos:`, `skill-icons:`, `devicon:`, `twemoji:`, `noto:`, `flat-color-icons:`) need neither.
 23. Never use `sketchMode`, `kind: "icon"` or `kind: "lottie"`; they render badly or not at all in the export. Icons are `kind: "svg"` with an iconify asset.
 24. Change `typeProgress` only through a `transformTween` from 0 to 1 (the helper's `typewrite`); a bare change jumps.
+25. Give every node an explicit `zIndex` (1, 2, 3 ... in the order they should stack). Without it the stacking can change between the editor and the export. The helper writes it in creation order.
+26. No decimals in captions ("2.5x", "0.5 s"): the narration voice reads them unreliably. Write "two and a half times", "half a second". The helper raises; the checker warns.
+27. Easing names are the exact strings in Actions (`ease-out`, not `easeOut`). An unknown name, camelCase included, plays as `linear`; the validator errors with the right spelling.
 
 ## Layout rules
 
 These keep the video readable once captions and arrows are on screen. The helper checks all of them.
 
-25. **Caption band.** Keep every node out of the bottom 20% of the frame in landscape and the bottom 30% in portrait (captions wrap to 3 or 4 lines there). For 16:9 that is `y + h <= 324`; for 9:16, `y + h <= 384`.
-26. **Fill the frame.** At the last step of a scene the diagram should cover about 60 to 75% of the safe area (artboard minus margin and caption band). No thin row with big empty bands: use bigger boxes or a second row.
-27. **Text fits its box.** Width: characters x 0.55 x font size per line, within `w` minus padding. Height: lines x font size x 1.2 plus 16 px padding, within `h`. Shapes have less room inside (a circle about 72%, a diamond about 50%).
-28. **Edge labels are readable.** `labelFontSize` at least 22 in landscape and 28 in portrait, with `"labelBgColor"` set to the background color so the label masks the line behind it.
-29. **Gaps leave a real arrow.** Between two connected nodes leave at least 100 px. For a labeled edge leave the label chip (characters x 0.6 x `labelFontSize` + 24; vertical links: font size x 1.2 + 10) plus 120 px of visible line, so the chip never covers most of the arrow. When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
-30. **No edge crosses a node.** An edge may not pass over any node except its two ends. Join neighbours, and send a skip connection along its own lane: `"fromPort": "S", "toPort": "S", "lineType": "elbowed"` (or `N`/`N`) with nothing in the lane.
-31. **Labels appear after their line.** The engine puts a label at the middle of the drawn part, so it slides with the tip and shows before the arrow. For a labeled edge, add an unlabeled copy (`<id>_line`, same ends, no label fields) listed before it: the copy starts at `"trim": 0, "opacity": 1` and draws in with `{"trim":0}` to `{"trim":1}`. The labeled edge sits at `"trim": 1, "opacity": 0` and switches on once the line is done: `{"type":"edgeTween","from":{"trim":1,"opacity":0},"to":{"trim":1,"opacity":1},"durationMs":40,"offsetMs":<end of the draw>,"ease":"step"}`, so the chip is opaque from its first frame (openCanviz draws the chip at the edge's opacity, and a slow fade shows the line through it). Switch the copy to opacity 0 with the same offset and `"ease":"step"`. The helper's `draw()` writes all of this. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
-32. **Reveal before you draw.** Within a step, an arrow's `edgeTween` starts no earlier than the reveal of the node it points to (same or later `offsetMs`).
-33. **Center what shows.** At every step the visible content's center sits within 15% of the frame height of the safe area's center. Lay the group out centered, or add a step `camera` (`x`, `y` = content center minus safe-area center, `zoom` 1) that pans as the content grows. A lone first node starts centered, not in a corner.
-34. **Cycles close.** For a cycle topic (water cycle, feedback loop, Krebs cycle), join the last node back to the first with an elbowed arrow around the outside of the group (`S`/`S` or `N`/`N`, label below or above the lane), not through the middle. In Python: `s.arrow(last, first, "repeats", route="around")`.
+28. **Caption band.** Keep every node out of the bottom 20% of the frame in landscape and the bottom 30% in portrait (captions wrap to 3 or 4 lines there). For 16:9 that is `y + h <= 324`; for 9:16, `y + h <= 384`.
+29. **Fill the frame.** At the last step of a scene the diagram should cover about 60 to 75% of the safe area (artboard minus margin and caption band). No thin row with big empty bands: use bigger boxes or a second row.
+30. **Text fits its box.** Width: characters x 0.55 x font size per line, within `w` minus padding. Height: lines x font size x 1.2 plus 16 px padding, within `h`. Shapes have less room inside (a circle about 72%, a diamond about 50%).
+31. **Edge labels are readable.** `labelFontSize` at least 22 in landscape and 28 in portrait, with `"labelBgColor"` set to the background color so the label masks the line behind it.
+32. **Gaps leave a real arrow.** Between two connected nodes leave at least 100 px. For a labeled edge leave the label chip (characters x 0.6 x `labelFontSize` + 24; vertical links: font size x 1.2 + 10) plus 120 px of visible line, so the chip never covers most of the arrow. When a chain does not fit in one row, wrap it to a second row running back the other way (a snake), so links still join neighbours.
+33. **No edge crosses a node.** An edge may not pass over any node except its two ends. Join neighbours, and send a skip connection along its own lane: `"fromPort": "S", "toPort": "S", "lineType": "elbowed"` (or `N`/`N`) with nothing in the lane.
+34. **Labels appear after their line.** The engine puts a label at the middle of the drawn part, so it slides with the tip and shows before the arrow. For a labeled edge, add an unlabeled copy (`<id>_line`, same ends, no label fields) listed before it: the copy starts at `"trim": 0, "opacity": 1` and draws in with `{"trim":0}` to `{"trim":1}`. The labeled edge sits at `"trim": 1, "opacity": 0` and switches on once the line is done: `{"type":"edgeTween","from":{"trim":1,"opacity":0},"to":{"trim":1,"opacity":1},"durationMs":40,"offsetMs":<end of the draw>,"ease":"step"}`, so the chip is opaque from its first frame (openCanviz draws the chip at the edge's opacity, and a slow fade shows the line through it). Switch the copy to opacity 0 with the same offset and `"ease":"step"`. The helper's `draw()` writes all of this. To take a labeled edge away, tween `trim` and `opacity` to 0 rather than using `removeEdgeIds`.
+35. **Reveal before you draw.** Within a step, an arrow's `edgeTween` starts no earlier than the reveal of the node it points to (same or later `offsetMs`).
+36. **Center what shows.** At every step the visible content's center sits within 15% of the frame height of the safe area's center. Lay the group out centered, or add a step `camera` (`x`, `y` = content center minus safe-area center, `zoom` 1) that pans as the content grows. A lone first node starts centered, not in a corner.
+37. **Cycles close.** For a cycle topic (water cycle, feedback loop, Krebs cycle), join the last node back to the first with an elbowed arrow around the outside of the group (`S`/`S` or `N`/`N`, label below or above the lane), not through the middle. In Python: `s.arrow(last, first, "repeats", route="around")`.
 
 ## Timing model
 
@@ -263,11 +349,11 @@ These keep the video readable once captions and arrows are on screen. The helper
 | `edgeTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `trim`, `trimStart`, `stroke`, `width`, `opacity` |
 | `algoSwap` | `indices` [i, j], `durationMs`, `offsetMs`, `ease` | on an `algo-array`; the step's `cellValues` hold the swapped values; step needs `easing` |
 | `positionTween` | `from`, `to` (points), `durationMs` | prefer the snapshot plus `transformTween` |
-| `pathFollow` | `pathId`, `from`, `to` (0..1), `rotateToTangent` | path lives in the scene's `paths` with `points`, `length` and `cum` |
+| `pathFollow` | `pathId`, `from`, `to` (0..1) | path lives in the scene's `paths` with `points`, `length` and `cum`; `rotateToTangent` is not applied in the export |
 
 `target` is `{"kind":"node","id":".."}` or `{"kind":"edge","id":".."}`. Slide directions name the side: `slideInLeft` enters from the left, `slideInUp` enters from above, `slideInDown` from below, `slideOutLeft` exits to the left.
 
-Easings: `linear`, `ease`, `ease-in`, `ease-out`, `spring`, `bounce`, `elastic`, `back`, `back-in`, `step`.
+Easings: `linear`, `ease`, `ease-in`, `ease-out`, `spring`, `bounce`, `elastic`, `back`, `back-in`, `step`. Anything else (`easeOut`, `easeInOut`, `cubic`) plays as `linear`.
 
 ## Useful nodes
 
@@ -306,6 +392,10 @@ Full field lists and enums are in `schema.json`.
 | Edge without `animationStyle` | Marching dashes forever | `"animationStyle": "none"` |
 | `glow: 0`, `sketchMode`, `kind: "icon"`, lottie | Ignored or broken in the export | `noGlow: true`, plain style, `kind: "svg"` |
 | Path without `length` and `cum` | The node never moves in the export | `scene.path` |
+| `"ease": "easeOut"` | Plays linear | `"ease-out"` |
+| "2.5x faster" in a caption | The voice stumbles on the decimal | "two and a half times faster" |
+| Every node fades in the same way | Reads as a slide deck | Pick presets by meaning (Motion presets) |
+| A hand-written `mathTex` node | Nothing renders | `scene.math()`, which embeds the SVG |
 
 ## Checklist before you answer
 
@@ -325,4 +415,5 @@ Full field lists and enums are in `schema.json`.
 - [ ] Each step's content is centered in the safe area; 120 px side margins in landscape; every labeled arrow shows 120 px+ of line.
 - [ ] The visual fits the topic (table at the top); boxes and arrows only for flows and systems.
 - [ ] Every edge has `animationStyle`; no delta step lists edges without a node; no `glow: 0`, `sketchMode`, `kind: "icon"` or lottie.
+- [ ] Every node has an explicit `zIndex`; captions have no decimals; easing names are spelled as in Actions.
 - [ ] No internal fields (only the code node's `_animatedProps` flag), comments or trailing commas.

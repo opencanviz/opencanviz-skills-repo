@@ -101,6 +101,16 @@
               "description": "Open the editor on the last step instead of the first."
             }
           }
+        },
+        "sfxPack": {
+          "enum": [
+            "soft",
+            "playful",
+            "retro",
+            "mech",
+            "off"
+          ],
+          "description": "Sound effects on motion (a node appearing, an arrow connecting). Leave it out (or \"off\") for none."
         }
       }
     },
@@ -682,6 +692,29 @@
         },
         "imageFailed": {
           "description": "Set by openCanviz, leave out."
+        },
+        "svgStretch": {
+          "type": "boolean",
+          "description": "svg nodes: stretch svgViewBox to the node's w x h (plot axes, curves, polygons). Without it the paths keep their aspect ratio."
+        },
+        "imageData": {
+          "type": "string",
+          "description": "A data: URL (an SVG or PNG) drawn inside the node's box; used for a LaTeX formula rendered to SVG. Such a node draws no fill."
+        },
+        "mathTex": {
+          "type": "string",
+          "description": "The LaTeX source of a formula node (imageData holds the rendered SVG). Kept so the editor can show and edit it; a node with mathTex and no imageData renders blank."
+        },
+        "wipeAxis": {
+          "enum": [
+            "x",
+            "y"
+          ],
+          "description": "With imageData: drawProgress 0..1 reveals the image left to right (x) or top to bottom (y)."
+        },
+        "haloColor": {
+          "$ref": "#/$defs/color",
+          "description": "Colour of a text node's halo (the soft outline that keeps it readable over a busy background)."
         }
       }
     },
@@ -1379,6 +1412,24 @@
         "rangeEnd": {
           "type": "number",
           "description": "Array bracket ends (cell indices)."
+        },
+        "startAngle": {
+          "type": "number",
+          "description": "Wedges: start angle in degrees (0 = 3 o'clock, clockwise)."
+        },
+        "endAngle": {
+          "type": "number",
+          "description": "Wedges: end angle in degrees. Tween it from startAngle + 1 to sweep an arc open (a zero sweep can draw a full disc)."
+        },
+        "innerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Wedges: hole size as a share of the radius (0.95 = a thin arc)."
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0
         }
       }
     },
@@ -1419,15 +1470,15 @@
         },
         "isRelative": {
           "type": "boolean",
-          "description": "Advanced, not recommended. Use an absolute to.x and to.y instead."
+          "description": "Entrances only: with dx and dy, and no to.x/to.y, the node travels from its step position minus (dx, dy) to its step position (a pop from below, a drop). Use it in the step that fades the node in; elsewhere use an absolute to.x and to.y."
         },
         "dx": {
           "type": "number",
-          "description": "Used only with isRelative."
+          "description": "With isRelative: the node starts dx px left of its step position (negative = right)."
         },
         "dy": {
           "type": "number",
-          "description": "Used only with isRelative."
+          "description": "With isRelative: the node starts dy px above its step position (negative = below)."
         }
       }
     },

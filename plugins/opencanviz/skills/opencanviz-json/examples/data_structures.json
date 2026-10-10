@@ -41,6 +41,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 60,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -107,6 +108,7 @@
             "n_6": "#1e293b",
             "n_8": "#1e293b"
           },
+          "zIndex": 2,
           "opacity": 1
         },
         {
@@ -122,6 +124,7 @@
           "labelFontSize": 36,
           "pointerArrowSize": 20,
           "pointerTreeNodeId": "n_8",
+          "zIndex": 3,
           "opacity": 1
         }
       ],
@@ -148,6 +151,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 60,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -214,6 +218,7 @@
                 "n_6": "#1e293b",
                 "n_8": "#1e293b"
               },
+              "zIndex": 2,
               "opacity": 1
             },
             {
@@ -229,6 +234,7 @@
               "labelFontSize": 36,
               "pointerArrowSize": 20,
               "pointerTreeNodeId": "n_8",
+              "zIndex": 3,
               "opacity": 1
             }
           ],
@@ -412,6 +418,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 60,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -447,6 +454,7 @@
             "l1": "#1e293b",
             "l2": "#1e293b"
           },
+          "zIndex": 2,
           "opacity": 1
         }
       ],
@@ -473,6 +481,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 60,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -508,6 +517,7 @@
                 "l1": "#1e293b",
                 "l2": "#1e293b"
               },
+              "zIndex": 2,
               "opacity": 1
             }
           ],
@@ -615,6 +625,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 60,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -683,6 +694,7 @@
             "g_c": "#1e293b",
             "g_d": "#1e293b"
           },
+          "zIndex": 2,
           "opacity": 1
         }
       ],
@@ -709,6 +721,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 60,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -777,6 +790,7 @@
                 "g_c": "#1e293b",
                 "g_d": "#1e293b"
               },
+              "zIndex": 2,
               "opacity": 1
             }
           ],

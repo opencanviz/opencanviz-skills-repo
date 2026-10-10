@@ -26,6 +26,20 @@ except ImportError:
 
 UNTITLED = "does not open with a title"
 
+# math examples compile LaTeX with node + mathjax-full; point MATHJAX_PATH at a node_modules that has it
+MATH_EXAMPLES = {"math_plot"}
+MATH_ENV = dict(os.environ)
+for _cand in (os.environ.get("MATHJAX_PATH"), os.path.expanduser("~/animated-diagram-editor-app/node_modules")):
+    if _cand and os.path.isdir(os.path.join(_cand, "mathjax-full")):
+        MATH_ENV["MATHJAX_PATH"] = _cand
+        os.environ.setdefault("MATHJAX_PATH", _cand)
+        break
+try:
+    oc._tex2svg([("x", "#ffffff")])
+    HAVE_MATH = True
+except oc.OpenCanvizError:
+    HAVE_MATH = False
+
 
 def clean(doc, titled=False):
     """Every problem in doc; the small test scenes have no title, so that warning is left out unless titled."""
@@ -43,7 +57,9 @@ class ExampleTests(unittest.TestCase):
             name = os.path.splitext(os.path.basename(script))[0]
             with self.subTest(example=name):
                 out = os.path.join(tmp, name + ".json")
-                r = subprocess.run([sys.executable, script, out], capture_output=True, text=True)
+                if name in MATH_EXAMPLES and not HAVE_MATH:
+                    continue      # needs node + mathjax-full
+                r = subprocess.run([sys.executable, script, out], capture_output=True, text=True, env=MATH_ENV)
                 self.assertEqual(r.returncode, 0, r.stderr)
                 with open(out) as fh:
                     doc = json.load(fh)
@@ -858,3 +874,271 @@ class TextEntrancesAndTransitions(unittest.TestCase):
         st["transitions"] = {st["nodes"][0]["id"]: "flip-x"}
         _, warnings = oc.validate(doc)
         self.assertTrue(any("flip" in w for w in warnings), warnings)
+
+
+def quiet(doc):
+    """clean() without the fill-the-frame warning, which small test scenes always trip."""
+    return [w for w in clean(doc) if "fills only" not in w]
+
+
+def motion_project(**kw):
+    p = oc.Project("t", **kw)
+    s = p.scene("t")
+    return p, s
+
+
+def step_acts(doc, scene=0, step=0):
+    return doc["diagrams"][scene]["steps"][step]["actions"]
+
+
+class MotionPresets(unittest.TestCase):
+    def test_entrances_validate(self):
+        for style in ("fade", "slide", "drop", "rise", "zoom", "wipe"):
+            with self.subTest(style=style):
+                p, s = motion_project()
+                b = s.box("A", at=p.area().centered(400, 240))
+                s.step("In it comes.").reveal(b, style=style)
+                self.assertEqual(quiet(p.to_dict()), [])
+
+    def test_drop_is_a_relative_entrance(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("It drops in.").reveal(b, style="drop")
+        tw = [a for a in step_acts(p.to_dict()) if a["type"] == "transformTween"][0]
+        self.assertTrue(tw["isRelative"])
+        self.assertEqual((tw["dx"], tw["dy"]), (0, 220))
+        self.assertNotIn("x", tw["to"])
+
+    def test_broken_styles_refused(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        t = s.text("hello", at=p.area().cut_top(120)[0])
+        st = s.step("x")
+        with self.assertRaisesRegex(oc.OpenCanvizError, "blur"):
+            st.reveal(b, style="blur-in")
+        with self.assertRaisesRegex(oc.OpenCanvizError, "wipe"):
+            st.reveal(t, style="wipe")
+        with self.assertRaisesRegex(oc.OpenCanvizError, "glow"):
+            st.emphasize(b, style="glow")
+
+    def test_gentle_pulse_keeps_its_scale(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("In.").reveal(b)
+        s.step("Look.").pulse(b, scale=1.04)
+        up = [a for a in step_acts(p.to_dict(), step=1) if a["type"] == "transformTween"][0]
+        self.assertEqual(up["to"]["scaleX"], 1.04)
+
+    def test_pop_and_scatter_letters(self):
+        p, s = motion_project()
+        word = s.letters("HELLO", at=p.area())
+        self.assertEqual(len(word), 5)
+        s.step("Pop.").pop(word, from_="scatter")
+        s.step("Gone.").hide(word, style="scatter")
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        ins = [a for a in step_acts(doc) if a["type"] == "visibility"]
+        self.assertEqual([a.get("offsetMs", 0) for a in ins], [0, 40, 80, 120, 160])
+
+    def test_emphasis_returns_home(self):
+        for style in ("pulse", "shake", "wiggle", "flash", "nudge"):
+            with self.subTest(style=style):
+                p, s = motion_project()
+                b = s.box("A", at=p.area().centered(400, 240))
+                s.step("Here.").reveal(b)
+                s.step("Look.").emphasize(b, style=style)
+                doc = p.to_dict()
+                self.assertEqual(quiet(doc), [])
+                base = [n for n in doc["diagrams"][0]["nodes"] if n["id"] == b.id][0]
+                for n1 in [n for n in doc["diagrams"][0]["steps"][1].get("nodes", []) if n["id"] == b.id]:
+                    for k in ("x", "scaleX", "rotationZ", "fill"):
+                        if k in n1:
+                            self.assertEqual(base.get(k, 1 if k == "scaleX" else 0), n1[k], k)
+
+    def test_exits_validate(self):
+        for style in ("fade", "shrink", "absorb", "slide"):
+            with self.subTest(style=style):
+                p, s = motion_project()
+                a, b = p.area().row(2, w=400, h=240)
+                na, nb = s.box("A", at=a), s.box("B", at=b)
+                s.step("Both.").reveal(na).reveal(nb)
+                s.step("A goes.").hide(na, style=style, into=nb if style == "absorb" else None)
+                self.assertEqual(quiet(p.to_dict()), [])
+
+    def test_stream_ids_unique(self):
+        p, s = motion_project()
+        a, b = p.area().row(2, w=400, h=240, gap=400)
+        na, nb = s.box("A", at=a), s.box("B", at=b)
+        e = s.arrow(na, nb)
+        s.step("Both.").reveal(na).reveal(nb).draw(e)
+        s.step("Data flows.").stream(e, n=4, gap_ms=220)
+        doc = p.to_dict()
+        pa = [a for a in step_acts(doc, step=1) if a["type"] == "pathAnimate"]
+        self.assertEqual(len({a["id"] for a in pa}), 4)
+        self.assertEqual([a.get("offsetMs", 0) for a in pa], [0, 220, 440, 660])
+        self.assertEqual(quiet(doc), [])
+
+    def test_ring_arc_and_walk(self):
+        p, s = motion_project()
+        ring = s.ring(center=(p.area().cx, p.area().cy), r=300)
+        srv = ring.dot(120, size=50, label="S")
+        key = ring.dot(40, size=30, label="k")
+        arc = ring.arc(0, 120)
+        self.assertLess(arc.fields["innerRadius"], 1)
+        self.assertEqual(arc.fields["startAngle"], -90)
+        s.step("Ring.").reveal(ring.node).pop([srv, key])
+        s.step("Walk.").reveal(arc, style="draw").walk(key, ring, 120, absorb_into=srv)
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        moved = {a["target"]["id"] for a in step_acts(doc, step=1) if a["type"] == "transformTween" and "x" in a["to"]}
+        self.assertIn(key.id, moved)
+        self.assertIn(key.parts[0].id, moved)      # the label walks with its dot
+
+    def test_table_and_compare_bars(self):
+        p, s = motion_project()
+        left, right = p.area().split(0.5)
+        t = s.table([["k", "v"], ["a", "1"], ["b", "2"]], at=left, colors={(1, 1): "#14532d"})
+        bars = s.compare_bars([("Old", 80), ("New", 20)], at=right, unit="%")
+        self.assertEqual(len(t.column(1)), 3)
+        s.step("Table.").stagger(t.column(0), style="fade").stagger(t.column(1), style="pop")
+        s.step("Bars.").reveal(bars.labels).stagger(bars.bars, style="wipe").pop(bars.numbers)
+        self.assertEqual(quiet(p.to_dict()), [])
+
+    def test_sfx_and_steady_stage(self):
+        p, s = motion_project(sfx="playful", stage="steady")
+        s2 = p.scene("two")
+        for sc in (s, s2):
+            sc.step("x.").reveal(sc.box("A", at=p.area().centered(400, 240)))
+        doc = p.to_dict()
+        self.assertEqual(doc["sfxPack"], "playful")
+        self.assertEqual(doc["transitions"][0]["durationMs"], oc.STEADY_MS)
+        with self.assertRaisesRegex(oc.OpenCanvizError, "sfx"):
+            oc.Project("t", sfx="loud")
+
+    def test_caption_decimal_refused(self):
+        p, s = motion_project()
+        with self.assertRaisesRegex(oc.OpenCanvizError, "decimal"):
+            s.step("It takes 7.1 minutes.")
+
+    def test_z_index_in_insertion_order(self):
+        p, s = motion_project()
+        a, b = p.area().row(2, w=400, h=240)
+        na, nb = s.box("A", at=a), s.box("B", at=b)
+        s.step("x.").reveal(na).reveal(nb)
+        z = {n["id"]: n["zIndex"] for n in p.to_dict()["diagrams"][0]["nodes"]}
+        self.assertLess(z[na.id], z[nb.id])
+
+
+class ValidatorMotionRules(unittest.TestCase):
+    def doc(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("In.").reveal(b)
+        s.step("Still there.")
+        return p.to_dict(), b.id
+
+    def test_camel_case_ease_explained(self):
+        doc, nid = self.doc()
+        step_acts(doc)[0]["ease"] = "easeOut"
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("camelCase" in e for e in errors), errors)
+
+    def test_relative_tween_outside_entrance_refused(self):
+        doc, nid = self.doc()
+        st = doc["diagrams"][0]["steps"][1]
+        st.setdefault("actions", []).append({"type": "transformTween", "target": {"kind": "node", "id": nid}, "durationMs": 300,
+                              "isRelative": True, "dx": 0, "dy": 50, "to": {}})
+        errors, _ = oc.validate(doc)
+        self.assertTrue(any("only for an entrance" in e for e in errors), errors)
+
+    def test_relative_entrance_accepted(self):
+        doc, nid = self.doc()
+        step_acts(doc).append({"type": "transformTween", "target": {"kind": "node", "id": nid}, "durationMs": 300,
+                          "isRelative": True, "dx": 0, "dy": 50, "to": {}})
+        errors, _ = oc.validate(doc)
+        self.assertFalse(any("isRelative" in e for e in errors), errors)
+
+    def test_caption_decimal_warned(self):
+        doc, nid = self.doc()
+        doc["diagrams"][0]["steps"][0]["caption"] = "About 2.5 seconds."
+        _, warnings = oc.validate(doc)
+        self.assertTrue(any("decimal" in w for w in warnings), warnings)
+
+
+@unittest.skipUnless(HAVE_MATH, "node + mathjax-full not available")
+class MathAndGraphs(unittest.TestCase):
+    def test_math_node_is_an_svg_image(self):
+        p, s = motion_project()
+        m = s.math(r"\frac{a}{b}", at=p.area().centered(600, 300), size=80)
+        self.assertTrue(m.fields["imageData"].startswith("data:image/svg+xml;base64,"))
+        self.assertEqual(m.fields["mathTex"], r"\frac{a}{b}")
+        s.step("A fraction.").reveal(m, style="wipe")
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        node = [n for n in doc["diagrams"][0]["nodes"] if n["id"] == m.id][0]
+        self.assertEqual(node["wipeAxis"], "x")
+
+    def test_bad_tex_is_explained(self):
+        p, s = motion_project()
+        with self.assertRaisesRegex(oc.OpenCanvizError, "Check the LaTeX"):
+            s.math(r"\frac{a", x=0, y=0)
+
+    def test_math_row_shares_a_baseline(self):
+        p, s = motion_project()
+        row = s.math_row(["x^2", "+", r"\frac{1}{2}"], at=p.area().centered(900, 300))
+        bases = [n.fields["y"] + (n.meta["math"]["heightEx"] - n.meta["math"]["depthEx"]) * n.meta["math"]["k"]
+                 for n in row]
+        self.assertAlmostEqual(max(bases), min(bases), delta=1.0)
+
+    def test_derivation_eq_alignment_and_flash(self):
+        p, s = motion_project()
+        lines = s.derivation([["y =", "x^2"], ["y' =", "2x"]], at=p.area().inset(100, 100), align="eq")
+        ends = [ln[0].fields["x"] + ln[0].fields["w"] for ln in lines]
+        self.assertAlmostEqual(ends[0], ends[1], delta=1.0)
+        s.step("One.").stagger(lines[0], style="fade")
+        s.step("Two.").stagger(lines[1], style="fade")
+        s.step("Flash.").emphasize(lines[1][1], style="flash")
+        self.assertEqual(quiet(p.to_dict()), [])
+
+    def test_plot_ride_with_tangent(self):
+        p, s = motion_project()
+        pl = s.plot(p.area().inset(80, 40), (-2, 2), (0, 4), grid=True)
+        c = pl.curve(lambda x: x * x)
+        dot = pl.point(-1, 1)
+        tan = pl.tangent(lambda x: x * x, -1)
+        self.assertAlmostEqual(tan.fields["rotationZ"], pl.slope_deg(lambda x: x * x, -1))
+        s.step("Plot.").reveal(pl.node).reveal(c, style="draw")
+        s.step("Ride.").pop([dot]).reveal(tan, style="zoom").ride(dot, pl, lambda x: x * x, -1, 1, tangent=tan)
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        last = [n for n in doc["diagrams"][0]["steps"][1]["nodes"] if n["id"] == dot.id][0]
+        px, py = pl.to_px(1, 1)
+        self.assertAlmostEqual(last["x"] + dot.fields["w"] / 2.0, px, delta=1)
+        with self.assertRaisesRegex(oc.OpenCanvizError, "rotationZ"):
+            s.step("Wipe.").reveal(pl.tangent(lambda x: x, 0, id="t2"), style="wipe")
+
+    def test_shapes(self):
+        p, s = motion_project()
+        top, bottom = p.area().cut_top(p.area().h * 0.5)
+        l, r = top.split(0.5)
+        tri = s.poly([(l.x, l.y + l.h), (l.x + l.w, l.y + l.h), (l.x, l.y)])
+        mat = s.matrix([["1", "2"], ["3", "4"]], at=r.inset(100, 20))
+        bl, br = bottom.split(0.5)
+        nl = s.number_line(bl.inset(20, 60), 0, 4)
+        venn = s.venn(["A", "B"], at=br)
+        self.assertEqual(len(venn[0].fields["fill"]), 9)      # alpha fill: see-through after a fadeIn
+        s.step("All.").reveal(tri, style="draw").reveal(mat.node).reveal(nl.node).pop(venn)
+        s.step("Row.").tint(mat.row(1), "#f59e0b")
+        self.assertEqual(quiet(p.to_dict()), [])
+
+
+class Tex2SvgMissing(unittest.TestCase):
+    def test_missing_mathjax_exits_3(self):
+        tmp = tempfile.mkdtemp()
+        env = dict(os.environ, MATHJAX_PATH=tmp)
+        r = subprocess.run(["node", oc.TEX2SVG], input='{"items": []}', capture_output=True, text=True, cwd=tmp,
+                           env=env)
+        if r.returncode == 0:
+            self.skipTest("mathjax-full is installed globally")
+        self.assertEqual(r.returncode, 3)
+        self.assertIn("npm i mathjax-full", r.stderr)

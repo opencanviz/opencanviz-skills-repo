@@ -44,6 +44,7 @@ without iconStyle "solid" and fill; a structure node without its font field; ske
 and lottie; typeProgress changed without a 0 to 1 tween; pathFollow on a path without length/cum.
 """
 
+import base64
 import json
 import math
 import os
@@ -89,7 +90,9 @@ NODE_FIELDS = {
     # count-up text
     "countFrom", "countTo", "countStartMs", "countDurationMs", "countPrefix", "countSuffix", "countIsInt",
     # text entrances and scene morphs
-    "hideCaret", "writeHand", "blur", "morphKey", "wipeAxis", "wipeOrigin", "wipeSoft"}
+    "hideCaret", "writeHand", "blur", "morphKey", "wipeAxis", "wipeOrigin", "wipeSoft",
+    # images, math and svg paths drawn in their own px
+    "svgStretch", "imageData", "mathTex", "haloColor"}
 
 # Kinds that get no theme fill/stroke from Scene.node(): the recipe methods pass exactly the fields the
 # renderer was seen to use.
@@ -138,7 +141,17 @@ TRANSITION_KINDS = {
 TEXT_ENTRANCES = {"type", "type_quiet", "write", "pop"}
 BROKEN_ENTRANCES = {
     "blur": "a blur tween is not drawn in exported videos (only the editor shows it); use \"pop\" or a fade.",
+    "blur-in": "a blur tween is not drawn in exported videos (only the editor shows it); use \"pop\" or \"zoom\".",
     "wipe": "drawProgress / wipeAxis wipes only image nodes; a text node appears whole. Use \"write\" or \"type\"."}
+# Motion presets (render-checked in the export renderer; see SKILL.md "Motion presets").
+MOTION_IN = {"fade", "slide", "drop", "rise", "zoom", "wipe", "draw"}
+POP_FROM_MODES = {"below", "edges", "scatter", None}
+EMPHASIS = {"pulse": 440, "shake": 300, "wiggle": 400, "flash": 800, "nudge": 500}     # default ms
+BROKEN_EMPHASIS = {"glow": "a glow tween is not drawn and a glow change is barely visible; use \"pulse\" or \"flash\"."}
+MOTION_OUT = {"fade", "slide", "shrink", "absorb", "scatter"}
+CAPTION_DECIMAL = re.compile(r"\d\.\d")
+SFX_PACKS = {"soft", "playful", "retro", "mech", "off"}
+STEADY_MS = 300        # stage="steady": every scene crossfades this long (260-340 ms reads as one stage)
 POP_MS, POP_FROM = 500, 0.6
 STAGGER_MS = 180
 TYPE_CPS = {"type": 28, "type_quiet": 28, "write": 16}     # characters per second
@@ -157,7 +170,8 @@ TWEEN_PROPS = {"x", "y", "w", "h", "scaleX", "scaleY", "rotationX", "rotationY",
                "stroke", "strokeWidth", "strokeTrimStart", "strokeTrimEnd", "typeProgress", "drawProgress",
                "blur", "value", "cellColors", "gridColors", "nodeColors", "cellValues", "gridValues",
                "highlightedLines", "color", "labelColor", "cylinderTopFill", "iconBg", "pointerColor", "rangeColor",
-               "textStroke", "pointerTargetIndex", "pointerTargetRow", "pointerTargetCol", "rangeStart", "rangeEnd"}
+               "textStroke", "pointerTargetIndex", "pointerTargetRow", "pointerTargetCol", "rangeStart", "rangeEnd",
+               "startAngle", "endAngle", "innerRadius", "cornerRadius"}
 # Structure fields a transformTween can time: its `to` names the field (the step snapshot holds the value)
 # and the change runs over the tween's offsetMs/durationMs instead of the whole step.
 ALGO_TIMED = {"cellColors", "gridColors", "nodeColors", "cellValues", "gridValues", "highlightedLines"}
@@ -517,6 +531,12 @@ def _clean(v):
     return int(v) if v == int(v) else v
 
 
+def _sc(v):
+    """A scale factor: 2 decimals, so a gentle 1.04 pulse is not rounded away to 1."""
+    v = round(float(v), 2)
+    return int(v) if v == int(v) else v
+
+
 def _slug(s):
     s = re.sub(r"[^a-z0-9]+", "_", str(s).lower()).strip("_")
     return (s[:24].strip("_") or "item")
@@ -756,6 +776,11 @@ class Step:
         chart's axes and labels, a bullet's glyph) come with it; a glyph draws itself in and a counter starts
         counting when it is revealed.
 
+        Motion presets: "fade", "slide" (a 60 px rise), "drop" (falls in with a bounce: an arrival),
+        "rise" (a soft 50 px rise), "zoom" (settles from 1.6x), "wipe" (left to right: a box or bar
+        grows from its left edge, an image or equation is uncovered) and "draw" (an svg path or a ring arc
+        draws itself on). step.pop() pops a group in with a stagger, step.stagger() any style.
+
         style: fadeIn, show, slideInLeft/Right/Up/Down (500 ms), or one of the text entrances:
         "type" (typewriter with a caret), "type_quiet" (no caret), "write" (a marker hand writes it on;
         text nodes only, duration from the text length unless given) and "pop" (fade in while scaling up
@@ -763,6 +788,14 @@ class Step:
         text in an exported video. For lines one after another use reveal_lines()."""
         if style in TEXT_ENTRANCES:
             return self._entrance(node, style, duration, offset, ease)
+        if style in MOTION_IN:
+            if isinstance(node, (list, tuple)):
+                start = self._place(0, offset)
+                for n in node:
+                    self._motion_in(n, style, duration, start, ease, distance)
+                self._last_start = start
+                return self
+            return self._motion_in(node, style, duration, offset, ease, distance)
         if duration is None:
             duration = 500
         if isinstance(node, (list, tuple)):
@@ -841,13 +874,24 @@ class Step:
         self._last_start = start
         return self
 
-    def hide(self, item, style="fadeOut", duration=400, offset=None, ease=None):
+    def hide(self, item, style="fadeOut", duration=400, offset=None, ease=None, into=None, distance=None, gap=28):
         """Hide a node (fadeOut, hide, slideOut*), a list of nodes, or undraw an arrow. Arrows and parts of a
-        hidden node go with it."""
+        hidden node go with it. Exit presets: "fade", "slide" (out to the right), "shrink" (scales to 0.6 as
+        it fades), "absorb" (flies into the node into= and fades: a key reaching its server) and "scatter"
+        (a list of letters or nodes blows apart from their center, gap ms apart)."""
+        if style == "scatter":
+            return self._scatter_out(item, None if duration == 400 else duration, offset, gap, distance or 160)
+        if style == "fade":
+            style = "fadeOut"
         if isinstance(item, (list, tuple)):
-            for i, n in enumerate(item):
-                self.hide(n, style, duration, offset if i == 0 else "with", ease)
+            start = self._place(0, offset)
+            for n in item:
+                self.hide(n, style, duration, start, ease, into, distance)
+            self._last_start = start
             return self
+        if style in ("shrink", "absorb", "slide") and isinstance(item, Node):
+            self._own(item, Node)
+            return self._motion_out(item, style, None if duration == 400 else duration, offset, into, distance)
         if isinstance(item, Edge):
             self._own(item, Edge)
             item.events.append((self.index, "undraw"))
@@ -855,15 +899,18 @@ class Step:
             return self
         self._own(item, Node)
         if style not in VIS_OUT:
-            raise OpenCanvizError("hide(%s): style must be one of %s" % (item.id, sorted(VIS_OUT)))
+            raise OpenCanvizError("hide(%s): style must be one of %s or %s" % (item.id, sorted(VIS_OUT),
+                                                                            sorted(MOTION_OUT)))
         item.events.append((self.index, "out"))
         act = {"type": "visibility", "target": {"kind": "node", "id": item.id}, "mode": style}
         if ease:
             act["ease"] = ease
+        if distance is not None and style.startswith("slideOut"):
+            act["slideDistance"] = distance
         start = self._action(act, duration, offset).get("offsetMs", 0)
         for part in item.parts:
             if isinstance(part, Node):
-                self.hide(part, style, duration, start, ease)
+                self.hide(part, style, duration, start, ease, distance=distance)
         self._last_start = start
         return self
 
@@ -1392,6 +1439,379 @@ class Step:
         self._action({"type": "pathAnimate", "target": {"kind": "edge", "id": edge.id}, "scale": 1, "opacity": 1,
                       "nodeSnapshot": {"id": self.scene._id(edge.id + "_pkt"), "kind": "circle", "w": size, "h": size,
                                        "fill": col, "stroke": "none"}}, duration, offset)
+        return self
+
+    # motion presets -----------------------------------------------------------------------------
+    def _cur(self, node, key, default=None):
+        """A node's value of key as this step starts (the latest patch from an earlier step or this one)."""
+        val = node.fields.get(key, default)
+        for st in self.scene.steps[:self.index + 1]:
+            p = st.node_patch.get(node.id)
+            if p and key in p:
+                val = p[key]
+        return val
+
+    def _tw(self, node, to, ms, start, ease=None, frm=None, **extra):
+        act = {"type": "transformTween", "target": {"kind": "node", "id": node.id}, "to": dict(to)}
+        if frm:
+            act["from"] = dict(frm)
+        if ease:
+            act["ease"] = ease
+        act.update(extra)
+        act["durationMs"] = int(max(1, round(ms)))
+        if start:
+            act["offsetMs"] = int(round(start))
+        self.actions.append(act)
+        self._tail = max(self._tail, int(round(start + ms)))
+        return act
+
+    def _motion_in(self, node, style, duration, offset, ease, distance):
+        """One node in with a motion preset (see MOTION_IN)."""
+        self._own(node, Node)
+        f = node.fields
+        kind = f.get("kind")
+        if style == "fade":
+            return self.reveal(node, "fadeIn", duration, offset, ease)
+        if style == "slide":
+            return self.reveal(node, "slideInUp", duration or 500, offset, ease or "ease-out",
+                               60 if distance is None else distance)
+        if style == "draw":
+            if kind == "wedge":
+                ms = duration or 800
+                start = self._place(ms, offset)
+                self.reveal(node, "fadeIn", 60, start)   # not "show": it leaves the node visible before its offset
+                a0 = f.get("startAngle", -90)
+                self._tw(node, {"endAngle": f.get("endAngle", 270)}, ms, start, ease or "ease-out",
+                         frm={"endAngle": a0 + 1})   # a zero sweep can draw a full disc
+                self._last_start = start
+                return self
+            if kind != "svg" or not f.get("svgPaths"):
+                raise OpenCanvizError("reveal(%s, \"draw\"): draw is for svg paths (scene.curve/poly/plot curves) "
+                                      "and arcs (ring.arc / wedges); draw an arrow with step.draw(edge)." % node.id)
+            ms = duration or 900
+            start = self._place(ms, offset)
+            self.reveal(node, "fadeIn", 60, start)   # not "show": it leaves the node visible before its offset
+            f.setdefault("drawProgress", 1)
+            self._tw(node, {"drawProgress": 1}, ms, start, ease or "linear", frm={"drawProgress": 0})
+            self._last_start = start
+            return self
+        if style == "wipe":
+            ms = duration or (900 if f.get("imageData") else 600)
+            start = self._place(ms, offset)
+            self.reveal(node, "fadeIn", 60, start)   # not "show": it leaves the node visible before its offset
+            if f.get("imageData"):
+                f.setdefault("wipeAxis", "x")
+                f.setdefault("drawProgress", 1)
+                self._tw(node, {"drawProgress": 1}, ms, start, ease or "linear", frm={"drawProgress": 0})
+            elif kind == "text":
+                raise OpenCanvizError("reveal(%s, \"wipe\"): %s" % (node.id, BROKEN_ENTRANCES["wipe"]))
+            else:
+                if f.get("rotationZ"):
+                    raise OpenCanvizError("reveal(%s, \"wipe\"): the node is turned (rotationZ); a wipe moves its pivot "
+                                          "to the left edge, so it would turn about the wrong point. Use \"fade\" or "
+                                          "\"zoom\"." % node.id)
+                f["pivotX"] = 0
+                f.setdefault("scaleX", 1)
+                self._tw(node, {"scaleX": 1}, ms, start, ease or "ease-out", frm={"scaleX": 0.01})
+            self._last_start = start
+            return self
+        spec = {"drop": (700, "bounce", 0, -220, None, 150), "rise": (450, "ease-out", 0, 50, None, 400),
+                "zoom": (500, "ease-out", 0, 0, 1.6, 300)}[style]
+        ms, ez, dx, dy, sc, fade = spec
+        ms = duration or ms
+        if distance is not None and style in ("drop", "rise"):
+            dy = -abs(distance) if style == "drop" else abs(distance)
+        start = self._place(ms, offset)
+        self.reveal(node, "fadeIn", min(fade, ms), start)
+        if sc:
+            f.setdefault("scaleX", 1)
+            f.setdefault("scaleY", 1)
+            self._tw(node, {"scaleX": 1, "scaleY": 1}, ms, start, ease or ez, frm={"scaleX": sc, "scaleY": sc})
+        else:
+            # isRelative: the tween runs from (home - (dx, dy)) to home, and home stays in the snapshot
+            self._tw(node, {}, ms, start, ease or ez, isRelative=True, dx=dx, dy=-dy)
+        self._last_start = start
+        return self
+
+    def pop(self, nodes, stagger=40, from_="below", duration=500, offset=None, distance=None, ease="back"):
+        """Pop nodes in one after another, stagger ms apart: each fades in (200 ms) while it scales up from 0.35
+        with a "back" overshoot and travels home from from_: "below" (120 px under), "edges" (out along the
+        line from the group's center, so a word bursts outward-in), "scatter" (a fixed pseudo-random spot
+        220 px away) or None (scale only). Home stays in the step-0 snapshot (an isRelative tween), so the
+        follow camera frames the final layout and it works in a scene's first step."""
+        nodes = [nodes] if isinstance(nodes, Node) else list(nodes)
+        if not nodes:
+            raise OpenCanvizError("pop(): give at least one node.")
+        if from_ not in POP_FROM_MODES:
+            raise OpenCanvizError("pop(): from_ must be one of %s." % sorted(POP_FROM_MODES, key=str))
+        for n in nodes:
+            self._own(n, Node)
+        cx = sum(n.rect.cx for n in nodes) / len(nodes)
+        cy = sum(n.rect.cy for n in nodes) / len(nodes)
+        start = self._place(0, offset)
+        for i, n in enumerate(nodes):
+            at = start + i * stagger
+            n.fields.setdefault("scaleX", 1)
+            n.fields.setdefault("scaleY", 1)
+            self.reveal(n, "fadeIn", min(200, duration), at)
+            d = 120 if distance is None else distance
+            if from_ == "below":
+                ox, oy = 0, d
+            elif from_ == "edges":
+                vx, vy = n.rect.cx - cx, n.rect.cy - cy
+                ln = math.hypot(vx, vy) or 1.0
+                vx, vy = (vx / ln, vy / ln) if ln > 1 else (0, 1)
+                ox, oy = vx * d * 1.4, vy * d * 1.4
+            elif from_ == "scatter":
+                a = (i * 137.508 + 23) * math.pi / 180      # golden-angle spread: varied, repeatable
+                r = (220 if distance is None else distance) * (0.75 + 0.5 * ((i * 7919) % 11) / 10.0)
+                ox, oy = math.cos(a) * r, math.sin(a) * r
+            else:
+                ox = oy = 0
+            extra = {"isRelative": True, "dx": _clean(-ox), "dy": _clean(-oy)} if (ox or oy) else {}
+            self._tw(n, {"scaleX": 1, "scaleY": 1}, duration, at, ease, frm={"scaleX": 0.35, "scaleY": 0.35}, **extra)
+        self._cursor = max(self._cursor, start + (len(nodes) - 1) * stagger + duration)
+        self._last_start = start
+        return self
+
+    def stagger(self, nodes, style="pop", gap=STAGGER_MS, duration=None, offset=None, ease=None):
+        """Bring nodes in one after another, gap ms apart, with any reveal() style (a table column, the terms
+        of an equation, a row of cards)."""
+        nodes = list(nodes)
+        if not nodes:
+            raise OpenCanvizError("stagger(): give at least one node.")
+        start = self._place(0, offset)
+        for i, n in enumerate(nodes):
+            self.reveal(n, style, duration, start + int(round(i * gap)), ease)
+        self._last_start = start
+        return self
+
+    def emphasize(self, node, style="pulse", duration=None, offset=None, color=None, scale=1.08, distance=40):
+        """Draw the eye to a node that is already on screen, then leave it as it was. One per beat.
+        style: pulse (scale up and back, 440 ms), shake (side to side, 300 ms: an error, a rejection),
+        wiggle (a small rotation, 400 ms: playful attention), flash (its fill, or a text's colour, flashes
+        to color and back, 800 ms) or nudge (a 40 px push right and back, 500 ms: "this one moves next").
+        "glow" is refused: a glow tween is not drawn."""
+        if isinstance(node, (list, tuple)):
+            start = self._place(0, offset)
+            for n in node:
+                self.emphasize(n, style, duration, start, color, scale, distance)
+            self._last_start = start
+            return self
+        self._own(node, Node)
+        if style in BROKEN_EMPHASIS:
+            raise OpenCanvizError("emphasize(%s, %r): %s" % (node.id, style, BROKEN_EMPHASIS[style]))
+        if style not in EMPHASIS:
+            raise OpenCanvizError("emphasize(%s): style must be one of %s." % (node.id, sorted(EMPHASIS)))
+        f = node.fields
+        total = duration or EMPHASIS[style]
+        start = self._place(total, offset)
+        if style == "pulse":
+            sx, sy = self._cur(node, "scaleX", 1), self._cur(node, "scaleY", 1)
+            f.setdefault("scaleX", 1)
+            f.setdefault("scaleY", 1)
+            half = total / 2.0
+            self._tw(node, {"scaleX": _sc(sx * scale), "scaleY": _sc(sy * scale)}, half, start, "ease-out")
+            self._tw(node, {"scaleX": sx, "scaleY": sy}, half, start + half, "ease-in")
+        elif style == "shake":
+            x0 = self._cur(node, "x")
+            seq = [12, -12, 9, -9, 5, 0]
+            ms = total / float(len(seq))
+            for i, d in enumerate(seq):
+                self._tw(node, {"x": _clean(x0 + d)}, ms, start + i * ms, "linear")
+        elif style == "wiggle":
+            r0 = self._cur(node, "rotationZ", 0) or 0
+            seq = [6, -6, 4, -4, 0]
+            ms = total / float(len(seq))
+            for i, d in enumerate(seq):
+                self._tw(node, {"rotationZ": _clean(r0 + d)}, ms, start + i * ms, "linear")
+        elif style == "flash" and f.get("imageData"):
+            # an image (an equation) draws no fill: light a highlighter box up behind it instead
+            col = color or self.scene.project.colors["hi"]
+            pad = 6
+            hl = self.scene.node("rect", None, x=f["x"] - pad, y=f["y"] - pad, w=f["w"] + 2 * pad, h=f["h"] + 2 * pad,
+                                 id=node.id + "_hl", fill=(col + "55") if len(col) == 7 else col, stroke="none",
+                                 cornerRadius=10, noGlow=True, zIndex=0)
+            self.reveal(hl, "fadeIn", int(total * 0.2), start)
+            self.hide(hl, "fadeOut", int(total * 0.45), start + int(total * 0.55))
+        elif style == "flash":
+            key = "color" if f.get("kind") == "text" else "fill"
+            was = self._cur(node, key)
+            if was in (None, "transparent", "none"):
+                was = (self.scene.scene_background() + "00") if key == "fill" else self.scene.project.colors["text"]
+                if f.get(key) in (None, "transparent", "none"):
+                    f[key] = was
+            col = color or self.scene.project.colors["hi"]
+            if key == "fill" and len(was) == 9 and len(col) == 7:
+                col += "88"          # a see-through flash behind an equation or a label
+            self._tw(node, {key: col}, total * 0.2, start, "ease-out")
+            self._tw(node, {key: was}, total * 0.45, start + total * 0.55, "ease-in")
+        elif style == "nudge":
+            x0 = self._cur(node, "x")
+            self._tw(node, {"x": _clean(x0 + distance)}, total * 0.36, start, "ease-out")
+            self._tw(node, {"x": x0}, total * 0.64, start + total * 0.36, "back")
+        self._last_start = start
+        return self
+
+    def pulse(self, node, scale=1.08, offset=None, duration=440):
+        """Scale a node up a little and back (two 220 ms tweens): "look here", "this one changed"."""
+        return self.emphasize(node, "pulse", duration, offset, scale=scale)
+
+    def tint(self, nodes, color, duration=FILL_MS, offset=None):
+        """Recolour nodes from this step on: a text's colour, any other node's fill (a matrix row, the
+        visited cells of a table, the winning bar)."""
+        nodes = [nodes] if isinstance(nodes, Node) else list(nodes)
+        start = self._place(duration, offset)
+        for n in nodes:
+            key = "color" if n.fields.get("kind") == "text" else "fill"
+            self.set(n, duration=duration, offset=start, **{key: color})
+        self._last_start = start
+        return self
+
+    def _exit_reset(self, node, start, to):
+        """After a node has faded out, put the fields an exit moved back (1 ms, unseen) so the snapshot is
+        unchanged and a later reveal shows it as it was."""
+        self._tw(node, to, 1, start, "step")
+
+    def _motion_out(self, node, style, duration, offset, into, distance):
+        f = node.fields
+        if style == "shrink":
+            ms = duration or 400
+            start = self._place(ms, offset)
+            sx, sy = self._cur(node, "scaleX", 1), self._cur(node, "scaleY", 1)
+            f.setdefault("scaleX", 1)
+            f.setdefault("scaleY", 1)
+            self.hide(node, "fadeOut", ms, start)
+            self._tw(node, {"scaleX": _sc(sx * 0.6), "scaleY": _sc(sy * 0.6)}, ms, start, "ease-in")
+            self._exit_reset(node, start + ms, {"scaleX": sx, "scaleY": sy})
+        elif style == "absorb":
+            if not isinstance(into, Node):
+                raise OpenCanvizError("hide(%s, \"absorb\"): pass into=<node> it is absorbed into." % node.id)
+            ms = duration or 500
+            start = self._place(ms + 200, offset)
+            x0, y0 = self._cur(node, "x"), self._cur(node, "y")
+            sx, sy = self._cur(node, "scaleX", 1), self._cur(node, "scaleY", 1)
+            f.setdefault("scaleX", 1)
+            f.setdefault("scaleY", 1)
+            tx = self._cur(into, "x") + into.fields["w"] / 2.0 - f["w"] / 2.0
+            ty = self._cur(into, "y") + into.fields["h"] / 2.0 - f["h"] / 2.0
+            self._tw(node, {"x": _clean(tx), "y": _clean(ty), "scaleX": _sc(sx * 0.4), "scaleY": _sc(sy * 0.4)},
+                     ms, start, "ease-in")
+            self.hide(node, "fadeOut", 200, start + ms - 80)
+            self._exit_reset(node, start + ms + 130, {"x": x0, "y": y0, "scaleX": sx, "scaleY": sy})
+        elif style == "slide":
+            self.hide(node, "slideOutRight", duration or 400, offset, "ease-in", distance or 120)
+        return self
+
+    def _scatter_out(self, nodes, duration, offset, gap, distance):
+        nodes = [nodes] if isinstance(nodes, Node) else list(nodes)
+        ms = duration or 380
+        cx = sum(n.rect.cx for n in nodes) / len(nodes)
+        cy = sum(n.rect.cy for n in nodes) / len(nodes)
+        start = self._place(0, offset)
+        for i, n in enumerate(nodes):
+            self._own(n, Node)
+            at = start + i * gap
+            x0, y0 = self._cur(n, "x"), self._cur(n, "y")
+            vx, vy = n.rect.cx - cx, n.rect.cy - cy
+            a = math.atan2(vy, vx) if math.hypot(vx, vy) > 1 else (i * 137.508) * math.pi / 180
+            a += ((i * 7919) % 7 - 3) * 0.12
+            r = distance * (0.8 + 0.4 * ((i * 31) % 5) / 4.0)
+            n.fields.setdefault("scaleX", 1)
+            n.fields.setdefault("scaleY", 1)
+            self.hide(n, "fadeOut", ms, at)
+            self._tw(n, {"x": _clean(x0 + math.cos(a) * r), "y": _clean(y0 + math.sin(a) * r), "scaleX": 0.3,
+                         "scaleY": 0.3}, ms, at, "ease-in")
+            self._exit_reset(n, at + ms, {"x": x0, "y": y0, "scaleX": 1, "scaleY": 1})
+        self._cursor = max(self._cursor, start + (len(nodes) - 1) * gap + ms + 1)
+        self._last_start = start
+        return self
+
+    def stream(self, edge, n=3, gap_ms=220, duration=900, offset=None, color=None, size=28):
+        """Send n dots down a drawn arrow, gap_ms apart (a stream of requests, a flow of data). Each dot
+        fades in and out at the ends of the line."""
+        self._own(edge, Edge)
+        col = color or self.scene.project.colors["hi"]
+        start = self._place(duration + (n - 1) * gap_ms, offset)
+        for i in range(n):
+            sid = self.scene._id(edge.id + "_dot")
+            act = {"type": "pathAnimate", "id": sid, "target": {"kind": "edge", "id": edge.id}, "scale": 1,
+                   "opacity": 1, "fadeIn": True, "fadeOut": True, "rotateWithPath": False, "ease": "linear",
+                   "nodeSnapshot": {"id": sid, "kind": "circle", "w": size, "h": size, "fill": col,
+                                    "stroke": "none"},
+                   "durationMs": duration}
+            if start + i * gap_ms:
+                act["offsetMs"] = int(start + i * gap_ms)
+            self.actions.append(act)
+        self._last_start = start
+        return self
+
+    def walk(self, node, ring, to_angle, duration=1200, offset=None, absorb_into=None, ease="linear"):
+        """Move a node clockwise around ring (from scene.ring()) from where it sits to to_angle (degrees,
+        0 = straight up, clockwise), hop by hop along the circle. absorb_into=<node> then shrinks it into
+        that node and fades it out (a key reaching its server)."""
+        self._own(node, Node)
+        if not isinstance(ring, Ring):
+            raise OpenCanvizError("walk(%s): ring must come from scene.ring()." % node.id)
+        a0 = node.meta.get("ring_angle")
+        if a0 is None:
+            raise OpenCanvizError("walk(%s): place the node on the ring first (ring.place(node, angle))." % node.id)
+        a1 = float(to_angle)
+        while a1 < a0 - 1e-6:
+            a1 += 360
+        hops = max(2, int(math.ceil((a1 - a0) / 12.0)))
+        start = self._place(duration, offset)
+        ms = duration / float(hops)
+        movers = [(node, ring.r)] + [(p, p.meta["ring_out"]) for p in node.parts if "ring_out" in p.meta]
+
+        def at(a, rad):
+            t = math.radians(a)
+            return ring.cx + rad * math.sin(t), ring.cy - rad * math.cos(t)
+        for m, rad in movers:
+            f = m.fields
+            for i in range(1, hops + 1):
+                px, py = at(a0 + (a1 - a0) * i / float(hops), rad)
+                self._tw(m, {"x": _clean(px - f["w"] / 2.0), "y": _clean(py - f["h"] / 2.0)}, ms,
+                         start + (i - 1) * ms, ease)
+            px, py = at(a1, rad)
+            self._patch(m, x=_clean(px - f["w"] / 2.0), y=_clean(py - f["h"] / 2.0))
+        node.meta["ring_angle"] = a1 % 360
+        if absorb_into is not None:
+            self._motion_out(node, "absorb", None, start + duration, absorb_into, None)
+        self._last_start = start
+        return self
+
+    def ride(self, node, plot, fn, x0, x1, duration=2400, offset=None, tangent=None, hops=24):
+        """Move a dot along a curve of plot from x0 to x1 (plot coordinates). tangent=<node from
+        plot.tangent()> moves a tangent line with it, turned to the curve's slope at every hop."""
+        self._own(node, Node)
+        start = self._place(duration, offset)
+        ms = duration / float(hops)
+        f = node.fields
+        for i in range(1, hops + 1):
+            xv = x0 + (x1 - x0) * i / float(hops)
+            px, py = plot.to_px(xv, fn(xv))
+            to = {"x": _clean(px - f["w"] / 2.0), "y": _clean(py - f["h"] / 2.0)}
+            self._tw(node, to, ms, start + (i - 1) * ms, "linear")
+            if i == hops:
+                self._patch(node, **to)
+            if tangent is not None:
+                tf = tangent.fields
+                rot = plot.slope_deg(fn, xv)
+                tt = {"x": _clean(px - tf["w"] / 2.0), "y": _clean(py - tf["h"] / 2.0), "rotationZ": rot}
+                self._tw(tangent, tt, ms, start + (i - 1) * ms, "linear")
+                if i == hops:
+                    self._patch(tangent, **tt)
+        self._last_start = start
+        return self
+
+    def crossfade(self, a, b, duration=500, offset=None):
+        """Fade node a out while b fades in on the same spot (a curve morphing into the next one, a
+        parameter sweep frame by frame, an equation turning into its simplified form)."""
+        start = self._place(duration, offset)
+        self.hide(a, "fadeOut", duration, start)
+        self.reveal(b, "fadeIn", duration, start)
+        self._last_start = start
         return self
 
 
@@ -2318,6 +2738,257 @@ class Scene:
         self.paths[pid] = {"id": pid, "points": pts, "closed": bool(closed), "length": cum[-1], "cum": cum}
         return pid
 
+    # kinetic type, rings, tables, bars ----------------------------------------------------------
+    def letters(self, word, at=None, cx=None, cy=None, size=120, color=None, fontWeight=800, id="ltr"):
+        """One text node per letter of word (spaces leave a gap), spaced by measured letter widths and
+        centered in at (or on cx, cy), for a kinetic title: step.pop(letters, stagger=45, from_="scatter")
+        brings it in letter by letter and step.hide(letters, style="scatter") blows it apart."""
+        if at is not None:
+            cx, cy = at.cx, at.cy
+        if cx is None or cy is None:
+            raise OpenCanvizError("letters(): give at=Rect or cx, cy.")
+        word = str(word)
+        if not word.strip():
+            raise OpenCanvizError("letters(): give a word.")
+        adv = [_advance(ch) * size for ch in word]
+        total = sum(adv)
+        x = cx - total / 2.0
+        out = []
+        for ch, a in zip(word, adv):
+            if ch != " ":
+                bw = max(size * 0.9, a * 1.6)   # wider than the glyph: neighbours may overlap, letters do not clip
+                out.append(self.text(ch, x=x + a / 2.0 - bw / 2.0, y=cy - size * 0.75, w=bw, h=size * 1.5,
+                                     fontSize=size, fontWeight=fontWeight, color=color or self.project.colors["text"],
+                                     id="%s_%s" % (id, _slug(ch) if ch.isalnum() else "c"), noGlow=True))
+            x += a
+        return out
+
+    def ring(self, center=None, r=300, color=None, width=6, id="ring"):
+        """A circle to place things on (a hash ring, a clock, a cycle). Angles are degrees, 0 = straight
+        up, increasing clockwise. Returns a Ring: ring.node (the circle), ring.point(angle),
+        ring.place(node, angle), ring.dot(angle, ...) and ring.arc(a0, a1, ...)."""
+        if center is None:
+            center = self.project.safe_center()
+        return Ring(self, center, r, color, width, id)
+
+    def table(self, rows, at, header=True, colors=None, font=None, gap=6, id="tbl"):
+        """A grid of labelled cells. rows = [[cell, ...], ...]; header=True makes row 0 bold on the accent
+        colour. colors = {(r, c): "#hex"} or a list of lists (None keeps the plain fill). Returns a Table:
+        table.cells[r][c], table.row(r), table.column(c). Reveal it column by column with
+        step.stagger(table.column(c), "pop", gap=60), recolour cells with step.tint(...)."""
+        return Table(self, rows, at, header, colors, font, gap, id)
+
+    def compare_bars(self, items, at, unit="", font=None, id="cmp"):
+        """A long and a short bar (or more), each with a big number at its end: "7 minutes" vs "40
+        seconds". items = [(label, value, color), ...]. Returns a CompareBars: .labels, .bars, .numbers.
+        Reveal each with step.reveal(label), step.reveal(bar, style="wipe"), step.reveal(num, style="pop")."""
+        return CompareBars(self, items, at, unit, font, id)
+
+    # math and graphs ---------------------------------------------------------------------------
+    def math(self, tex, at=None, x=None, y=None, size=64, color=None, align="center", id="math"):
+        """A LaTeX formula, compiled here to an SVG image (node + mathjax-full: scripts/tex2svg.js) and
+        sized so its letters are about size px tall. at=Rect centers it there (align="left" puts it on the
+        left edge); x, y put its top-left corner. Reveal it with style "wipe" (left to right), a fade, or
+        build it term by term with math_row()."""
+        res = _tex2svg([(tex, color or self.project.colors["text"])])[0]
+        return self._math_node(tex, res, at, x, y, size, align, id)
+
+    def _math_node(self, tex, res, at, x, y, size, align, id):
+        k = size * MATH_EX
+        w, h = max(10.0, res["widthEx"] * k), max(10.0, res["heightEx"] * k)
+        if at is not None:
+            if w > at.w + 1 or h > at.h + 1:
+                raise OpenCanvizError("math(%r): at size %g it is %dx%d px, larger than its %dx%d box; lower size= "
+                                      "or give it more room." % (tex, size, w, h, at.w, at.h))
+            x = at.x if align == "left" else (at.x + at.w - w if align == "right" else at.cx - w / 2.0)
+            y = at.cy - h / 2.0
+        if x is None or y is None:
+            raise OpenCanvizError("math(%r): give at=Rect or x, y." % tex)
+        url = "data:image/svg+xml;base64," + base64.b64encode(res["svg"].encode("utf-8")).decode("ascii")
+        n = self.node("rect", None, x=x, y=y, w=w, h=h, id=id, imageData=url, mathTex=tex, fill="transparent",
+                      stroke="none", noGlow=True)
+        n.meta["math"] = {"k": k, "heightEx": res["heightEx"], "depthEx": res["depthEx"]}
+        return n
+
+    def math_row(self, terms, x=None, baseline=None, at=None, size=64, color=None, gap=None, colors=None, id="term"):
+        """Several LaTeX terms side by side on one baseline (each its own node), for an equation that is
+        built term by term: step.stagger(row, "fade", gap=300). at=Rect centers the row there. colors =
+        one colour per term (None = the text colour). Returns the list of term nodes."""
+        terms = list(terms)
+        if not terms:
+            raise OpenCanvizError("math_row(): give at least one term.")
+        cols = list(colors or [None] * len(terms))
+        res = _tex2svg([(t, c or color or self.project.colors["text"]) for t, c in zip(terms, cols)])
+        k = size * MATH_EX
+        g = size * 0.25 if gap is None else gap
+        widths = [max(10.0, r["widthEx"] * k) for r in res]
+        total = sum(widths) + g * (len(terms) - 1)
+        asc = max((r["heightEx"] - r["depthEx"]) * k for r in res)
+        desc = max(r["depthEx"] * k for r in res)
+        if at is not None:
+            if total > at.w + 1:
+                raise OpenCanvizError("math_row(): the row is %d px wide, its box %d; lower size=." % (total, at.w))
+            x = at.cx - total / 2.0
+            baseline = at.cy - (asc + desc) / 2.0 + asc
+        if x is None or baseline is None:
+            raise OpenCanvizError("math_row(): give at=Rect or x and baseline.")
+        out = []
+        for t, r, w in zip(terms, res, widths):
+            top = baseline - (r["heightEx"] - r["depthEx"]) * k
+            out.append(self._math_node(t, r, None, x, top, size, "left", id))
+            x += w + g
+        return out
+
+    def derivation(self, lines, at, size=56, gap=None, align="left", color=None, id="line"):
+        """A derivation: one LaTeX line per step, stacked top to bottom in at. A line is a string, or a
+        list of terms (math_row) so a changed term can be flashed with step.emphasize(term, "flash").
+        Returns one entry per line: a node, or the list of term nodes. Reveal line i in its own step with
+        style "wipe" (or stagger its terms). align="eq" lines the lines up on the end of their first term
+        (write each line as [r"f'(x) =", r"..."] so the equals signs stack) and centers the block;
+        "left" and "center" align whole lines."""
+        if align not in ("left", "center", "eq"):
+            raise OpenCanvizError("derivation(): align must be \"left\", \"center\" or \"eq\".")
+        lines = list(lines)
+        if not lines:
+            raise OpenCanvizError("derivation(): give at least one line.")
+        k = size * MATH_EX
+        g = size * 0.5 if gap is None else gap
+        flat = [(i, t) for i, ln in enumerate(lines) for t in ([ln] if isinstance(ln, str) else ln)]
+        res = _tex2svg([(t, color or self.project.colors["text"]) for _, t in flat])
+        per = {}
+        for (i, t), r in zip(flat, res):
+            per.setdefault(i, []).append((t, r))
+        heights = [max(r["heightEx"] for _, r in per[i]) * k for i in range(len(lines))]
+        need = sum(heights) + g * (len(lines) - 1)
+        if need > at.h + 1:
+            raise OpenCanvizError("derivation(): %d lines need %d px, the box is %d px; lower size= or gap=."
+                                  % (len(lines), need, at.h))
+        y = at.y + (at.h - need) / 2.0
+        gp = size * 0.25
+        wid = lambda r: max(10.0, r["widthEx"] * k)   # noqa: E731
+        lhs = [wid(per[i][0][1]) for i in range(len(lines))]
+        rhs = [sum(wid(r) for _, r in per[i][1:]) + gp * (len(per[i]) - 1) for i in range(len(lines))]
+        col, block = max(lhs), max(lhs) + max(rhs)
+        out = []
+        for i, ln in enumerate(lines):
+            terms = per[i]
+            widths = [wid(r) for _, r in terms]
+            total = sum(widths) + gp * (len(terms) - 1)
+            if total > at.w + 1 or (align == "eq" and block > at.w + 1):
+                raise OpenCanvizError("derivation(): line %d is %d px wide, the box %d; lower size=."
+                                      % (i, max(total, block if align == "eq" else 0), at.w))
+            if align == "eq":
+                x = at.cx - block / 2.0 + col - lhs[i]
+            else:
+                x = at.x if align == "left" else at.cx - total / 2.0
+            asc = max((r["heightEx"] - r["depthEx"]) * k for _, r in terms)
+            base = y + asc + (heights[i] - max(r["heightEx"] * k for _, r in terms)) / 2.0
+            nodes = []
+            for (t, r), w in zip(terms, widths):
+                top = base - (r["heightEx"] - r["depthEx"]) * k
+                nodes.append(self._math_node(t, r, None, x, top, size, "left", "%s%d" % (id, i)))
+                x += w + gp
+            out.append(nodes[0] if isinstance(ln, str) else nodes)
+            y += heights[i] + g
+        return out
+
+    def plot(self, at, x_range, y_range, x_ticks=None, y_ticks=None, grid=False, font=None, color=None,
+             x_label=None, y_label=None, id="plot"):
+        """A coordinate plane in at: axes (through 0 when 0 is in range, else along the edge), ticks with
+        labels and an optional grid, all one svg node plus its tick texts. Returns a Plot:
+        plot.curve(fn), plot.area(fn, a, b), plot.point(x, y), plot.vector(x0, y0, x1, y1),
+        plot.tangent(fn, x), plot.legend([...]), plot.to_px(x, y)."""
+        return Plot(self, at, x_range, y_range, x_ticks, y_ticks, grid, font, color, x_label, y_label, id)
+
+    def number_line(self, at, lo, hi, step=1, font=None, color=None, id="nline"):
+        """A number line across at with a tick and a label every step. Returns a NumberLine:
+        nl.to_px(v) and nl.point(v, ...) (a dot on the line)."""
+        return NumberLine(self, at, lo, hi, step, font, color, id)
+
+    def poly(self, points, closed=True, color=None, fill="none", width=4, id="poly"):
+        """A polyline or polygon through world points (a triangle, a vector, a path) as one svg node.
+        Reveal it with style "draw" to draw it on."""
+        xs, ys = [p[0] for p in points], [p[1] for p in points]
+        pad = width + 2
+        x0, y0 = min(xs) - pad, min(ys) - pad
+        w, h = max(10.0, max(xs) - min(xs) + 2 * pad), max(10.0, max(ys) - min(ys) + 2 * pad)
+        d = "M " + " L ".join("%s %s" % (_clean(px - x0), _clean(py - y0)) for px, py in points) + (" Z" if closed else "")
+        return self.svg_path([{"d": d, "stroke": color or self.project.colors["accent"], "strokeWidth": width,
+                               "fill": fill}], x0, y0, w, h, id)
+
+    def svg_path(self, paths, x, y, w, h, id="path"):
+        """An svg node drawing paths [{d, stroke, strokeWidth, fill}] in its own px (viewBox = its size)."""
+        return self.node("svg", None, x=x, y=y, w=w, h=h, id=id, svgStretch=True,
+                         svgViewBox={"x": 0, "y": 0, "w": _clean(w), "h": _clean(h)}, svgPaths=paths)
+
+    def angle_mark(self, vertex, p1, p2, r=60, color=None, label=None, font=None, id="angle"):
+        """Mark the angle at vertex between the rays to p1 and p2 (world points) with a filled wedge of
+        radius r, and an optional label on its bisector. Returns the wedge (the label is its part)."""
+        vx, vy = vertex
+        a1 = math.degrees(math.atan2(p1[1] - vy, p1[0] - vx))
+        a2 = math.degrees(math.atan2(p2[1] - vy, p2[0] - vx))
+        sweep = (a2 - a1) % 360
+        if sweep > 180:
+            a1, a2, sweep = a2, a1, 360 - sweep
+        col = color or self.project.colors["hi"]
+        wdg = self.node("wedge", None, x=vx - r, y=vy - r, w=2 * r, h=2 * r, id=id, startAngle=_clean(a1),
+                        endAngle=_clean(a1 + sweep), fill=col + "aa" if len(col) == 7 else col, stroke="none", noGlow=True)
+        if label:
+            mid = math.radians(a1 + sweep / 2.0)
+            fs = font or self._floor("body")
+            lx, ly = vx + math.cos(mid) * r * 1.6, vy + math.sin(mid) * r * 1.6
+            bw = max(60, len(label) * fs * 0.6 + 16)
+            wdg.parts.append(self.text(label, x=lx - bw / 2.0, y=ly - _tline(fs) / 2.0, w=bw, h=_tline(fs), fontSize=fs,
+                                       color=col, id=id + "_lbl"))
+        return wdg
+
+    def side_label(self, p1, p2, text, offset=34, font=None, color=None, id="side"):
+        """A label beside the segment p1-p2 (a triangle's side length), offset px along its normal
+        (positive = to the left of the direction p1 -> p2)."""
+        mx, my = (p1[0] + p2[0]) / 2.0, (p1[1] + p2[1]) / 2.0
+        dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+        ln = math.hypot(dx, dy) or 1.0
+        nx, ny = dy / ln, -dx / ln
+        fs = font or self._floor("body")
+        bw = max(60, len(str(text)) * fs * 0.6 + 16)
+        cx, cy = mx + nx * offset, my + ny * offset
+        return self.text(str(text), x=cx - bw / 2.0, y=cy - _tline(fs) / 2.0, w=bw, h=_tline(fs), fontSize=fs,
+                         color=color or self.project.colors["muted"], id=id)
+
+    def matrix(self, rows, at, font=None, color=None, id="mat"):
+        """A matrix: text cells between square brackets. Returns a Matrix: m.cells[r][c], m.row(r),
+        m.column(c), m.node (the brackets; its parts are the cells). Highlight a row or column with
+        step.tint(m.row(1), "#f59e0b") or step.emphasize(m.column(0), "pulse")."""
+        return Matrix(self, rows, at, font, color, id)
+
+    def venn(self, labels, at, colors=None, font=None, id="venn"):
+        """Two or three see-through circles that overlap (an alpha fill, no glow), each with its label.
+        Returns the list of circles; each circle's label is its part."""
+        labels = list(labels)
+        if len(labels) not in (2, 3):
+            raise OpenCanvizError("venn(): give 2 or 3 labels.")
+        cols = colors or PALETTE[:len(labels)]
+        n = len(labels)
+        d = min(at.w / (1.7 if n == 2 else 1.75), at.h / (1.0 if n == 2 else 1.7))
+        r = d / 2.0
+        if n == 2:
+            centers = [(at.cx - r * 0.7, at.cy), (at.cx + r * 0.7, at.cy)]
+        else:
+            centers = [(at.cx - r * 0.75, at.cy - r * 0.35), (at.cx + r * 0.75, at.cy - r * 0.35),
+                       (at.cx, at.cy + r * 0.85 - r * 0.35)]
+        fs = font or self._floor("body")
+        out = []
+        for i, (lab, (cx, cy)) in enumerate(zip(labels, centers)):
+            c = self.node("circle", None, x=cx - r, y=cy - r, w=d, h=d, id="%s_%s" % (id, _slug(lab)), fill=_alpha(cols[i], "77"),
+                          stroke=cols[i], strokeWidth=4, noGlow=True)   # alpha fill: a fadeIn ends at opacity 1
+            ox = {0: -0.45, 1: 0.45, 2: 0}[i] if n == 3 else (-0.45 if i == 0 else 0.45)
+            oy = {0: -0.35, 1: -0.35, 2: 0.5}[i] if n == 3 else 0
+            bw = r * 0.9
+            c.parts.append(self.text(str(lab), x=cx + ox * r - bw / 2.0, y=cy + oy * r - _tline(fs) / 2.0, w=bw,
+                                     h=_tline(fs), fontSize=fs, fontWeight=700, id="%s_lbl%d" % (id, i)))
+            out.append(c)
+        return out
+
     def scene_background(self):
         return self.background or self.project.colors["background"]
 
@@ -2346,6 +3017,10 @@ class Scene:
             raise OpenCanvizError("scene %d step %d: give a caption (one 8-20 word line)." % (self.index + 1, len(self.steps)))
         if easing is not None and easing not in EASINGS:
             raise OpenCanvizError("step easing must be one of %s" % sorted(EASINGS))
+        if CAPTION_DECIMAL.search(str(caption)):
+            raise OpenCanvizError("scene %d step %d: the caption %r has a decimal number; the caption card splits "
+                                  "\"7.1 minutes\" at the point. Round it or say it in words (\"about 7 minutes\")."
+                                  % (self.index + 1, len(self.steps), caption))
         st = Step(self, len(self.steps), caption, caption if narration is None else narration, duration, easing)
         self.steps.append(st)
         return st
@@ -2429,8 +3104,9 @@ class Scene:
                 self._route_around(e)
         vis, evis = self._timelines()
         snap_nodes = []
-        for n in self.nodes:
+        for z, n in enumerate(self.nodes):
             f = {k: v for k, v in n.fields.items() if not k.startswith("_") or k == "_animatedProps"}
+            f.setdefault("zIndex", z + 1)      # explicit: later nodes draw on top, in every renderer
             shown = f.pop("opacity", 1)
             f["opacity"] = shown if n.initial_visible else 0
             if n.fields.get("_type_step", -1) > 0:
@@ -2669,6 +3345,433 @@ class Scene:
             cur = target
 
 
+# ------------------------------------------------------------------------------- math, graphs, motion helpers
+
+MATH_EX = 0.431        # MathJax's ex is about 0.431 of the font size: size px letters = size * 0.431 px per ex
+TEX2SVG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tex2svg.js")
+_TEX_CACHE = {}
+
+
+def _tex2svg(items):
+    """Compile [(tex, color), ...] to [{svg, widthEx, heightEx, depthEx}] with node + mathjax-full
+    (scripts/tex2svg.js). Raises OpenCanvizError saying what to install when either is missing."""
+    import subprocess
+    todo = [it for it in dict.fromkeys(items) if it not in _TEX_CACHE]
+    if todo:
+        payload = json.dumps({"items": [{"tex": t, "color": c, "display": True} for t, c in todo]})
+        try:
+            r = subprocess.run(["node", TEX2SVG], input=payload, capture_output=True, text=True, timeout=120)
+        except FileNotFoundError:
+            raise OpenCanvizError("math() needs Node.js (the `node` command) to compile LaTeX; install Node 16+ "
+                                  "and run `npm i mathjax-full` (or set MATHJAX_PATH to a node_modules that has it).")
+        if r.returncode == 3:
+            raise OpenCanvizError("math() needs the mathjax-full package: run `npm i mathjax-full` in this folder, "
+                                  "`npm i -g mathjax-full`, or set MATHJAX_PATH to the node_modules that has it.")
+        if r.returncode != 0:
+            raise OpenCanvizError("math(): tex2svg.js failed: %s" % (r.stderr.strip()[:300] or r.returncode))
+        out = json.loads(r.stdout)["results"]
+        for it, res in zip(todo, out):
+            if not res.get("ok"):
+                raise OpenCanvizError("math(%r): %s. Check the LaTeX (escape backslashes: use r\"...\")."
+                                      % (it[0], res.get("error", "TeX error")))
+            _TEX_CACHE[it] = res
+    return [_TEX_CACHE[it] for it in items]
+
+
+def _alpha(col, aa):
+    """#rrggbb -> #rrggbbaa (a see-through fill); other colours unchanged."""
+    return col + aa if isinstance(col, str) and len(col) == 7 and col.startswith("#") else col
+
+
+def _advance(ch):
+    """Width of a letter as a share of the font size (bold display type)."""
+    if ch == " ":
+        return 0.30
+    if ch in "mwMW@%":
+        return 0.98
+    if ch in "iIl|.,:;'!j":
+        return 0.36
+    if ch in "ftrJLT()[]{}-/\\":
+        return 0.52
+    return 0.72
+
+
+class Ring:
+    """A circle to place things on, from scene.ring(). Angles: degrees, 0 = straight up, clockwise."""
+
+    def __init__(self, scene, center, r, color, width, id):
+        self.scene, self.cx, self.cy, self.r = scene, float(center[0]), float(center[1]), float(r)
+        th = scene.project.colors
+        self.color = color or th["muted"]
+        self.node = scene.node("circle", None, x=self.cx - r, y=self.cy - r, w=2 * r, h=2 * r, id=id,
+                               fill="transparent", stroke=self.color, strokeWidth=width, noGlow=True)
+
+    def point(self, angle):
+        a = math.radians(angle)
+        return self.cx + self.r * math.sin(a), self.cy - self.r * math.cos(a)
+
+    def place(self, node, angle):
+        """Center node on the ring at angle (before the scene's steps move it). Returns the node."""
+        px, py = self.point(angle)
+        node.fields["x"], node.fields["y"] = _clean(px - node.fields["w"] / 2.0), _clean(py - node.fields["h"] / 2.0)
+        node.meta["ring_angle"] = float(angle) % 360
+        return node
+
+    place_on_ring = place
+
+    def dot(self, angle, size=40, color=None, label=None, font=None, out=None, id="dot", **kw):
+        """A dot on the ring at angle, with an optional label outside the ring (its part)."""
+        col = color or self.scene.project.colors["accent"]
+        n = self.scene.node("circle", None, x=0, y=0, w=size, h=size, id=id, fill=col, stroke="none", noGlow=True, **kw)
+        self.place(n, angle)
+        if label:
+            fs = font or self.scene._floor("body")
+            d = self.r + (out if out is not None else size / 2.0 + fs * 1.4)
+            a = math.radians(angle)
+            lx, ly = self.cx + d * math.sin(a), self.cy - d * math.cos(a)
+            bw = max(60, len(str(label)) * fs * 0.62 + 16)
+            lbl = self.scene.text(str(label), x=lx - bw / 2.0, y=ly - _tline(fs) / 2.0, w=bw, h=_tline(fs),
+                                  fontSize=fs, fontWeight=700, color=col, id=id + "_lbl")
+            lbl.meta["ring_out"] = d      # walk() carries the label round with its dot
+            n.parts.append(lbl)
+        return n
+
+    def arc(self, a0, a1, color=None, thickness=14, id="arc"):
+        """A band along the ring from a0 to a1 clockwise (a server's range of keys): a wedge with a large
+        innerRadius. Reveal it with style "draw" to sweep it open from a0."""
+        while a1 <= a0:
+            a1 += 360
+        ro = self.r + thickness / 2.0
+        col = color or self.scene.project.colors["hi"]
+        return self.scene.node("wedge", None, x=self.cx - ro, y=self.cy - ro, w=2 * ro, h=2 * ro, id=id,
+                               startAngle=_clean(a0 - 90), endAngle=_clean(a1 - 90),
+                               innerRadius=round((self.r - thickness / 2.0) / ro, 4), fill=col, stroke="none", noGlow=True)
+
+
+class Table:
+    """Cells from scene.table(): .cells[r][c], .row(r), .column(c)."""
+
+    def __init__(self, scene, rows, at, header, colors, font, gap, id):
+        rows = [[str(c) for c in r] for r in rows]
+        if not rows or not rows[0]:
+            raise OpenCanvizError("table(): give at least one row with one cell.")
+        m = max(len(r) for r in rows)
+        rows = [r + [""] * (m - len(r)) for r in rows]
+        n = len(rows)
+        th = scene.project.colors
+        cw = (at.w - gap * (m - 1)) / float(m)
+        ch = min((at.h - gap * (n - 1)) / float(n), scene.project.base_font * 2.6)
+        y0 = at.y + (at.h - (ch * n + gap * (n - 1))) / 2.0
+        if font is None:
+            sizes = [fit_font(c, scene.project.base_font, cw, ch, "rect", header and i == 0) for i, r in enumerate(rows)
+                     for c in r if c]
+            if None in sizes:
+                raise OpenCanvizError("table(): a cell does not fit its %dx%d box; give the table more room or "
+                                      "shorter cells." % (cw, ch))
+            font = min(sizes) if sizes else scene.project.base_font
+        self.cells = []
+        for i, r in enumerate(rows):
+            line = []
+            for j, c in enumerate(r):
+                col = None
+                if isinstance(colors, dict):
+                    col = colors.get((i, j))
+                elif colors:
+                    col = colors[i][j] if i < len(colors) and j < len(colors[i]) else None
+                head = header and i == 0
+                fill = col or ("#1e3a5f" if head and scene.project.colors is not THEMES["light"] else th["fill"])
+                f = dict(fill=fill, stroke=th["line"], strokeWidth=2, cornerRadius=8, noGlow=True, labelFontSize=font)
+                if head:
+                    f["labelFontWeight"] = "bold"
+                line.append(scene.node("rect", c if c else None, x=at.x + j * (cw + gap), y=y0 + i * (ch + gap), w=cw, h=ch,
+                                       id="%s_r%dc%d" % (id, i, j), **f))
+            self.cells.append(line)
+
+    def row(self, r):
+        return list(self.cells[r])
+
+    def column(self, c):
+        return [line[c] for line in self.cells]
+
+    @property
+    def all(self):
+        return [n for line in self.cells for n in line]
+
+
+class CompareBars:
+    """From scene.compare_bars(): .labels, .bars, .numbers (lists, one per item)."""
+
+    def __init__(self, scene, items, at, unit, font, id):
+        items = list(items)
+        if len(items) < 2:
+            raise OpenCanvizError("compare_bars(): give at least two (label, value, color) items.")
+        th = scene.project.colors
+        lf = font or scene._floor("body")
+        n = len(items)
+        row_h = (at.h - 30 * (n - 1)) / float(n)
+        nf = int(min(lf * 1.7, (row_h - _tline(lf) - 4) / 1.25))
+        if nf < lf:
+            raise OpenCanvizError("compare_bars(): %d rows do not fit in %d px; give a taller area." % (n, at.h))
+        texts = [(it[3] if len(it) > 3 else _tick_fmt(it[1]) + unit) for it in items]
+        num_w = max(len(t) for t in texts) * nf * 0.8 + 40
+        nh = _tline(nf)
+        bar_h = max(30, min(nh, nf * 1.1))
+        top = max(v for _, v, *_ in items)
+        if top <= 0:
+            raise OpenCanvizError("compare_bars(): values must be > 0.")
+        span = at.w - num_w
+        self.labels, self.bars, self.numbers = [], [], []
+        for i, it in enumerate(items):
+            lab, v = it[0], it[1]
+            col = it[2] if len(it) > 2 and it[2] else PALETTE[i % len(PALETTE)]
+            y = at.y + i * (row_h + 30)
+            self.labels.append(scene.text(str(lab), x=at.x, y=y, w=at.w, h=_tline(lf), fontSize=lf, textAlign="left",
+                                          color=th["muted"], id="%s_lbl%d" % (id, i)))
+            by = y + _tline(lf) + 4
+            bw = max(12.0, span * v / float(top))
+            self.bars.append(scene.node("rect", None, x=at.x, y=by + (nh - bar_h) / 2.0, w=bw, h=bar_h, id="%s_bar%d" % (id, i), fill=col,
+                                        stroke="none", cornerRadius=10, noGlow=True, pivotX=0))
+            self.numbers.append(scene.text(texts[i], x=at.x + bw + 16, y=by, w=num_w, h=nh,
+                                           fontSize=nf, fontWeight=800, textAlign="left", color=col,
+                                           id="%s_num%d" % (id, i)))
+
+
+class Plot:
+    """A coordinate plane from scene.plot()."""
+
+    def __init__(self, scene, at, x_range, y_range, x_ticks, y_ticks, grid, font, color, x_label, y_label, id):
+        self.scene, self.id = scene, id
+        th = scene.project.colors
+        self.xlo, self.xhi = float(x_range[0]), float(x_range[1])
+        self.ylo, self.yhi = float(y_range[0]), float(y_range[1])
+        if self.xhi <= self.xlo or self.yhi <= self.ylo:
+            raise OpenCanvizError("plot(): x_range and y_range must be (low, high).")
+        tf = font or scene._floor("tick")
+        xt = list(x_ticks) if x_ticks is not None else _ticks(self.xlo, self.xhi, 5)
+        yt = list(y_ticks) if y_ticks is not None else _ticks(self.ylo, self.yhi, 4)
+        left = max(len(_tick_fmt(v)) for v in yt) * tf * 0.6 + 24 if yt else 20
+        bottom = _tline(tf) + 8
+        self.px0, self.py0 = at.x + left, at.y + 10
+        self.pw, self.ph = at.w - left - 20, at.h - bottom - 10
+        col = color or th["muted"]
+        paths = []
+        if grid:
+            d = " ".join("M %s 0 V %s" % (_clean(self._lx(v)), _clean(self.ph)) for v in xt) + " " + \
+                " ".join("M 0 %s H %s" % (_clean(self._ly(v)), _clean(self.pw)) for v in yt)
+            paths.append({"d": d.strip(), "stroke": th["line"], "strokeWidth": 2, "fill": "none"})
+        ax_y = self._ly(0) if self.ylo <= 0 <= self.yhi else self.ph
+        ax_x = self._lx(0) if self.xlo <= 0 <= self.xhi else 0
+        ticks = " ".join("M %s %s V %s" % (_clean(self._lx(v)), _clean(ax_y - 8), _clean(ax_y + 8)) for v in xt) + " " + \
+            " ".join("M %s %s H %s" % (_clean(ax_x - 8), _clean(self._ly(v)), _clean(ax_x + 8)) for v in yt)
+        paths.append({"d": "M 0 %s H %s M %s 0 V %s %s" % (_clean(ax_y), _clean(self.pw), _clean(ax_x), _clean(self.ph),
+                                                             ticks.strip()), "stroke": col, "strokeWidth": 3, "fill": "none"})
+        self.node = scene.svg_path(paths, self.px0, self.py0, self.pw, self.ph, id=id)
+        for v in xt:
+            if abs(v) < 1e-9 and self.ylo <= 0 <= self.yhi and self.xlo < 0:
+                continue
+            w = max(40, len(_tick_fmt(v)) * tf * 0.6 + 12)
+            self.node.parts.append(scene.text(_tick_fmt(v), x=self.px0 + self._lx(v) - w / 2.0,
+                                              y=self.py0 + ax_y + 10, w=w, h=_tline(tf), fontSize=tf, color=col,
+                                              id="%s_x%s" % (id, _slug(_tick_fmt(v)))))
+        for v in yt:
+            if abs(v) < 1e-9 and self.xlo <= 0 <= self.xhi:
+                continue
+            w = left - 4
+            self.node.parts.append(scene.text(_tick_fmt(v), x=self.px0 + ax_x - w - 12,
+                                              y=self.py0 + self._ly(v) - _tline(tf) / 2.0, w=w, h=_tline(tf), fontSize=tf,
+                                              color=col, textAlign="right", id="%s_y%s" % (id, _slug(_tick_fmt(v)))))
+        for txt, xx, yy, al in ((x_label, self.px0 + self.pw - 160, self.py0 + ax_y - _tline(tf) - 6, "right"),
+                                (y_label, self.px0 + ax_x + 14, self.py0, "left")):
+            if txt:
+                self.node.parts.append(scene.text(str(txt), x=xx, y=yy, w=150, h=_tline(tf), fontSize=tf, color=col,
+                                                  textAlign=al, id="%s_%s" % (id, _slug(txt))))
+
+    def _lx(self, x):
+        return (x - self.xlo) / (self.xhi - self.xlo) * self.pw
+
+    def _ly(self, y):
+        return (self.yhi - y) / (self.yhi - self.ylo) * self.ph
+
+    def to_px(self, x, y):
+        """World px of plot point (x, y)."""
+        return self.px0 + self._lx(x), self.py0 + self._ly(y)
+
+    def slope_deg(self, fn, x):
+        """rotationZ that lines a horizontal node up with the curve's tangent at x (screen degrees)."""
+        h = (self.xhi - self.xlo) * 1e-4
+        m = (fn(x + h) - fn(x - h)) / (2 * h)
+        return _clean(round(math.degrees(math.atan2(-m * self.ph / (self.yhi - self.ylo), self.pw / (self.xhi - self.xlo))), 2))
+
+    def _trace(self, fn, a, b, samples):
+        segs, cur = [], []
+        for i in range(samples + 1):
+            x = a + (b - a) * i / float(samples)
+            try:
+                y = fn(x)
+            except (ValueError, ZeroDivisionError):
+                y = None
+            if y is None or not (self.ylo - 1e-9 <= y <= self.yhi + 1e-9):
+                if len(cur) > 1:
+                    segs.append(cur)
+                cur = []
+                continue
+            cur.append((self._lx(x), self._ly(y)))
+        if len(cur) > 1:
+            segs.append(cur)
+        return segs
+
+    def curve(self, fn, color=None, width=5, samples=160, x_range=None, id="curve"):
+        """fn drawn across the plot (parts outside the y range are left out) as an svg node on the plot
+        area. Reveal it with style "draw" to draw it on left to right."""
+        a, b = x_range or (self.xlo, self.xhi)
+        segs = self._trace(fn, a, b, samples)
+        if not segs:
+            raise OpenCanvizError("plot.curve(): the curve never enters the plot's y range.")
+        d = " ".join("M " + " L ".join("%s %s" % (_clean(round(px, 1)), _clean(round(py, 1))) for px, py in s) for s in segs)
+        return self.scene.svg_path([{"d": d, "stroke": color or self.scene.project.colors["accent"],
+                                     "strokeWidth": width, "fill": "none"}], self.px0, self.py0, self.pw, self.ph,
+                                   id="%s_%s" % (self.id, id))
+
+    def area(self, fn, a, b, color=None, samples=80, id="area"):
+        """The area between fn and the x axis from a to b, filled see-through."""
+        col = color or self.scene.project.colors["accent"]
+        base = self._ly(min(max(0, self.ylo), self.yhi))
+        pts = [(self._lx(a), base)]
+        for i in range(samples + 1):
+            x = a + (b - a) * i / float(samples)
+            pts.append((self._lx(x), self._ly(min(max(fn(x), self.ylo), self.yhi))))
+        pts.append((self._lx(b), base))
+        d = "M " + " L ".join("%s %s" % (_clean(round(px, 1)), _clean(round(py, 1))) for px, py in pts) + " Z"
+        return self.scene.svg_path([{"d": d, "stroke": "none", "strokeWidth": 0,
+                                     "fill": col + "55" if len(col) == 7 else col}], self.px0, self.py0, self.pw, self.ph,
+                                   id="%s_%s" % (self.id, id))
+
+    def point(self, x, y, size=28, color=None, label=None, font=None, id="pt"):
+        """A dot at plot point (x, y), with an optional label above-right (its part)."""
+        px, py = self.to_px(x, y)
+        col = color or self.scene.project.colors["hi"]
+        n = self.scene.node("circle", None, x=px - size / 2.0, y=py - size / 2.0, w=size, h=size,
+                            id="%s_%s" % (self.id, id), fill=col, stroke="none", noGlow=True)
+        if label:
+            fs = font or self.scene._floor("tick")
+            bw = len(str(label)) * fs * 0.62 + 16
+            n.parts.append(self.scene.text(str(label), x=px + size * 0.6, y=py - size * 0.6 - _tline(fs), w=bw,
+                                           h=_tline(fs), fontSize=fs, color=col, textAlign="left",
+                                           id="%s_%s_lbl" % (self.id, id)))
+        return n
+
+    def vector(self, x0, y0, x1, y1, color=None, width=5, id="vec"):
+        """An arrow from plot point (x0, y0) to (x1, y1), drawn as one svg node (style "draw" draws it on)."""
+        (ax, ay), (bx, by) = self.to_px(x0, y0), self.to_px(x1, y1)
+        ang = math.atan2(by - ay, bx - ax)
+        hl = 22
+        h1 = (bx - hl * math.cos(ang - 0.45), by - hl * math.sin(ang - 0.45))
+        h2 = (bx - hl * math.cos(ang + 0.45), by - hl * math.sin(ang + 0.45))
+        pad = hl + width
+        x_0, y_0 = min(ax, bx) - pad, min(ay, by) - pad
+        w, h = max(10, abs(bx - ax) + 2 * pad), max(10, abs(by - ay) + 2 * pad)
+        q = lambda p: "%s %s" % (_clean(round(p[0] - x_0, 1)), _clean(round(p[1] - y_0, 1)))   # noqa: E731
+        d = "M %s L %s M %s L %s L %s" % (q((ax, ay)), q((bx, by)), q(h1), q((bx, by)), q(h2))
+        return self.scene.svg_path([{"d": d, "stroke": color or self.scene.project.colors["hi"], "strokeWidth": width,
+                                     "fill": "none"}], x_0, y_0, w, h, id="%s_%s" % (self.id, id))
+
+    def tangent(self, fn, x, length=360, color=None, thickness=10, id="tan"):
+        """A tangent line to fn at x (a thin bar turned to the slope). step.ride(dot, plot, fn, x0, x1,
+        tangent=this) slides it along the curve."""
+        px, py = self.to_px(x, fn(x))
+        n = self.scene.node("rect", None, x=px - length / 2.0, y=py - 5, w=length, h=10, id="%s_%s" % (self.id, id),
+                            fill=color or self.scene.project.colors["hi"], stroke="none", cornerRadius=3, noGlow=True,
+                            rotationZ=self.slope_deg(fn, x))
+        if thickness < 10:
+            raise OpenCanvizError("plot.tangent(): thickness must be >= 10; the export renderer drops nodes under 10 px.")
+        n.fields["h"] = thickness
+        n.fields["y"] = _clean(py - thickness / 2.0)
+        return n
+
+    def legend(self, items, at=None, font=None, id="key"):
+        """A key in the plot's top-left corner (or in at): items = [(label, color), ...]. Returns the
+        swatch nodes; each one's text is its part."""
+        fs = font or self.scene._floor("body")
+        x = at.x if at is not None else self.px0 + 30
+        y = at.y if at is not None else self.py0 + 10
+        out = []
+        for i, (lab, col) in enumerate(items):
+            rh = _tline(fs)
+            sw = self.scene.node("rect", None, x=x, y=y + i * (rh + 6) + rh / 2.0 - 7, w=36, h=14,
+                                 id="%s_%s%d" % (self.id, id, i), fill=col, stroke="none", cornerRadius=4, noGlow=True)
+            sw.parts.append(self.scene.text(str(lab), x=x + 48, y=y + i * (rh + 6), w=len(str(lab)) * fs * 0.62 + 20,
+                                            h=rh, fontSize=fs, textAlign="left", color=col,
+                                            id="%s_%s%d_t" % (self.id, id, i)))
+            out.append(sw)
+        return out
+
+
+class NumberLine:
+    """From scene.number_line(): .node, .to_px(v), .point(v)."""
+
+    def __init__(self, scene, at, lo, hi, step, font, color, id):
+        self.scene, self.lo, self.hi, self.id = scene, float(lo), float(hi), id
+        th = scene.project.colors
+        tf = font or scene._floor("tick")
+        self.x0, self.x1, self.cy = at.x + 30, at.x + at.w - 30, at.cy
+        col = color or th["muted"]
+        vals, v = [], self.lo
+        while v <= self.hi + 1e-9:
+            vals.append(_clean(round(v, 6)))
+            v += step
+        w = self.x1 - self.x0 + 60
+        ticks = " ".join("M %s 22 V 50" % _clean(self.to_px(v) - self.x0 + 30) for v in vals)
+        self.node = scene.svg_path([{"d": "M 0 36 H %s %s" % (_clean(w), ticks), "stroke": col, "strokeWidth": 4,
+                                     "fill": "none"}], self.x0 - 30, self.cy - 36, w, 72, id=id)
+        for v in vals:
+            bw = max(40, len(_tick_fmt(v)) * tf * 0.6 + 12)
+            self.node.parts.append(scene.text(_tick_fmt(v), x=self.to_px(v) - bw / 2.0, y=self.cy + 40, w=bw,
+                                              h=_tline(tf), fontSize=tf, color=col, id="%s_%s" % (id, _slug(_tick_fmt(v)))))
+
+    def to_px(self, v):
+        return self.x0 + (v - self.lo) / (self.hi - self.lo) * (self.x1 - self.x0)
+
+    def point(self, v, size=30, color=None, id="pt"):
+        col = color or self.scene.project.colors["hi"]
+        return self.scene.node("circle", None, x=self.to_px(v) - size / 2.0, y=self.cy - size / 2.0, w=size, h=size,
+                               id="%s_%s" % (self.id, id), fill=col, stroke="none", noGlow=True)
+
+
+class Matrix:
+    """From scene.matrix(): .node (the brackets), .cells[r][c], .row(r), .column(c)."""
+
+    def __init__(self, scene, rows, at, font, color, id):
+        rows = [[str(c) for c in r] for r in rows]
+        n, m = len(rows), max(len(r) for r in rows)
+        th = scene.project.colors
+        fs = font or scene.project.base_font
+        cw = max(max(len(c) for r in rows for c in r) * fs * 0.62 + 36, fs * 1.6)
+        ch = _tline(fs) + 8
+        w, h = cw * m + 60, ch * n + 30
+        if w > at.w + 1 or h > at.h + 1:
+            raise OpenCanvizError("matrix(): %dx%d px does not fit its %dx%d box; lower font=." % (w, h, at.w, at.h))
+        x0, y0 = at.cx - w / 2.0, at.cy - h / 2.0
+        col = color or th["text"]
+        d = "M 22 4 H 6 V %s H 22 M %s 4 H %s V %s H %s" % (_clean(h - 4), _clean(w - 22), _clean(w - 6), _clean(h - 4),
+                                                           _clean(w - 22))
+        self.node = scene.svg_path([{"d": d, "stroke": th["muted"], "strokeWidth": 4, "fill": "none"}], x0, y0, w, h, id=id)
+        self.cells = []
+        for i, r in enumerate(rows):
+            line = []
+            for j in range(m):
+                t = scene.text(r[j] if j < len(r) else "", x=x0 + 30 + j * cw, y=y0 + 15 + i * ch, w=cw, h=ch, fontSize=fs,
+                               color=col, id="%s_r%dc%d" % (id, i, j))
+                self.node.parts.append(t)
+                line.append(t)
+            self.cells.append(line)
+
+    def row(self, r):
+        return list(self.cells[r])
+
+    def column(self, c):
+        return [line[c] for line in self.cells]
+
+
 def _arrives(a):
     """True for an action that brings something onto the screen (a reveal or an edge draw-in)."""
     if a.get("type") == "visibility":
@@ -2683,13 +3786,21 @@ class Project:
     """An openCanviz project. aspect: "16:9" (1920x1080), "9:16" (1080x1920) or "1:1" (1080x1080)."""
 
     def __init__(self, title, aspect="16:9", background=None, theme="dark", voice="alloy", captions=True,
-                 caption_style=None, margin=60, side_margin=None, follow=True):
+                 caption_style=None, margin=60, side_margin=None, follow=True, sfx=None, stage="follow"):
         if aspect not in ASPECTS:
             raise OpenCanvizError("aspect must be one of %s" % sorted(ASPECTS))
         if theme not in THEMES:
             raise OpenCanvizError("theme must be one of %s" % sorted(THEMES))
         if voice not in VOICES:
             raise OpenCanvizError("voice must be one of %s" % sorted(VOICES))
+        if sfx is not None and sfx not in SFX_PACKS:
+            raise OpenCanvizError("sfx must be one of %s (motion sound effects on appear / connect)." % sorted(SFX_PACKS))
+        if stage not in ("follow", "steady"):
+            raise OpenCanvizError("stage must be \"follow\" (the camera centers each step) or \"steady\" (a fixed "
+                                  "camera and %d ms crossfades between scenes)." % STEADY_MS)
+        self.sfx, self.stage = sfx, stage
+        if stage == "steady":
+            follow = False
         self.title, self.aspect, self.voice, self.captions = title, aspect, voice, captions
         self.caption_style, self.margin = caption_style, margin
         self.width, self.height = ASPECTS[aspect]
@@ -2729,10 +3840,13 @@ class Project:
         a = self.area()
         return a.cx, a.cy
 
-    def scene(self, name=None, transition="crossfade", transition_ms=600, background=None, color=None):
+    def scene(self, name=None, transition="crossfade", transition_ms=None, background=None, color=None):
         """Add a scene. transition joins the previous scene to this one: any of TRANSITION_KINDS, or None
         for a hard cut. color is the block colour of a colorWipe* (default the brand violet); "morph"
-        needs at least one node in each of the two scenes with the same morph_key."""
+        needs at least one node in each of the two scenes with the same morph_key. transition_ms defaults
+        to 600 (300 with stage="steady")."""
+        if transition_ms is None:
+            transition_ms = STEADY_MS if self.stage == "steady" else 600
         if transition is not None and transition not in TRANSITION_KINDS:
             raise OpenCanvizError("transition must be None or one of %s" % sorted(TRANSITION_KINDS))
         if transition is not None and not transition_ms > 0:
@@ -2766,6 +3880,8 @@ class Project:
                                       for s in self.scenes[1:]]
             doc["diagrams"] = scenes
         doc["showCaptions"] = bool(self.captions)
+        if self.sfx:
+            doc["sfxPack"] = self.sfx
         if self.caption_style:
             doc["captionStyle"] = self.caption_style
         return doc
@@ -3127,6 +4243,18 @@ def _overlap_ok(a, b):
         return True
     if ka == kb == "wedge":
         return True
+    if a.get("svgStretch") or b.get("svgStretch"):
+        return True        # plot axes, curves, brackets and polygons are drawn over the things they mark
+    for p, q in ((a, b), (b, a)):
+        if p.get("kind") == "wedge" and (p.get("innerRadius") or 0) > 0:
+            return True    # a thin arc: its box is the whole ring, so a box test means nothing
+        if p.get("kind") == "circle" and (p.get("fill") in ("transparent", "none") or (p.get("opacity", 1) or 0) < 0.9
+                                          or len(str(p.get("fill", ""))) == 9):
+            return True    # a ring (hollow circle) with dots on it, see-through Venn circles
+        if p.get("kind") == "wedge" and q.get("kind") == "circle":
+            return True    # an arc on its ring
+    if ka == kb == "text" and len(str(a.get("text", ""))) <= 1 and len(str(b.get("text", ""))) <= 1:
+        return True        # the letters of a kinetic title
     under = {"algo-chart", "algo-chart-line", "algo-chart-scatter", "progress", "uml-lifeline"}
     if "text" in kinds and (ka in under or kb in under):
         return True
@@ -3273,6 +4401,9 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             E("%s: include 'nodes' and 'edges' lists (empty lists are fine in delta steps)." % P)
         if not str(st.get("caption", "")).strip():
             W("%s: no caption." % P)
+        elif CAPTION_DECIMAL.search(str(st.get("caption"))):
+            W("%s: the caption has a decimal number (%r); the caption card splits \"7.1 minutes\" at the point. "
+              "Round it or say it in words." % (P, st.get("caption")))
         before_n = {i: dict(n) for i, n in nodes.items()}
         before_e = {i: dict(e) for i, e in edges.items()}
         changed = False
@@ -3386,7 +4517,22 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                     W("%s: a colour tween on %s has a null cell; openCanviz keeps a cell tweened to null in its old "
                       "colour for the whole step. Write the plain fill (the array's \"fill\", default #1e293b) "
                       "instead." % (P, (a.get("target") or {}).get("id")))
-        last_et = {}
+        last_et, last_tw = {}, {}
+        entering = {(a.get("target") or {}).get("id") for a in acts if isinstance(a, dict)
+                    and a.get("type") == "visibility" and a.get("mode") in VIS_IN}
+        last_vis = {}      # the renderer keeps the visibility action that starts last (a flash: in, then out)
+        for a in acts:
+            if isinstance(a, dict) and a.get("type") == "visibility":
+                k_ = (a.get("target") or {}).get("id")
+                if k_ not in last_vis or (a.get("offsetMs") or 0) >= (last_vis[k_].get("offsetMs") or 0):
+                    last_vis[k_] = a
+        for a in acts:
+            if isinstance(a, dict) and a.get("type") == "transformTween":
+                end_ = (a.get("offsetMs") or 0) + (a.get("durationMs") or 0)
+                for key in (a.get("to") or {}):
+                    kk = ((a.get("target") or {}).get("id"), key)
+                    if kk not in last_tw or end_ >= (last_tw[kk].get("offsetMs") or 0) + (last_tw[kk].get("durationMs") or 0):
+                        last_tw[kk] = a
         for a in acts:
             if isinstance(a, dict) and a.get("type") == "edgeTween":
                 eid_ = (a.get("target") or {}).get("id")
@@ -3409,6 +4555,8 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                     E("%s: visibility action targets unknown node %s." % (P, tid))
                     continue
                 op = nodes[tid].get("opacity", 1)
+                if last_vis.get(tid) is not a:
+                    continue
                 if a.get("mode") in VIS_IN and op <= 0.01:
                     E("%s: %s fades in %s but its opacity stays 0 in this step, so it fades back out next step. Set "
                       "\"opacity\": 1 for it in this step's nodes." % (P, a.get("mode"), tid))
@@ -3424,7 +4572,11 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                     E("%s: transformTween on %s has from.x/from.y, which are ignored; put the start position in the "
                       "previous step." % (P, tid))
                 if a.get("isRelative") or "dx" in a or "dy" in a:
-                    E("%s: transformTween on %s uses isRelative/dx/dy; use an absolute to.x/to.y." % (P, tid))
+                    if not (a.get("isRelative") and _num(a.get("dx")) and _num(a.get("dy")) and tid in entering
+                            and "x" not in to and "y" not in to):
+                        E("%s: transformTween on %s uses isRelative/dx/dy; that is only for an entrance (the node "
+                          "has a fadeIn/show in this step, isRelative true with both dx and dy, no to.x/to.y: it "
+                          "travels from home - (dx, dy) to home). Otherwise use an absolute to.x/to.y." % (P, tid))
                 if to.get("opacity") == 0:
                     E("%s: do not hide %s with an opacity transformTween; use a visibility fadeOut and opacity 0."
                       % (P, tid))
@@ -3437,6 +4589,8 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                               "same value in both (the tween only sets the timing)." % (P, tid, key, key, key))
                         continue
                     cur = nodes[tid].get(key, 1 if key in ("opacity", "typeProgress", "scaleX", "scaleY") else None)
+                    if last_tw.get((tid, key)) is not a:
+                        continue      # a later tween in this step takes the prop on (a pulse's way up, a shake)
                     if cur is not None and _num(val) and _num(cur) and abs(cur - val) > 0.01:
                         E("%s: transformTween on %s ends at %s=%g but the step sets %g; make the step's value match "
                           "to.%s." % (P, tid, key, val, cur, key))
@@ -3491,7 +4645,8 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                 E("%s: edgeTween target must be {\"kind\":\"edge\",\"id\":...}." % P)
             ease = a.get("ease")
             if ease is not None and ease not in EASINGS:
-                E("%s: ease %r is not one of %s." % (P, ease, sorted(EASINGS)))
+                E("%s: ease %r is not one of %s%s." % (P, ease, sorted(EASINGS),
+                  " (camelCase names play linear: write ease-out, not easeOut)" if re.search("[a-z][A-Z]", str(ease)) else ""))
         tweened_edges = {(a.get("target") or {}).get("id") for a in acts if isinstance(a, dict) and a.get("type") == "edgeTween"}
         visual_in = {(a.get("target") or {}).get("id") for a in acts if isinstance(a, dict) and a.get("type") == "visibility"}
         cam = st.get("camera")

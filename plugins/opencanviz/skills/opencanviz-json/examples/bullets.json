@@ -29,6 +29,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 60,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -40,6 +41,7 @@
           "h": 76,
           "glyph": "check",
           "color": "#22c55e",
+          "zIndex": 2,
           "opacity": 0,
           "drawStartMs": 4400
         },
@@ -58,6 +60,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 64,
+          "zIndex": 3,
           "opacity": 0
         },
         {
@@ -69,6 +72,7 @@
           "h": 76,
           "glyph": "check",
           "color": "#22c55e",
+          "zIndex": 4,
           "opacity": 0,
           "drawStartMs": 5700
         },
@@ -87,6 +91,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 64,
+          "zIndex": 5,
           "opacity": 0
         },
         {
@@ -98,6 +103,7 @@
           "h": 76,
           "glyph": "check",
           "color": "#22c55e",
+          "zIndex": 6,
           "opacity": 0,
           "drawStartMs": 8600
         },
@@ -116,6 +122,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 64,
+          "zIndex": 7,
           "opacity": 0
         }
       ],
@@ -142,6 +149,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 60,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -153,6 +161,7 @@
               "h": 76,
               "glyph": "check",
               "color": "#22c55e",
+              "zIndex": 2,
               "opacity": 0,
               "drawStartMs": 4400
             },
@@ -171,6 +180,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 64,
+              "zIndex": 3,
               "opacity": 0
             },
             {
@@ -182,6 +192,7 @@
               "h": 76,
               "glyph": "check",
               "color": "#22c55e",
+              "zIndex": 4,
               "opacity": 0,
               "drawStartMs": 5700
             },
@@ -200,6 +211,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 64,
+              "zIndex": 5,
               "opacity": 0
             },
             {
@@ -211,6 +223,7 @@
               "h": 76,
               "glyph": "check",
               "color": "#22c55e",
+              "zIndex": 6,
               "opacity": 0,
               "drawStartMs": 8600
             },
@@ -229,6 +242,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 64,
+              "zIndex": 7,
               "opacity": 0
             }
           ],

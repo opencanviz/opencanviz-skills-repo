@@ -29,6 +29,7 @@
           "fill": "transparent",
           "stroke": "none",
           "fontSize": 60,
+          "zIndex": 1,
           "opacity": 1
         },
         {
@@ -51,6 +52,7 @@
           "countIsInt": true,
           "countSuffix": " MB",
           "fontSize": 96,
+          "zIndex": 2,
           "opacity": 0,
           "countStartMs": 2900
         },
@@ -65,6 +67,7 @@
           "fill": "#1e293b",
           "stroke": "none",
           "progressColor": "#f59e0b",
+          "zIndex": 3,
           "opacity": 1
         }
       ],
@@ -91,6 +94,7 @@
               "fill": "transparent",
               "stroke": "none",
               "fontSize": 60,
+              "zIndex": 1,
               "opacity": 1
             },
             {
@@ -113,6 +117,7 @@
               "countIsInt": true,
               "countSuffix": " MB",
               "fontSize": 96,
+              "zIndex": 2,
               "opacity": 0,
               "countStartMs": 2900
             },
@@ -127,6 +132,7 @@
               "fill": "#1e293b",
               "stroke": "none",
               "progressColor": "#f59e0b",
+              "zIndex": 3,
               "opacity": 1
             }
           ],
