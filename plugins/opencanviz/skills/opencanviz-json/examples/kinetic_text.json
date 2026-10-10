@@ -1,0 +1,849 @@
+{
+  "$schema": "https://opencanviz.com/schema/v1.json",
+  "title": "Why queues help",
+  "artboard": {
+    "x": -960,
+    "y": -540,
+    "width": 1920,
+    "height": 1080,
+    "background": "#0f172a"
+  },
+  "sceneNames": [
+    "Title",
+    "Reasons",
+    "Pipeline"
+  ],
+  "transitions": [
+    {
+      "kind": "colorWipe",
+      "durationMs": 600,
+      "color": "#f59e0b"
+    },
+    {
+      "kind": "morph",
+      "durationMs": 800
+    }
+  ],
+  "diagrams": [
+    {
+      "nodes": [
+        {
+          "id": "s1_why_queues_help",
+          "kind": "text",
+          "x": -740,
+          "y": -207.8,
+          "w": 1480,
+          "h": 170,
+          "text": "Why queues help",
+          "fontWeight": 800,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "writeHand": true,
+          "hideCaret": true,
+          "opacity": 1,
+          "typeProgress": 1
+        },
+        {
+          "id": "s1_three_reasons_in_one_min",
+          "kind": "text",
+          "x": -740,
+          "y": -17.8,
+          "w": 1480,
+          "h": 90,
+          "text": "Three reasons, in one minute",
+          "fontWeight": 400,
+          "color": "#94a3b8",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 44,
+          "hideCaret": true,
+          "opacity": 0,
+          "typeProgress": 0
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s1_step0",
+          "durationMs": 2200,
+          "caption": "Why do queues help?",
+          "easing": "ease",
+          "nodes": [
+            {
+              "id": "s1_why_queues_help",
+              "kind": "text",
+              "x": -740,
+              "y": -207.8,
+              "w": 1480,
+              "h": 170,
+              "text": "Why queues help",
+              "fontWeight": 800,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "writeHand": true,
+              "hideCaret": true,
+              "opacity": 1,
+              "typeProgress": 1
+            },
+            {
+              "id": "s1_three_reasons_in_one_min",
+              "kind": "text",
+              "x": -740,
+              "y": -17.8,
+              "w": 1480,
+              "h": 90,
+              "text": "Three reasons, in one minute",
+              "fontWeight": 400,
+              "color": "#94a3b8",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 44,
+              "hideCaret": true,
+              "opacity": 0,
+              "typeProgress": 0
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_why_queues_help"
+              },
+              "from": {
+                "typeProgress": 0
+              },
+              "to": {
+                "typeProgress": 1
+              },
+              "ease": "linear",
+              "durationMs": 938
+            }
+          ],
+          "camera": {
+            "x": 0,
+            "y": -44.8,
+            "zoom": 1
+          },
+          "cameraDurationMs": 0
+        },
+        {
+          "id": "s1_step1",
+          "delta": true,
+          "durationMs": 2500,
+          "caption": "Three reasons, in one minute.",
+          "easing": "ease",
+          "nodes": [
+            {
+              "id": "s1_three_reasons_in_one_min",
+              "typeProgress": 1,
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s1_three_reasons_in_one_min"
+              },
+              "mode": "show",
+              "durationMs": 1,
+              "offsetMs": 700
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s1_three_reasons_in_one_min"
+              },
+              "from": {
+                "typeProgress": 0
+              },
+              "to": {
+                "typeProgress": 1
+              },
+              "ease": "linear",
+              "durationMs": 1000,
+              "offsetMs": 700
+            }
+          ],
+          "camera": {
+            "x": 0,
+            "y": 10.2,
+            "zoom": 1
+          },
+          "cameraDurationMs": 700,
+          "cameraEasing": "ease"
+        }
+      ],
+      "narration": [
+        {
+          "id": "s1_n0",
+          "text": "Why do queues help?",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s1_n1",
+          "text": "Three reasons, in one minute.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    },
+    {
+      "nodes": [
+        {
+          "id": "s2_a_queue_lets_you",
+          "kind": "text",
+          "x": -840,
+          "y": -480,
+          "w": 1680,
+          "h": 110,
+          "text": "A queue lets you",
+          "fontWeight": 700,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s2_absorb_a_traffic_spike",
+          "kind": "text",
+          "x": -780,
+          "y": -310,
+          "w": 930,
+          "h": 192.4,
+          "text": "Absorb a traffic spike",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s2_retry_what_failed",
+          "kind": "text",
+          "x": -780,
+          "y": -99.2,
+          "w": 930,
+          "h": 192.4,
+          "text": "Retry what failed",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s2_scale_workers_on_their_o",
+          "kind": "text",
+          "x": -780,
+          "y": 111.6,
+          "w": 930,
+          "h": 192.4,
+          "text": "Scale workers on their own",
+          "fontWeight": 400,
+          "color": "#f8fafc",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "opacity": 1
+        },
+        {
+          "id": "s2_10x",
+          "kind": "text",
+          "x": 250,
+          "y": -290,
+          "w": 490,
+          "h": 374,
+          "text": "10x",
+          "fontWeight": 800,
+          "color": "#f59e0b",
+          "textAlign": "center",
+          "verticalAlign": "middle",
+          "fill": "transparent",
+          "stroke": "none",
+          "fontSize": 60,
+          "scaleX": 1,
+          "scaleY": 1,
+          "opacity": 0
+        },
+        {
+          "id": "s2_job",
+          "kind": "rect",
+          "x": 290,
+          "y": 124,
+          "w": 410,
+          "h": 160,
+          "label": "Job",
+          "labelColor": "#f8fafc",
+          "fill": "#3b0764",
+          "stroke": "#c084fc",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "morphKey": "job",
+          "labelFontSize": 40,
+          "opacity": 0
+        }
+      ],
+      "edges": [],
+      "steps": [
+        {
+          "id": "s2_step0",
+          "durationMs": 3300,
+          "caption": "A queue does three things for you.",
+          "easing": "ease",
+          "nodes": [
+            {
+              "id": "s2_a_queue_lets_you",
+              "kind": "text",
+              "x": -840,
+              "y": -480,
+              "w": 1680,
+              "h": 110,
+              "text": "A queue lets you",
+              "fontWeight": 700,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s2_absorb_a_traffic_spike",
+              "kind": "text",
+              "x": -780,
+              "y": -310,
+              "w": 930,
+              "h": 192.4,
+              "text": "Absorb a traffic spike",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s2_retry_what_failed",
+              "kind": "text",
+              "x": -780,
+              "y": -99.2,
+              "w": 930,
+              "h": 192.4,
+              "text": "Retry what failed",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s2_scale_workers_on_their_o",
+              "kind": "text",
+              "x": -780,
+              "y": 111.6,
+              "w": 930,
+              "h": 192.4,
+              "text": "Scale workers on their own",
+              "fontWeight": 400,
+              "color": "#f8fafc",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "opacity": 1
+            },
+            {
+              "id": "s2_10x",
+              "kind": "text",
+              "x": 250,
+              "y": -290,
+              "w": 490,
+              "h": 374,
+              "text": "10x",
+              "fontWeight": 800,
+              "color": "#f59e0b",
+              "textAlign": "center",
+              "verticalAlign": "middle",
+              "fill": "transparent",
+              "stroke": "none",
+              "fontSize": 60,
+              "scaleX": 1,
+              "scaleY": 1,
+              "opacity": 0
+            },
+            {
+              "id": "s2_job",
+              "kind": "rect",
+              "x": 290,
+              "y": 124,
+              "w": 410,
+              "h": 160,
+              "label": "Job",
+              "labelColor": "#f8fafc",
+              "fill": "#3b0764",
+              "stroke": "#c084fc",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "morphKey": "job",
+              "labelFontSize": 40,
+              "opacity": 0
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_a_queue_lets_you"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_absorb_a_traffic_spike"
+              },
+              "mode": "slideInUp",
+              "ease": "ease-out",
+              "slideDistance": 40,
+              "durationMs": 450,
+              "offsetMs": 300
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_retry_what_failed"
+              },
+              "mode": "slideInUp",
+              "ease": "ease-out",
+              "slideDistance": 40,
+              "durationMs": 450,
+              "offsetMs": 480
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_scale_workers_on_their_o"
+              },
+              "mode": "slideInUp",
+              "ease": "ease-out",
+              "slideDistance": 40,
+              "durationMs": 450,
+              "offsetMs": 660
+            }
+          ]
+        },
+        {
+          "id": "s2_step1",
+          "delta": true,
+          "durationMs": 4100,
+          "caption": "It can soak up ten times the normal load.",
+          "easing": "ease",
+          "nodes": [
+            {
+              "id": "s2_10x",
+              "opacity": 1
+            },
+            {
+              "id": "s2_job",
+              "opacity": 1
+            }
+          ],
+          "edges": [],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_10x"
+              },
+              "mode": "fadeIn",
+              "durationMs": 250
+            },
+            {
+              "type": "transformTween",
+              "target": {
+                "kind": "node",
+                "id": "s2_10x"
+              },
+              "from": {
+                "scaleX": 0.6,
+                "scaleY": 0.6
+              },
+              "to": {
+                "scaleX": 1,
+                "scaleY": 1
+              },
+              "ease": "back",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s2_job"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 500
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s2_n0",
+          "text": "A queue does three things for you.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s2_n1",
+          "text": "It can soak up ten times the normal load.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ],
+      "background": "#1e1b4b",
+      "bg": {
+        "kind": "solid"
+      }
+    },
+    {
+      "nodes": [
+        {
+          "id": "s3_api",
+          "kind": "rect",
+          "x": -840,
+          "y": -288,
+          "w": 440,
+          "h": 420,
+          "label": "API",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#38bdf8",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 1
+        },
+        {
+          "id": "s3_job",
+          "kind": "rect",
+          "x": -220,
+          "y": -288,
+          "w": 440,
+          "h": 420,
+          "label": "Job",
+          "labelColor": "#f8fafc",
+          "fill": "#3b0764",
+          "stroke": "#c084fc",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "morphKey": "job",
+          "labelFontSize": 40,
+          "opacity": 1
+        },
+        {
+          "id": "s3_worker",
+          "kind": "rect",
+          "x": 400,
+          "y": -288,
+          "w": 440,
+          "h": 420,
+          "label": "Worker",
+          "labelColor": "#f8fafc",
+          "fill": "#1e293b",
+          "stroke": "#22c55e",
+          "strokeWidth": 3,
+          "cornerRadius": 16,
+          "labelFontSize": 40,
+          "opacity": 1
+        }
+      ],
+      "edges": [
+        {
+          "id": "s3_api_to_job",
+          "from": "s3_api",
+          "to": "s3_job",
+          "fromPort": "E",
+          "toPort": "W",
+          "lineType": "straight",
+          "stroke": "#94a3b8",
+          "width": 4,
+          "arrow": "end",
+          "animationStyle": "none",
+          "trim": 0,
+          "opacity": 0
+        },
+        {
+          "id": "s3_job_to_worker",
+          "from": "s3_job",
+          "to": "s3_worker",
+          "fromPort": "E",
+          "toPort": "W",
+          "lineType": "straight",
+          "stroke": "#94a3b8",
+          "width": 4,
+          "arrow": "end",
+          "animationStyle": "none",
+          "trim": 0,
+          "opacity": 0
+        }
+      ],
+      "steps": [
+        {
+          "id": "s3_step0",
+          "durationMs": 4800,
+          "caption": "Each job waits in the queue until a worker is free.",
+          "easing": "ease",
+          "nodes": [
+            {
+              "id": "s3_api",
+              "kind": "rect",
+              "x": -840,
+              "y": -288,
+              "w": 440,
+              "h": 420,
+              "label": "API",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#38bdf8",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 1
+            },
+            {
+              "id": "s3_job",
+              "kind": "rect",
+              "x": -220,
+              "y": -288,
+              "w": 440,
+              "h": 420,
+              "label": "Job",
+              "labelColor": "#f8fafc",
+              "fill": "#3b0764",
+              "stroke": "#c084fc",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "morphKey": "job",
+              "labelFontSize": 40,
+              "opacity": 1
+            },
+            {
+              "id": "s3_worker",
+              "kind": "rect",
+              "x": 400,
+              "y": -288,
+              "w": 440,
+              "h": 420,
+              "label": "Worker",
+              "labelColor": "#f8fafc",
+              "fill": "#1e293b",
+              "stroke": "#22c55e",
+              "strokeWidth": 3,
+              "cornerRadius": 16,
+              "labelFontSize": 40,
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s3_api_to_job",
+              "from": "s3_api",
+              "to": "s3_job",
+              "fromPort": "E",
+              "toPort": "W",
+              "lineType": "straight",
+              "stroke": "#94a3b8",
+              "width": 4,
+              "arrow": "end",
+              "animationStyle": "none",
+              "trim": 0,
+              "opacity": 0
+            },
+            {
+              "id": "s3_job_to_worker",
+              "from": "s3_job",
+              "to": "s3_worker",
+              "fromPort": "E",
+              "toPort": "W",
+              "lineType": "straight",
+              "stroke": "#94a3b8",
+              "width": 4,
+              "arrow": "end",
+              "animationStyle": "none",
+              "trim": 0,
+              "opacity": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s3_api"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500
+            },
+            {
+              "type": "visibility",
+              "target": {
+                "kind": "node",
+                "id": "s3_worker"
+              },
+              "mode": "fadeIn",
+              "durationMs": 500,
+              "offsetMs": 200
+            }
+          ]
+        },
+        {
+          "id": "s3_step1",
+          "delta": true,
+          "durationMs": 3700,
+          "caption": "The worker pulls it when it is ready.",
+          "easing": "ease",
+          "nodes": [
+            {
+              "id": "s3_api",
+              "opacity": 1
+            }
+          ],
+          "edges": [
+            {
+              "id": "s3_api_to_job",
+              "trim": 1,
+              "opacity": 1
+            },
+            {
+              "id": "s3_job_to_worker",
+              "trim": 1,
+              "opacity": 1
+            }
+          ],
+          "actions": [
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s3_api_to_job"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700
+            },
+            {
+              "type": "edgeTween",
+              "target": {
+                "kind": "edge",
+                "id": "s3_job_to_worker"
+              },
+              "from": {
+                "trim": 0,
+                "opacity": 1
+              },
+              "to": {
+                "trim": 1,
+                "opacity": 1
+              },
+              "ease": "ease-out",
+              "durationMs": 700,
+              "offsetMs": 400
+            }
+          ]
+        }
+      ],
+      "narration": [
+        {
+          "id": "s3_n0",
+          "text": "Each job waits in the queue until a worker is free.",
+          "stepIndex": 0,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        },
+        {
+          "id": "s3_n1",
+          "text": "The worker pulls it when it is ready.",
+          "stepIndex": 1,
+          "voice": {
+            "provider": "openai",
+            "voiceId": "alloy",
+            "voiceName": "Alloy"
+          }
+        }
+      ]
+    }
+  ],
+  "showCaptions": true
+}

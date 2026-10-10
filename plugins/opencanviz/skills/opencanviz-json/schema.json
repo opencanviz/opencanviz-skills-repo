@@ -293,6 +293,19 @@
         "background": {
           "$ref": "#/$defs/color",
           "description": "Flat background color for this scene only."
+        },
+        "bg": {
+          "type": "object",
+          "description": "Ground spec for this scene. The scene's own background color is drawn only when bg is present; {\"kind\": \"solid\"} paints it flat.",
+          "properties": {
+            "kind": {
+              "enum": [
+                "solid",
+                "gradient",
+                "paper"
+              ]
+            }
+          }
         }
       }
     },
@@ -496,6 +509,18 @@
           "minimum": 0,
           "maximum": 1,
           "description": "Typewriter reveal of a text node, 1 = all text."
+        },
+        "hideCaret": {
+          "type": "boolean",
+          "description": "Typewriter without the blinking block caret."
+        },
+        "writeHand": {
+          "type": "boolean",
+          "description": "Typewriter drawn as a marker writing the text, with a hand at the pen edge (implies hideCaret)."
+        },
+        "morphKey": {
+          "type": "string",
+          "description": "Pairs this node with the node carrying the same morphKey in the next scene for a \"morph\" scene transition."
         },
         "highlightedLines": {
           "type": "array",

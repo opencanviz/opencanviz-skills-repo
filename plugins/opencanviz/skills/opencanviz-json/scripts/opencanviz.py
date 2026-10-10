@@ -87,7 +87,9 @@ NODE_FIELDS = {
     # UML
     "lifelineLength", "activations", "attributes", "methods", "stereotype",
     # count-up text
-    "countFrom", "countTo", "countStartMs", "countDurationMs", "countPrefix", "countSuffix", "countIsInt"}
+    "countFrom", "countTo", "countStartMs", "countDurationMs", "countPrefix", "countSuffix", "countIsInt",
+    # text entrances and scene morphs
+    "hideCaret", "writeHand", "blur", "morphKey", "wipeAxis", "wipeOrigin", "wipeSoft"}
 
 # Kinds that get no theme fill/stroke from Scene.node(): the recipe methods pass exactly the fields the
 # renderer was seen to use.
@@ -132,6 +134,24 @@ TRANSITION_KINDS = {
     "pushRight", "travelOffUp", "travelOffDown", "travelOffLeft", "travelOffRight", "scribbleWipe",
     "scribbleWipeLeft", "scribbleWipeUp", "scribbleWipeDown", "colorWipe", "colorWipeLeft", "colorWipeUp",
     "colorWipeDown", "morph"}
+# Text entrances (render-checked in the export renderer): reveal(style=...) names -> what they do.
+TEXT_ENTRANCES = {"type", "type_quiet", "write", "pop"}
+BROKEN_ENTRANCES = {
+    "blur": "a blur tween is not drawn in exported videos (only the editor shows it); use \"pop\" or a fade.",
+    "wipe": "drawProgress / wipeAxis wipes only image nodes; a text node appears whole. Use \"write\" or \"type\"."}
+POP_MS, POP_FROM = 500, 0.6
+STAGGER_MS = 180
+TYPE_CPS = {"type": 28, "type_quiet": 28, "write": 16}     # characters per second
+COLOR_WIPES = {"colorWipe", "colorWipeLeft", "colorWipeUp", "colorWipeDown"}
+FLIP_TRANSITIONS = {"flip-x", "flip-y"}
+
+
+def type_ms(text, style="type"):
+    """Default typing time for a text: 28 characters a second (16 when a hand writes it), 600-3000 ms."""
+    n = len(str(text).replace("\n", ""))
+    return int(max(600, min(3000, round(1000.0 * n / TYPE_CPS.get(style, 28)))))
+
+
 VOICES = {"alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse"}
 TWEEN_PROPS = {"x", "y", "w", "h", "scaleX", "scaleY", "rotationX", "rotationY", "rotationZ", "opacity", "fill",
                "stroke", "strokeWidth", "strokeTrimStart", "strokeTrimEnd", "typeProgress", "drawProgress",
@@ -731,17 +751,30 @@ class Step:
         if not isinstance(item, cls) or item.scene is not self.scene:
             raise OpenCanvizError("step %d: expected a %s from this scene, got %r" % (self.index, cls.__name__, item))
 
-    def reveal(self, node, style="fadeIn", duration=500, offset=None, ease=None, distance=None):
-        """Show a hidden node (or a list of nodes, together): fadeIn, show, slideInLeft/Right/Up/Down. Sets
-        opacity 1 for you. The node's parts (a chart's axes and labels, a bullet's glyph) come with it; a
-        glyph draws itself in and a counter starts counting when it is revealed."""
+    def reveal(self, node, style="fadeIn", duration=None, offset=None, ease=None, distance=None):
+        """Show a hidden node (or a list of nodes, together). Sets opacity 1 for you. The node's parts (a
+        chart's axes and labels, a bullet's glyph) come with it; a glyph draws itself in and a counter starts
+        counting when it is revealed.
+
+        style: fadeIn, show, slideInLeft/Right/Up/Down (500 ms), or one of the text entrances:
+        "type" (typewriter with a caret), "type_quiet" (no caret), "write" (a marker hand writes it on;
+        text nodes only, duration from the text length unless given) and "pop" (fade in while scaling up
+        from 0.6 with a "back" overshoot, 500 ms; any node). "blur" and "wipe" are refused: neither shows on
+        text in an exported video. For lines one after another use reveal_lines()."""
+        if style in TEXT_ENTRANCES:
+            return self._entrance(node, style, duration, offset, ease)
+        if duration is None:
+            duration = 500
         if isinstance(node, (list, tuple)):
             for i, n in enumerate(node):
                 self.reveal(n, style, duration, offset if i == 0 else "with", ease, distance)
             return self
         self._own(node, Node)
+        if style in BROKEN_ENTRANCES:
+            raise OpenCanvizError("reveal(%s): %s" % (node.id, BROKEN_ENTRANCES[style]))
         if style not in VIS_IN:
-            raise OpenCanvizError("reveal(%s): style must be one of %s" % (node.id, sorted(VIS_IN)))
+            raise OpenCanvizError("reveal(%s): style must be one of %s or %s"
+                                  % (node.id, sorted(VIS_IN), sorted(TEXT_ENTRANCES)))
         node.events.append((self.index, "in"))
         act = {"type": "visibility", "target": {"kind": "node", "id": node.id}, "mode": style}
         if ease:
@@ -759,6 +792,52 @@ class Step:
                 self.draw(part, duration=duration, offset=start)
             else:
                 self.reveal(part, style, duration, start, ease, distance)
+        self._last_start = start
+        return self
+
+    def _entrance(self, node, style, duration, offset, ease):
+        if isinstance(node, (list, tuple)):
+            for i, n in enumerate(node):
+                self._entrance(n, style, duration, offset if i == 0 else "with", ease)
+            return self
+        self._own(node, Node)
+        if style == "pop":
+            ms = duration or POP_MS
+            start = self._place(ms, offset)
+            self.reveal(node, "fadeIn", min(250, ms), start)
+            node.fields.setdefault("scaleX", 1)
+            node.fields.setdefault("scaleY", 1)
+            self._action({"type": "transformTween", "target": {"kind": "node", "id": node.id},
+                          "from": {"scaleX": POP_FROM, "scaleY": POP_FROM}, "to": {"scaleX": 1, "scaleY": 1},
+                          "ease": ease or "back"}, ms, start)
+            self._last_start = start
+            return self
+        if node.fields.get("kind") != "text":
+            raise OpenCanvizError("reveal(%s, %r): only text nodes can be typed or written; use \"pop\" or a "
+                                  "fade for other nodes." % (node.id, style))
+        if style == "write":
+            node.fields["writeHand"] = True
+            node.fields["hideCaret"] = True
+        elif style == "type_quiet":
+            node.fields["hideCaret"] = True
+        return self.typewrite(node, duration or type_ms(node.fields.get("text", ""), style), offset)
+
+    def reveal_lines(self, nodes, style="slideInUp", gap=STAGGER_MS, duration=None, offset=None, distance=40,
+                     ease="ease-out"):
+        """Bring separate nodes in one after another, gap ms apart (a bullet list, a stack of lines from
+        scene.lines()). style is any reveal() style; slides default to a short 40 px rise."""
+        nodes = list(nodes)
+        if not nodes:
+            raise OpenCanvizError("reveal_lines(): give at least one node.")
+        if not isinstance(gap, (int, float)) or gap < 0:
+            raise OpenCanvizError("reveal_lines(): gap must be ms >= 0.")
+        start = self._place(0, offset)
+        for i, n in enumerate(nodes):
+            at = start + int(round(i * gap))
+            if style in TEXT_ENTRANCES:
+                self._entrance(n, style, duration, at, None)
+            else:
+                self.reveal(n, style, duration or 450, at, ease, distance if style.startswith("slideIn") else None)
         self._last_start = start
         return self
 
@@ -913,16 +992,26 @@ class Step:
             a["durationMs"] = max(1, int(sd["durationMs"]) - s0)
         self.hooks.append(hook)
 
-    def typewrite(self, node, duration=1200, offset=None):
-        """Type a text node's text in (typeProgress 0 -> 1)."""
+    def typewrite(self, node, duration=1200, offset=None, caret=True, hand=False):
+        """Type a text node's text in (typeProgress 0 -> 1). caret=False hides the block caret; hand=True has
+        a marker hand write it on (no caret). A text typed after the first step stays hidden until then:
+        openCanviz draws a half-typed text whole in every step that is not typing it."""
         self._own(node, Node)
         if node.fields.get("kind") != "text":
             raise OpenCanvizError("typewrite(%s): only text nodes can be typed." % node.id)
+        if hand:
+            node.fields["writeHand"] = True
+        if hand or not caret:
+            node.fields["hideCaret"] = True
         node.fields["_type_step"] = self.index
+        start = self._place(duration, offset)
         if self.index > 0:
             self.node_patch.setdefault(node.id, {})["typeProgress"] = 1
+            if not node.events:
+                self.reveal(node, "show", 1, start)
         self._action({"type": "transformTween", "target": {"kind": "node", "id": node.id},
-                      "from": {"typeProgress": 0}, "to": {"typeProgress": 1}, "ease": "linear"}, duration, offset)
+                      "from": {"typeProgress": 0}, "to": {"typeProgress": 1}, "ease": "linear"}, duration, start)
+        self._last_start = start
         return self
 
     def camera(self, x=0, y=0, zoom=1.0, duration=1000, offset=None, ease="ease-out"):
@@ -1335,8 +1424,14 @@ class Scene:
                                   % (what, w, h))
         return {"x": _clean(x), "y": _clean(y), "w": _clean(w), "h": _clean(h)}
 
-    def node(self, kind, label=None, at=None, x=None, y=None, w=None, h=None, id=None, **fields):
-        """Any node kind from schema.json (rect, circle, diamond, cylinder, star, callout, ...)."""
+    def node(self, kind, label=None, at=None, x=None, y=None, w=None, h=None, id=None, morph_key=None, **fields):
+        """Any node kind from schema.json (rect, circle, diamond, cylinder, star, callout, ...).
+        morph_key pairs this node with the node of the same key in the next or previous scene for a
+        "morph" scene transition (box() and text() pass it through too)."""
+        if morph_key is not None:
+            if not isinstance(morph_key, str) or not morph_key:
+                raise OpenCanvizError("morph_key must be a non-empty string.")
+            fields["morphKey"] = morph_key
         if kind not in NODE_KINDS:
             raise OpenCanvizError("node kind '%s' is not in the schema. Use one of: %s" % (kind, ", ".join(sorted(NODE_KINDS))))
         if kind in BROKEN_KINDS:
@@ -1390,6 +1485,24 @@ class Scene:
             fontSize = fs
         n.fields["fontSize"] = fontSize
         return n
+
+    def lines(self, texts, at, fontSize=None, gap=None, **kw):
+        """One text node per line, stacked in at (a Rect) with a shared font size, for reveal_lines():
+        each line can then come in on its own. Returns the list of nodes."""
+        texts = [str(t) for t in texts]
+        if not texts:
+            raise OpenCanvizError("lines(): give at least one line.")
+        n = len(texts)
+        gap = (at.h * 0.06 / max(1, n - 1)) if gap is None else gap
+        rows = at.stack(n, gap=gap) if n > 1 else [at]
+        if fontSize is None:
+            sizes = [fit_font(t, self.project.base_font * 1.5, r.w, r.h, "text", _is_bold(kw.get("fontWeight")))
+                     for t, r in zip(texts, rows)]
+            if None in sizes:
+                raise OpenCanvizError("lines(): a line does not fit its %gx%g row even at 14 px; give the lines "
+                                      "more room or fewer words." % (rows[0].w, rows[0].h))
+            fontSize = min(sizes)
+        return [self.text(t, at=r, fontSize=fontSize, **kw) for t, r in zip(texts, rows)]
 
     def title(self, text, h=110, **kw):
         """The scene's title across the top of the safe area. Returns (title node, body Rect under it).
@@ -2424,7 +2537,10 @@ class Scene:
         if self.paths:
             scene["paths"] = dict(self.paths)
         if self.background:
+            # The renderer reads a scene's own colour only when the scene also carries a
+            # `bg` spec; {"kind": "solid"} paints that colour as the scene's ground.
             scene["background"] = self.background
+            scene["bg"] = {"kind": "solid"}
         return scene
 
 
@@ -2613,14 +2729,21 @@ class Project:
         a = self.area()
         return a.cx, a.cy
 
-    def scene(self, name=None, transition="crossfade", transition_ms=600, background=None):
-        """Add a scene. transition joins the previous scene to this one (None = hard cut)."""
+    def scene(self, name=None, transition="crossfade", transition_ms=600, background=None, color=None):
+        """Add a scene. transition joins the previous scene to this one: any of TRANSITION_KINDS, or None
+        for a hard cut. color is the block colour of a colorWipe* (default the brand violet); "morph"
+        needs at least one node in each of the two scenes with the same morph_key."""
         if transition is not None and transition not in TRANSITION_KINDS:
             raise OpenCanvizError("transition must be None or one of %s" % sorted(TRANSITION_KINDS))
         if transition is not None and not transition_ms > 0:
             raise OpenCanvizError("transition_ms must be > 0.")
+        if color is not None:
+            if transition not in COLOR_WIPES:
+                raise OpenCanvizError("color= is only for the colorWipe transitions, not %r." % transition)
+            if not (isinstance(color, str) and re.match(r"^#[0-9a-fA-F]{6}$", color)):
+                raise OpenCanvizError("color must be a #rrggbb hex, got %r." % color)
         s = Scene(self, len(self.scenes), name or "Scene %d" % (len(self.scenes) + 1),
-                  (transition, transition_ms), background)
+                  (transition, transition_ms, color), background)
         self.scenes.append(s)
         return s
 
@@ -2638,7 +2761,8 @@ class Project:
             doc["sceneNames"] = [s.name for s in self.scenes]
             if len(scenes) > 1:
                 doc["transitions"] = [None if s.transition[0] is None else
-                                      {"kind": s.transition[0], "durationMs": s.transition[1]}
+                                      dict({"kind": s.transition[0], "durationMs": s.transition[1]},
+                                           **({"color": s.transition[2]} if s.transition[2] else {}))
                                       for s in self.scenes[1:]]
             doc["diagrams"] = scenes
         doc["showCaptions"] = bool(self.captions)
@@ -2764,6 +2888,17 @@ def validate(doc):
                     E("transitions[%d]: kind must be one of %s, or null for a cut." % (i, sorted(TRANSITION_KINDS)))
                 elif not (_num(t.get("durationMs")) and t["durationMs"] > 0):
                     E("transitions[%d]: durationMs must be > 0." % i)
+                else:
+                    if "color" in t and t["kind"] not in COLOR_WIPES:
+                        W("transitions[%d]: color is used only by the colorWipe kinds; %s ignores it." % (i, t["kind"]))
+                    if t["kind"] == "morph" and i + 1 < len(scenes):
+                        keys = [{n.get("morphKey") for n in (sc.get("nodes") or []) if isinstance(n, dict)
+                                 and n.get("morphKey")} if isinstance(sc, dict) else set()
+                                for sc in (scenes[i], scenes[i + 1])]
+                        if not keys[0] & keys[1]:
+                            E("transitions[%d]: morph needs a node in scene %d and one in scene %d with the same "
+                              "\"morphKey\" (the helper: morph_key=\"...\" on both); without one it is only a "
+                              "crossfade. Node ids differ per scene, so they never pair." % (i, i + 1, i + 2))
         if scenes and isinstance(scenes[0], dict) and ab and not _opens_with_title(scenes[0], ab):
             W("scene 1: the video does not open with a title. Show a short bold title at the top in the first "
               "step (the Python helper: title, body = scene.title(\"...\")), or a title card.")
@@ -3121,6 +3256,10 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             return False
         seen_msgs.add(key)
         return True
+    typing = [{(a.get("target") or {}).get("id") for a in (st.get("actions") or []) if isinstance(a, dict)
+               and a.get("type") == "transformTween" and "typeProgress" in (a.get("to") or {})}
+              if isinstance(st, dict) else set() for st in steps]
+    typed_later = {k: set().union(*typing[k + 1:]) - typing[k] for k in range(len(steps) - 1)}
     for k, st in enumerate(steps):
         P = "%s step %d" % (S, k)
         if not isinstance(st, dict):
@@ -3196,6 +3335,27 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
                 W("%s: %s changes typeProgress with no transformTween, so the text jumps instead of typing. Tween "
                   "it: {\"type\":\"transformTween\",\"from\":{\"typeProgress\":0},\"to\":{\"typeProgress\":1}}."
                   % (P, p.get("id")))
+        for a in acts:
+            if not isinstance(a, dict):
+                continue
+            tid = (a.get("target") or {}).get("id")
+            if a.get("type") == "transformTween" and "blur" in (a.get("to") or {}):
+                W("%s: %s tweens blur, which exported videos do not draw (only the editor shows it); the text "
+                  "just fades. Use a pop (scale from 0.6, ease \"back\") or a fade." % (P, tid))
+            if a.get("type") == "transformTween" and "drawProgress" in (a.get("to") or {}) and \
+                    (nodes.get(tid) or {}).get("kind") == "text":
+                W("%s: %s is a text node; drawProgress wipes only image nodes, so the text appears whole. Type "
+                  "it (typeProgress) or write it on (writeHand)." % (P, tid))
+        for nid, how in (st.get("transitions") or {}).items() if isinstance(st.get("transitions"), dict) else []:
+            if how in FLIP_TRANSITIONS:
+                W("%s: transitions[%s] is %s, which openCanviz does not draw; the change plays as a plain morph. "
+                  "Use \"fade\" or \"instant\", or tween scaleX/scaleY yourself." % (P, nid, how))
+        for nid in typed_later.get(k, ()):
+            n = nodes.get(nid) or {}
+            if (n.get("opacity", 1) or 0) > 0.01 and _num(n.get("typeProgress")) and n["typeProgress"] < 1:
+                W("%s: %s is typed in a later step but is already visible here, and openCanviz draws a half-typed "
+                  "text whole in any step that is not typing it. Keep it at opacity 0 until the step that types it "
+                  "(the helper's typewrite does)." % (P, nid))
         # a visible node's colour / position change with no tween of its own plays across the whole step
         timed_keys = {}
         for a in acts:

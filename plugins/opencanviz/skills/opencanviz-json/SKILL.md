@@ -30,6 +30,9 @@ Boxes and arrows are for flows, systems and processes only. Everything else has 
 | Tips, rules, steps of advice | Bullets with check marks | `bullets` / `reveal` | `bullets` |
 | One big number, a percentage done | Counter, progress bar | `counter`, `progress` / `set` | `counter_progress` |
 | Something travelling a route | A node on a path, a packet on an arrow | `path` / `follow`, `packet` | `path_follow` |
+| A title, a claim, a list of words | Kinetic type: written on, typed, popped, staggered | `text`, `lines` / `reveal(style=...)`, `reveal_lines` | `kinetic_text` |
+
+Do not fade everything in. A video where every node uses the same fade looks like a slide deck. Write titles on (`style="write"`), type subtitles and terminal text (`"type"`), pop a number or a key word (`"pop"`), stagger a list (`reveal_lines`), and join scenes with a transition that says what changed (see Scene transitions).
 
 ## Files in this skill
 
@@ -41,6 +44,7 @@ Boxes and arrows are for flows, systems and processes only. Everything else has 
 - `examples/short.json`: a 9:16 Short in the flat single-scene form, with stacked cards and a progress bar.
 - `examples/science_explainer.json`: three narrated scenes with labeled arrows and a two-row comparison.
 - `examples/portrait_stack.json`: a 9:16 Short with a vertical chain of cards and labeled arrows.
+- `examples/kinetic_text.json`: text entrances (write-on, type, staggered lines, pop) plus a colour wipe and a morph between scenes.
 - Recipe examples, one per visual in the table above: `bar_chart`, `line_chart`, `scatter_grid`, `pie`, `bubble_sort`, `data_structures`, `code_walkthrough`, `sequence`, `timeline`, `before_after`, `bullets`, `counter_progress`, `path_follow`.
 - Each example has a matching `.py` that writes it. `tests/test_examples.py` runs them all.
 
@@ -61,6 +65,8 @@ a, b = s.box("Client", at=cells[0]), s.node("cylinder", "DB", at=cells[1])
 link = s.arrow(a, b, "asks")                       # route="below": skip arrow on its own lane; route="around": closes a cycle
 s.step("Caption, also the narration.").reveal(title).reveal(a)  # .hide .move .set .typewrite .camera .focus .remove .wait
 s.step("Next beat.").reveal(b).draw(link)          # reveal a node before drawing an arrow to it
+# text entrances: reveal(t, style="write" | "type" | "type_quiet" | "pop"); step.reveal_lines(s.lines([...], at=r))
+# scene joins: p.scene("B", transition="pushLeft" | "colorWipe" | "morph" | None, color="#f59e0b")
 p.save("out.json")                                 # validates; raises with a fix hint and writes nothing on error
 ```
 
@@ -109,6 +115,54 @@ What the recipes take care of, and what to keep in mind if you write these kinds
 - **Readable floor:** at 1080p landscape, text of 4+ words at least 34 px, code 30, chart ticks and short labels 28, variables 34; in portrait 1.4x that (48, 42, 39, 48). The recipes never go lower: `code()`, `bullets()` and `timeline()` raise when the text cannot fit at the floor, so shorten it (timeline events of 2 to 6 words) or give it a bigger rect. The checker warns on hand-written text under the floor.
 - **Stable layout:** timelines, code panels, bullets, panels and variables are laid out at their final size from step 0, and the camera frames that final layout, so nothing shifts as items appear. `scene.reserve(node, ...)` does the same for your own nodes. `rect.split(0.68)` returns a left and a right rect side by side.
 - **Line charts:** openCanviz grows a chart series over the whole step and cannot time it, so `extend` leaves the series at the first point and draws each new stretch as a straight edge through the points (`<id>_run<upto>`, `waypoints` = the points) with a linear 0.6 to 1.4 s `edgeTween` from the step start; the tip dot rides it with a `pathFollow` of the same length, each note fades in as the line reaches its point, and the step lasts at least 1.5 s past the last note so it stays on screen. The axes are the edges `<id>_line` and `<id>_line_2`.
+
+## Text entrances
+
+Every entrance below was render-checked in the openCanviz export renderer. Pick by meaning, not habit.
+
+| Entrance | When to use it | Helper | Default timing |
+| --- | --- | --- | --- |
+| Write-on | A title or a hand-written word: a marker writes it, hand visible | `reveal(t, style="write")` | 16 chars/s, 600 to 3000 ms |
+| Typewriter | Terminal output, a quote, a subtitle; caret blinks | `reveal(t, style="type")` | 28 chars/s, 600 to 3000 ms |
+| Typewriter, no caret | A subtitle typed under a title | `reveal(t, style="type_quiet")` | 28 chars/s |
+| Pop | A number, a key word, a new thing landing | `reveal(t, style="pop")` | scale 0.6 to 1 with `back`, 500 ms |
+| Staggered lines | A list or a three-part claim | `step.reveal_lines(s.lines([...], at=r))` | each line slides 40 px over 450 ms, 180 ms apart |
+| Count up | A big number | `s.counter(...)` then `reveal` | 1500 ms, eases out |
+| Slide | A label that comes from a side | `reveal(t, style="slideInUp", distance=60)` | 500 ms |
+
+The JSON each one writes (all on a text node that starts at `"opacity": 0` in the previous snapshot):
+
+- Write-on: node `"writeHand": true`; actions `{"type":"visibility","target":{"kind":"node","id":"t"},"mode":"show","durationMs":1}` and `{"type":"transformTween","target":{"kind":"node","id":"t"},"from":{"typeProgress":0},"to":{"typeProgress":1},"durationMs":1000,"ease":"linear"}`, with `"typeProgress": 1` in the step's snapshot.
+- Typewriter: the same tween without `writeHand`; add `"hideCaret": true` for no caret.
+- Pop: `{"type":"visibility",...,"mode":"fadeIn","durationMs":250}` plus `{"type":"transformTween",...,"from":{"scaleX":0.6,"scaleY":0.6},"to":{"scaleX":1,"scaleY":1},"durationMs":500,"ease":"back"}`, node `"scaleX": 1, "scaleY": 1`.
+- Staggered lines: one text node per line, each with `{"type":"visibility","mode":"slideInUp","slideDistance":40,"durationMs":450,"offsetMs":180*i,"ease":"ease-out"}`.
+- Count up: node `"countFrom": 0, "countTo": 2048, "countDurationMs": 1500, "countIsInt": true` (plus `countPrefix`/`countSuffix`); it counts from the moment it is revealed.
+
+A text typed in a later step must sit at `"opacity": 0` until that step: openCanviz shows any text whose `typeProgress` is not tweened in the current step in full, so it would appear whole before it is typed. The helper does this; the checker warns.
+
+Not supported in exported videos, so do not hand-roll them: a `blur` tween (only the editor draws it) and `drawProgress` / `wipeAxis` wipes on text (they wipe image nodes only; a text node appears whole). The helper raises on `style="blur"` and `style="wipe"` for text.
+
+## Scene transitions
+
+`transitions[i]` joins scene `i` to scene `i+1`: `{"kind": "<kind>", "durationMs": 600}`. All 22 kinds render in the export. The transition is centred on the boundary (half before, half after).
+
+| Kind | When to use it |
+| --- | --- |
+| `crossfade` | The calm default between related scenes. |
+| `null` (hard cut) | A fresh topic, or a deliberate jolt. |
+| `colorWipe`, `colorWipeLeft`, `colorWipeUp`, `colorWipeDown` | The punch around a kinetic-type beat. A band in `color` sweeps across; use the next scene's accent colour (default the brand violet). |
+| `scribbleWipe`, `scribbleWipeLeft`, `scribbleWipeUp`, `scribbleWipeDown` | Hand-drawn looks: a marker scribbles the next scene in. |
+| `morph` | The same thing carried into the next scene: nodes with the same `morphKey` move, resize and recolour; the rest cross-fade. |
+| `pushLeft`, `pushRight`, `pushUp`, `pushDown` | A sequence with direction (next stage, next step): the new scene pushes the old one out. |
+| `slideLeft`, `slideRight`, `slideUp`, `slideDown` | Like push, but the new scene slides over the old one. |
+| `travelOffLeft`, `travelOffRight`, `travelOffUp`, `travelOffDown` | Leaving a place: the old scene drifts off and reveals the new one. |
+
+- Colour wipe: `{"kind": "colorWipe", "durationMs": 600, "color": "#f59e0b"}`. `color` is only read by the colour wipes.
+- Morph: `{"kind": "morph", "durationMs": 800}` plus `"morphKey": "job"` on one node in each scene. Pairing falls back to the node id, and ids differ per scene (`s2_job`, `s3_job`), so without a shared `morphKey` nothing morphs; the checker reports that as an error.
+- A scene's own ground: put `"background": "#1e1b4b"` and `"bg": {"kind": "solid"}` on the scene. openCanviz ignores `background` without `bg`. The helper writes both for `p.scene(..., background=...)`.
+- In Python: `p.scene("Next", transition="pushLeft", transition_ms=600)`, `transition=None` for a hard cut, `color="#f59e0b"` with a colour wipe, and `s.box(..., morph_key="job")` on both sides of a morph.
+
+Inside a step, the per-node `transitions` map takes `"fade"` (cross-fade the change) and `"instant"` (snap it). `"flip-x"` and `"flip-y"` are in the schema but play as a plain tween, so do not use them.
 
 ## Workflow
 
@@ -197,7 +251,7 @@ These keep the video readable once captions and arrows are on screen. The helper
 - A step lasts `durationMs`; 0 or missing counts as 900. A scene lasts the sum of its steps; scenes play back to back. Once narration is recorded, each step stretches to fit its audio.
 - Inside a step, an action starts at `offsetMs` (default 0) and runs for `durationMs` (visibility default 200). Keep `offsetMs + durationMs` within the step.
 - Numbers and colors that differ from the previous step (`x`, `y`, `w`, `h`, `opacity`, `fontSize`, `value`, `fill`, `stroke`, `color`, `labelColor`) tween over the whole step with the step's `easing` (default `ease`) unless an action covers them. Give every visible colour or position change its own short `transformTween`.
-- `transitions` inside a step, keyed by node id, can be `"instant"` to snap a change or `"fade"` to cross-fade it.
+- `transitions` inside a step, keyed by node id, can be `"instant"` to snap a change or `"fade"` to cross-fade it (`flip-x`/`flip-y` do not flip).
 - Camera: `"camera": {"x": .., "y": .., "zoom": 1.4}` on a step, with `cameraDurationMs`. `x`, `y` is the world point at the center of the view; zoom 1 is 100 percent.
 
 ## Actions
@@ -205,7 +259,7 @@ These keep the video readable once captions and arrows are on screen. The helper
 | type | key fields | notes |
 | --- | --- | --- |
 | `visibility` | `mode`, `durationMs`, `offsetMs`, `ease`, `slideDistance` (150) | modes: `fadeIn`, `fadeOut`, `show`, `hide`, `slideInLeft/Right/Up/Down`, `slideOutLeft/Right/Up/Down` |
-| `transformTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `x`, `y`, `w`, `h`, `scaleX`, `scaleY`, `rotationZ`, `opacity`, `fill`, `stroke`, `strokeWidth`, `typeProgress`, `value`, `blur`, `color`, `labelColor`, `pointerColor`, `rangeColor`, `pointerTargetIndex`/`Row`/`Col`, `rangeStart`/`End`; algo fields `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues`, `highlightedLines` (step needs `easing`) |
+| `transformTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `x`, `y`, `w`, `h`, `scaleX`, `scaleY`, `rotationZ`, `opacity`, `fill`, `stroke`, `strokeWidth`, `typeProgress`, `value`, `color`, `labelColor`, `pointerColor`, `rangeColor`, `pointerTargetIndex`/`Row`/`Col`, `rangeStart`/`End`; algo fields `cellColors`, `gridColors`, `nodeColors`, `cellValues`, `gridValues`, `highlightedLines` (step needs `easing`) |
 | `edgeTween` | `from`, `to`, `durationMs`, `offsetMs`, `ease` | props: `trim`, `trimStart`, `stroke`, `width`, `opacity` |
 | `algoSwap` | `indices` [i, j], `durationMs`, `offsetMs`, `ease` | on an `algo-array`; the step's `cellValues` hold the swapped values; step needs `easing` |
 | `positionTween` | `from`, `to` (points), `durationMs` | prefer the snapshot plus `transformTween` |
@@ -218,7 +272,7 @@ Easings: `linear`, `ease`, `ease-in`, `ease-out`, `spring`, `bounce`, `elastic`,
 ## Useful nodes
 
 - Box: `{"id":"api","kind":"rect","x":-160,"y":-90,"w":320,"h":180,"cornerRadius":16,"fill":"#1e293b","stroke":"#38bdf8","strokeWidth":3,"label":"API","labelColor":"#f8fafc","labelFontSize":40}`
-- Text: `{"id":"title","kind":"text","x":-700,"y":-460,"w":1400,"h":120,"text":"Title","fontSize":72,"fontWeight":700,"color":"#f8fafc","textAlign":"center"}`. Use `\n` for line breaks. Typewriter: tween `typeProgress` from 0 to 1.
+- Text: `{"id":"title","kind":"text","x":-700,"y":-460,"w":1400,"h":120,"text":"Title","fontSize":72,"fontWeight":700,"color":"#f8fafc","textAlign":"center"}`. Use `\n` for line breaks. Typewriter: tween `typeProgress` from 0 to 1 (see Text entrances).
 - Database: `kind: "cylinder"`. Also `circle`, `diamond`, `triangle`, `star`, `callout`, `chevron`, `funnel`.
 - Progress bar: `kind: "progress"` with `value` 0..1 and `progressColor`.
 - Icon: `{"kind":"svg","asset":{"type":"icon","source":"iconify","ref":"mdi:database"},"iconStyle":"solid","fill":"#38bdf8", ...}`. The icon loads when the project opens in the editor.

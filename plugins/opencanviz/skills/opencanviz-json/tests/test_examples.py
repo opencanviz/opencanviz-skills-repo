@@ -732,3 +732,129 @@ class NoWholeStepCrawls(unittest.TestCase):
         note = [a for a in last["actions"] if a["type"] == "visibility" and "_note" in a["target"]["id"]]
         end = note[-1].get("offsetMs", 0) + note[-1]["durationMs"]
         self.assertGreaterEqual(last["durationMs"] - end, oc.NOTE_HOLD)
+
+
+def two_scene_project(transition="crossfade", color=None, key=True):
+    p = oc.Project("t")
+    a, b = p.area().row(2, w=420, h=300)
+    s1 = p.scene("one")
+    x = s1.box("Job", at=a, morph_key="job" if key else None)
+    s1.step("One.").reveal(x)
+    s2 = p.scene("two", transition=transition, color=color)
+    y = s2.box("Job", at=b, morph_key="job" if key else None)
+    s2.step("Two.").reveal(y)
+    return p
+
+
+class TextEntrancesAndTransitions(unittest.TestCase):
+    def _text(self):
+        p, s, ra, rb = small_project()
+        return p, s, s.text("Hello there", at=ra), rb
+
+    def test_type_ms_bounds(self):
+        self.assertEqual(oc.type_ms("a"), 600)
+        self.assertEqual(oc.type_ms("x" * 500), 3000)
+        self.assertGreater(oc.type_ms("x" * 30, "write"), oc.type_ms("x" * 30, "type"))
+
+    def test_write_sets_hand_and_tweens_type_progress(self):
+        p, s, t, _ = self._text()
+        s.step("Hi.").reveal(t, style="write")
+        sc = p.to_dict()["diagrams"][0]
+        n = [n for n in sc["steps"][0]["nodes"] if n["id"] == t.id][0]
+        self.assertTrue(n["writeHand"])
+        tw = [a for a in sc["steps"][0]["actions"] if a["type"] == "transformTween"]
+        self.assertEqual(tw[0]["from"], {"typeProgress": 0})
+        self.assertEqual(clean(p.to_dict()), [])
+
+    def test_type_quiet_hides_caret(self):
+        p, s, t, _ = self._text()
+        s.step("Hi.").reveal(t, style="type_quiet")
+        n = p.to_dict()["diagrams"][0]["steps"][0]["nodes"][0]
+        self.assertTrue(n["hideCaret"])
+        self.assertNotIn("writeHand", n)
+
+    def test_later_typed_text_is_hidden_until_its_step(self):
+        p, s, t, rb = self._text()
+        b = s.box("B", at=rb)
+        s.step("First.").reveal(b)
+        s.step("Then the text.").reveal(t, style="type")
+        sc = p.to_dict()["diagrams"][0]
+        n0 = [n for n in sc["steps"][0]["nodes"] if n["id"] == t.id][0]
+        self.assertEqual(n0["opacity"], 0)
+        self.assertEqual(clean(p.to_dict()), [])
+
+    def test_validator_warns_on_text_shown_whole_before_typing(self):
+        p, s, t, rb = self._text()
+        b = s.box("B", at=rb)
+        s.step("First.").reveal(b).reveal(t)
+        s.step("Then the text.").typewrite(t)
+        doc = p.to_dict()
+        doc["diagrams"][0]["steps"][0]["nodes"][0]["typeProgress"] = 0
+        errors, warnings = oc.validate(doc)
+        self.assertTrue(any("whole" in w and "typ" in w for w in warnings), warnings)
+
+    def test_pop_scales_with_back(self):
+        p, s, t, _ = self._text()
+        s.step("Hi.").reveal(t, style="pop")
+        tw = [a for a in p.to_dict()["diagrams"][0]["steps"][0]["actions"] if a["type"] == "transformTween"][0]
+        self.assertEqual(tw["from"], {"scaleX": oc.POP_FROM, "scaleY": oc.POP_FROM})
+        self.assertEqual(tw["ease"], "back")
+        self.assertEqual(tw["durationMs"], oc.POP_MS)
+
+    def test_reveal_lines_staggers(self):
+        p, s, ra, rb = small_project()
+        lines = s.lines(["One", "Two", "Three"], at=ra)
+        self.assertEqual(len({n.fields["fontSize"] for n in lines}), 1)
+        s.step("Three.").reveal_lines(lines)
+        acts_ = p.to_dict()["diagrams"][0]["steps"][0]["actions"]
+        self.assertEqual([a.get("offsetMs", 0) for a in acts_], [0, oc.STAGGER_MS, 2 * oc.STAGGER_MS])
+        self.assertTrue(all(a["mode"] == "slideInUp" for a in acts_))
+
+    def test_broken_entrances_raise(self):
+        p, s, t, _ = self._text()
+        for style in ("blur", "wipe"):
+            with self.assertRaises(oc.OpenCanvizError):
+                s.step("Hi.").reveal(t, style=style)
+
+    def test_validator_warns_on_blur_and_text_wipe(self):
+        doc = base_doc()
+        st = doc["diagrams"][0]["steps"][1]
+        nid = st["nodes"][0]["id"]
+        st["actions"].append({"type": "transformTween", "target": {"kind": "node", "id": nid},
+                              "from": {"blur": 8}, "to": {"blur": 0}, "durationMs": 400})
+        errors, warnings = oc.validate(doc)
+        self.assertTrue(any("blur" in w for w in warnings), warnings)
+
+    def test_every_transition_kind_is_accepted(self):
+        schema = json.load(open(os.path.join(ROOT, "schema.json")))
+        enum = json.dumps(schema)
+        for k in ["crossfade", "slideUp", "pushLeft", "travelOffDown", "scribbleWipeUp", "colorWipeLeft", "morph"]:
+            self.assertIn('"%s"' % k, enum)
+            p = two_scene_project(k)
+            self.assertEqual(clean(p.to_dict()), [], k)
+        self.assertIsNone(two_scene_project(None).to_dict()["transitions"][0])
+
+    def test_color_only_with_color_wipe(self):
+        d = two_scene_project("colorWipe", color="#f59e0b").to_dict()
+        self.assertEqual(d["transitions"][0]["color"], "#f59e0b")
+        with self.assertRaises(oc.OpenCanvizError):
+            two_scene_project("crossfade", color="#f59e0b")
+
+    def test_morph_needs_a_shared_key(self):
+        self.assertEqual(clean(two_scene_project("morph").to_dict()), [])
+        errors, _ = oc.validate(two_scene_project("morph", key=False).to_dict())
+        self.assertTrue(any("morphKey" in e for e in errors), errors)
+
+    def test_scene_background_writes_bg(self):
+        p = oc.Project("t")
+        s = p.scene("one", background="#1e1b4b")
+        s.step("One.").reveal(s.box("A", at=p.area().centered(400, 300)))
+        sc = p.to_dict()["diagrams"][0]
+        self.assertEqual((sc["background"], sc["bg"]), ("#1e1b4b", {"kind": "solid"}))
+
+    def test_flip_step_transition_warns(self):
+        doc = base_doc()
+        st = doc["diagrams"][0]["steps"][1]
+        st["transitions"] = {st["nodes"][0]["id"]: "flip-x"}
+        _, warnings = oc.validate(doc)
+        self.assertTrue(any("flip" in w for w in warnings), warnings)
