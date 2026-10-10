@@ -175,10 +175,10 @@ Not supported in exported videos, so do not hand-roll them: a `blur` tween (only
 | `reveal "wipe"` | Grows from its left edge (a box, a bar) or is uncovered left to right (an equation, an image) | A bar that measures, an equation being written | 600 ms (900 ms on an image or equation) |
 | `reveal "draw"` | An svg path, curve or arc draws itself on | Curves, outlines, arcs, triangles | 900 ms (800 ms on an arc) |
 | `reveal "pop"` / `pop(...)` | Scales up from 0.35 with a `back` overshoot; `from_="below"`, `"edges"`, `"scatter"` or `None` | A number, a key word, a group landing together | 500 ms, 40 ms stagger |
-| `emphasize "pulse"` / `pulse(n, scale=1.08)` | Scales up and back; always grows the short side by 10 px or more (a small node gets a bigger scale), and a wide, thin node (one side over 3.5x the other: a table row, a bar) flashes instead | "Look at this one" | 440 ms |
+| `emphasize "pulse"` / `pulse(n, scale=1.08)` | Scales up and back; always grows the short side by 10 px or more (a small node gets a bigger scale). A wide, thin node (one side over 3.5x the other: a table row, a bar), a table cell, a node packed in a row of look-alikes, and a ring arc get a tint flash instead, so nothing grows over its neighbour | "Look at this one" (a standalone node) | 440 ms |
 | `emphasize "shake"` | Side to side | An error, a rejection, a cache miss | 300 ms |
 | `emphasize "wiggle"` | A small rotation | Playful attention | 400 ms |
-| `emphasize "flash"` | Its fill (or text colour, or a highlighter behind an equation term) flashes to `color` and back | A changed term, the answer | 800 ms |
+| `emphasize "flash"` | Its fill (or text colour, or a highlighter behind an equation term) lights up in `color`, holds to the end of its step (never less than 1.5 s), then fades back | A changed term, the answer | lights in 160 ms; what follows starts after 800 ms |
 | `emphasize "nudge"` | A 40 px push right and back | "This one moves next" | 500 ms |
 | `tint(nodes, color)` | Recolours and stays | Cells that changed, a state that is now different | 350 ms |
 | `hide "fade"` | Fades out | The default exit | 400 ms |
@@ -186,6 +186,8 @@ Not supported in exported videos, so do not hand-roll them: a `blur` tween (only
 | `hide "shrink"` | Scales to 0.6 as it fades | Something removed or rejected | 400 ms |
 | `hide "absorb"` (`into=`) | Flies into another node and fades | A key reaching its server, an item consumed | 500 ms |
 | `hide "scatter"` | A list of letters or nodes blows apart from their centre | Ending a title beat | 380 ms, 28 ms apart |
+
+Entrances that travel (`rise`, `drop`, a `pop` from below, the edges or a scatter) stay hidden for the first part of the move and fade in late, over at least 300 ms. A node that moves while half see-through leaves faint dotted specks along its path in the exported mp4 (x264 residue); a late fade leaves none. A point made with `plot.point()` or `number_line.point()` pops in place, on its curve, rather than from below.
 
 Any `hide(..., offset="end")` runs at the very end of its step (finishing 150 ms before the next step), so the screen is never empty while the caption still plays. Use it for the exit that closes a scene.
 
@@ -195,7 +197,7 @@ How to use them:
 - **One emphasis per beat.** Pulse, flash or shake one thing in a step, not three. Emphasize only what is already on screen.
 - **Match the entrance to its meaning.** Drop for an arrival, zoom for the centrepiece, wipe for a bar that measures or an equation being written, draw for a curve or arc, pop for numbers, fade for support.
 - **Vary the entrances.** Do not open every scene the same way; mix a pop, a zoom, a draw and a stagger across a video.
-- `step.walk(dot, ring, to_angle, absorb_into=server)` moves a ring dot (and its label) along the ring, then absorbs it. `step.ride(dot, plot, fn, x0, x1, tangent=tan)` moves a point along a curve with its tangent.
+- `step.walk(dot, ring, to_angle, absorb_into=server)` moves a ring dot (and its label) along the ring, then absorbs it. The label fades out before the dot reaches the server's own label, and the dot slides in under the server, so nothing is left on it. `step.ride(dot, plot, fn, x0, x1, tangent=tan)` moves a point along a curve with its tangent.
 - `step.stream(edge, n=3)` sends dots down a drawn arrow, 220 ms apart.
 
 Not supported in exported videos, so the helper refuses them: a blur entrance, a wipe on a text node (use `"type"`), a glow tween (use `"pulse"` or `"flash"`), `rotateToTangent` on a path follow (it is not applied), a `mathTex` node without its `imageData` (the formula is compiled to an image by the helper), and a wipe on a turned node (`rotationZ`; a wipe moves the pivot to the left edge, so use `"fade"` or `"zoom"`).
@@ -254,7 +256,7 @@ venn = s.venn(["A", "B"], at=r)                                  # .pop(venn, st
 - A distance or lookup table is a `table`; a matrix is a `matrix` (no header row).
 - Draw curves and outlines on (`"draw"`), wipe equations (`"wipe"`), pop points and set circles.
 - The tangent is a 10 px bar (the export drops anything under 10 px); reveal it with `"zoom"` or `"fade"`, never `"wipe"`. It belongs to the `pl.point()` at the same x (or `point=`): its reveal is moved to start with that dot or later, never before, and revealing it while the dot is hidden raises.
-- Ring arcs (`ring.arc`) draw under the ring's dots and stop 6 px short of a dot at either end, so a band never paints over a server.
+- Ring arcs (`ring.arc`) draw under the ring's dots and stop 6 px short of a dot at either end, so a band never paints over a server. A dot added later inside an arc (server D between B and C) cuts the arc back as it comes in: the arc keeps the side that ends at its owner and stops 6 px short of the new dot. The validator warns when an arc runs under a visible dot.
 
 ## Workflow
 
@@ -406,6 +408,7 @@ Full field lists and enums are in `schema.json`.
 | Every node fades in the same way | Reads as a slide deck | Pick presets by meaning (Motion presets) |
 | A hand-written `mathTex` node | Nothing renders | `scene.math()`, which embeds the SVG |
 | Exit at the start of a step, nothing after it | The caption plays over a blank screen | `hide(..., offset="end")`, or reveal the next thing in the same step |
+| Pulsing a table cell or a ring arc by hand with a scale tween | It grows over the cells around it | `emphasize(cell, "pulse")` tints it for you; keep the scale pulse for a node that stands alone |
 | Flashing a whole equation for one term | The eye does not know where to look | `\part{name}{...}` plus `emphasize(eq, "flash", part="name")` |
 | Indented JSON with many equations | The import times out (about 150 KB) | `p.save()` writes compact JSON; keep equations few and reuse them |
 

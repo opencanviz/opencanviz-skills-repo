@@ -1010,7 +1010,8 @@ class MotionPresets(unittest.TestCase):
         doc = p.to_dict()
         self.assertEqual(quiet(doc), [])
         ins = [a for a in step_acts(doc) if a["type"] == "visibility"]
-        self.assertEqual([a.get("offsetMs", 0) for a in ins], [0, 40, 80, 120, 160])
+        # a travelling pop fades in a quarter of the way home (x264 leaves specks behind a see-through mover)
+        self.assertEqual([a.get("offsetMs", 0) for a in ins], [125, 165, 205, 245, 285])
 
     def test_emphasis_returns_home(self):
         for style in ("pulse", "shake", "wiggle", "flash", "nudge"):
@@ -1091,6 +1092,118 @@ class MotionPresets(unittest.TestCase):
         p, s = motion_project()
         with self.assertRaisesRegex(oc.OpenCanvizError, "decimal"):
             s.step("It takes 7.1 minutes.")
+
+    def test_moving_entrances_fade_in_late(self):
+        for style in ("rise", "drop"):
+            with self.subTest(style=style):
+                p, s = motion_project()
+                b = s.box("A", at=p.area().centered(400, 240))
+                s.step("In.").reveal(b, style=style)
+                doc = p.to_dict()
+                vis = [a for a in step_acts(doc) if a["type"] == "visibility"][0]
+                tw = [a for a in step_acts(doc) if a["type"] == "transformTween"][0]
+                self.assertGreaterEqual(vis.get("offsetMs", 0), 0.35 * tw["durationMs"])
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("In.").reveal(b, style="zoom")
+        self.assertEqual([a for a in step_acts(p.to_dict()) if a["type"] == "visibility"][0].get("offsetMs", 0), 0)
+
+    def test_dot_added_inside_an_arc_cuts_it_back(self):
+        p, s = motion_project()
+        ring = s.ring(r=300)
+        b, c = ring.dot(150, id="B"), ring.dot(260, id="C")
+        arc = ring.arc(150, 260, id="arcC")
+        d = ring.dot(205, id="D")
+        s.step("Arcs.").reveal(ring.node).reveal([b, c]).reveal(arc)
+        s.step("Add D.").pop([d])
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        gap = math.degrees((20 + oc.DOT_GAP) / 300.0)
+        tws = [a for a in step_acts(doc, 0, 1) if a["type"] == "transformTween" and a["target"]["id"] == arc.id]
+        self.assertEqual(len(tws), 1)
+        self.assertAlmostEqual(tws[0]["to"]["startAngle"], 205 + gap - 90, delta=0.2)   # C keeps D..C
+        self.assertNotIn("endAngle", tws[0]["to"])
+        patch = [n for n in doc["diagrams"][0]["steps"][1]["nodes"] if n["id"] == arc.id][0]
+        self.assertAlmostEqual(patch["startAngle"], 205 + gap - 90, delta=0.2)
+        # the arc first appears after D: it is cut from the start, and its draw sweeps from the cut
+        p, s = motion_project()
+        ring = s.ring(r=300)
+        b, c = ring.dot(150, id="B"), ring.dot(260, id="C")
+        arc = ring.arc(150, 260, id="arcC")
+        d = ring.dot(205, id="D")
+        s.step("Dots.").reveal(ring.node).reveal([b, c, d])
+        s.step("Arc.").reveal(arc, style="draw")
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        base = {n["id"]: n for n in doc["diagrams"][0]["steps"][0]["nodes"]}[arc.id]
+        self.assertAlmostEqual(base["startAngle"], 205 + gap - 90, delta=0.2)
+        draw = [a for a in step_acts(doc, 0, 1) if a["type"] == "transformTween" and a["target"]["id"] == arc.id][0]
+        self.assertAlmostEqual(draw["from"]["endAngle"], base["startAngle"] + 1, delta=0.01)
+
+    def test_validator_flags_an_arc_under_a_dot(self):
+        p, s = motion_project()
+        ring = s.ring(r=300)
+        b = ring.dot(150, id="B")
+        arc = ring.arc(150, 260, id="arcC")
+        s.step("x.").reveal(ring.node).reveal([b, arc])
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        nodes = doc["diagrams"][0]["steps"][0]["nodes"]
+        [n for n in nodes if n["id"] == arc.id][0]["startAngle"] = 150 - 90      # runs under B again
+        self.assertTrue(any("runs under" in w for w in clean(doc)))
+
+    def test_flash_holds_to_the_step_end(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("Here.").reveal(b)
+        s.step("Look at this box for a while, it matters a lot here.").emphasize(b, "flash")
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        st = doc["diagrams"][0]["steps"][1]
+        back = [a for a in st["actions"] if a["type"] == "transformTween"][-1]
+        self.assertGreaterEqual(back.get("offsetMs", 0), oc.FLASH_HOLD_MS)
+        self.assertEqual(back["offsetMs"] + back["durationMs"], st["durationMs"] - oc.END_PAD_MS)
+
+    def test_pulse_on_a_table_cell_tints_instead(self):
+        p, s = motion_project()
+        tbl = s.table([["a", "b", "c"], ["1", "2", "3"]], at=p.area().centered(900, 300))
+        s.step("T.").reveal(tbl.all)
+        s.step("This one.").emphasize(tbl.cells[1][1], "pulse")
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        tws = [a for a in step_acts(doc, 0, 1) if a["type"] == "transformTween"]
+        self.assertTrue(tws and all("scaleX" not in a["to"] for a in tws))
+        self.assertTrue(any("fill" in a["to"] for a in tws))
+        # a lone node still pulses
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("Here.").reveal(b)
+        s.step("Look.").emphasize(b, "pulse")
+        self.assertTrue(any("scaleX" in a["to"] for a in step_acts(p.to_dict(), 0, 1)))
+
+    def test_walk_fades_the_label_and_slides_under_the_server(self):
+        p, s = motion_project()
+        ring = s.ring(r=300)
+        b = ring.dot(150, size=60, label="B", id="B")
+        k = ring.dot(80, size=30, label="k1", id="k1")
+        s.step("Ring.").reveal(ring.node).reveal([b, k])
+        s.step("Walk.").walk(k, ring, 150, absorb_into=b)
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        lbl = k.parts[0]
+        outs = [a for a in step_acts(doc, 0, 1) if a["type"] == "visibility" and a["target"]["id"] == lbl.id]
+        self.assertEqual(len(outs), 1)
+        self.assertLessEqual(outs[0].get("offsetMs", 0) + outs[0]["durationMs"], 1200 * 40 / 70.0 + 1)
+        z = {n["id"]: n["zIndex"] for n in doc["diagrams"][0]["nodes"]}
+        self.assertLess(z[k.id], z[b.id])
+
+    def test_plot_point_pops_in_place(self):
+        p, s = motion_project()
+        pl = s.plot(at=p.area().centered(900, 600), x_range=(-3, 3), y_range=(0, 9))
+        dot = pl.point(1, 1)
+        s.step("Dot.").reveal(pl.node).pop([dot])
+        tw = [a for a in step_acts(p.to_dict()) if a["type"] == "transformTween" and a["target"]["id"] == dot.id][0]
+        self.assertNotIn("isRelative", tw)
 
     def test_z_index_in_insertion_order(self):
         p, s = motion_project()

@@ -151,12 +151,14 @@ BROKEN_EMPHASIS = {"glow": "a glow tween is not drawn and a glow change is barel
 MOTION_OUT = {"fade", "slide", "shrink", "absorb", "scatter"}
 CAPTION_DECIMAL = re.compile(r"\d\.\d")
 SFX_PACKS = {"soft", "playful", "retro", "mech", "off"}
-END_PAD_MS = 150
+END_PAD_MS = 150       # hide(offset="end") finishes this long before the step ends
+FLASH_HOLD_MS = 1500   # a flash stays lit at least this long, and to the end of its step
+FLASH_OUT_MS = 350
 IMPORT_SOFT_LIMIT = 150 * 1024
 DOT_GAP = 6            # px a ring arc stops short of a dot at its end
 PULSE_MIN_PX = 10      # a pulse grows a node's short side by at least this much
 PULSE_MAX = 1.3
-PULSE_THIN = 3.5       # one side over 3.5x the other: a pulse would not show, flash instead       # hide(offset="end") finishes this long before the step ends
+PULSE_THIN = 3.5       # one side over 3.5x the other: a pulse would not show, flash instead
 DEAD_AIR_MS = 1000     # a captioned step may be blank this long at most (an exit finishing, a late reveal)
 STEADY_MS = 300        # stage="steady": every scene crossfades this long (260-340 ms reads as one stage)
 POP_MS, POP_FROM = 500, 0.6
@@ -749,6 +751,7 @@ class Step:
         self.camera_spec = None
         self._cursor, self._last_start, self._tail = 0, 0, 0
         self._end_acts = []    # (action, offset as placed) for hide(offset="end"), moved to the step's end
+        self._hold_acts = []   # (action, offset as placed) a flash's way back, each moved to the step's end
         self._shift = None          # (from_ms, by_ms) when the follow camera delayed this step's arrivals
         self.timed = []             # (node, field, offset_ms): scene-time markers filled at compile time
         self.hooks = []             # fn(snapshot_by_id, step_start_ms, step_dict, adjust_offset) run at compile time
@@ -926,6 +929,9 @@ class Step:
         start = self._action(act, duration, offset).get("offsetMs", 0)
         for part in item.parts:
             if isinstance(part, Node):
+                last = [e for e in part.events if e[0] <= self.index]
+                if last and last[-1][1] in ("out", "remove"):
+                    continue      # already gone (walk() fades a key's label before it arrives)
                 self.hide(part, style, duration, start, ease, distance=distance)
         self._last_start = start
         return self
@@ -1538,7 +1544,13 @@ class Step:
         if distance is not None and style in ("drop", "rise"):
             dy = -abs(distance) if style == "drop" else abs(distance)
         start = self._place(ms, offset)
-        self.reveal(node, "fadeIn", min(fade, ms), start)
+        if sc:
+            self.reveal(node, "fadeIn", min(fade, ms), start)
+        else:
+            # a node that travels while half transparent leaves x264 residue (faint dotted specks) along its
+            # path in the exported mp4, so a moving entrance stays hidden for its first 44% and fades in late,
+            # over at least 300 ms (a faster fade on a still-moving node left them too, in real renders)
+            self.reveal(node, "fadeIn", int(round(max(300, 0.66 * ms))), int(round(start + 0.44 * ms)))
         if sc:
             f.setdefault("scaleX", 1)
             f.setdefault("scaleY", 1)
@@ -1550,10 +1562,11 @@ class Step:
         return self
 
     def pop(self, nodes, stagger=40, from_="below", duration=500, offset=None, distance=None, ease="back"):
-        """Pop nodes in one after another, stagger ms apart: each fades in (200 ms) while it scales up from 0.35
+        """Pop nodes in one after another, stagger ms apart: each fades in while it scales up from 0.35
         with a "back" overshoot and travels home from from_: "below" (120 px under), "edges" (out along the
         line from the group's center, so a word bursts outward-in), "scatter" (a fixed pseudo-random spot
-        220 px away) or None (scale only). Home stays in the step-0 snapshot (an isRelative tween), so the
+        220 px away) or None (scale only). A node that travels fades in a quarter of the way home (a
+        see-through mover leaves x264 specks); a plot or number-line point always pops in place. Home stays in the step-0 snapshot (an isRelative tween), so the
         follow camera frames the final layout and it works in a scene's first step."""
         nodes = [nodes] if isinstance(nodes, Node) else list(nodes)
         if not nodes:
@@ -1569,7 +1582,6 @@ class Step:
             at = start + i * stagger
             n.fields.setdefault("scaleX", 1)
             n.fields.setdefault("scaleY", 1)
-            self.reveal(n, "fadeIn", min(200, duration), at)
             d = 120 if distance is None else distance
             if from_ == "below":
                 ox, oy = 0, d
@@ -1584,7 +1596,15 @@ class Step:
                 ox, oy = math.cos(a) * r, math.sin(a) * r
             else:
                 ox = oy = 0
+            if n.meta.get("on_curve"):
+                ox = oy = 0       # a plot point grows in place, on its curve
             extra = {"isRelative": True, "dx": _clean(-ox), "dy": _clean(-oy)} if (ox or oy) else {}
+            if extra:
+                # travelling while half transparent leaves x264 residue (dotted specks) along the path, so the
+                # fade starts a quarter of the way in, when the node is mostly home
+                self.reveal(n, "fadeIn", max(1, int(round(0.45 * duration))), int(round(at + 0.25 * duration)))
+            else:
+                self.reveal(n, "fadeIn", min(200, duration), at)
             self._tw(n, {"scaleX": 1, "scaleY": 1}, duration, at, ease, frm={"scaleX": 0.35, "scaleY": 0.35}, **extra)
         self._cursor = max(self._cursor, start + (len(nodes) - 1) * stagger + duration)
         self._last_start = start
@@ -1611,7 +1631,9 @@ class Step:
         "glow" is refused: a glow tween is not drawn.
         A pulse always grows the node by at least PULSE_MIN_PX on its short side (scale is raised for a
         small node); a wide, thin node (a table row, a cell, a bar: one side over PULSE_THIN times the
-        other) gets a flash instead, since a few px of growth on its short side does not show.
+        other) gets a flash instead, since a few px of growth on its short side does not show; so does a
+        table cell, a node packed in a row of look-alikes, or a ring arc, which would grow over its
+        neighbours. A flash holds to the end of its step (at least FLASH_HOLD_MS), then fades back.
         part= (flash on an equation only) lights up one marked term: write it as \\part{name}{...} in the
         TeX, e.g. scene.math(r"\\frac{\\part{a}{x^2} + 2xh - \\part{b}{x^2}}{h}") and then
         emphasize(eq, "flash", part="a"); a list of names flashes several terms together."""
@@ -1634,6 +1656,19 @@ class Step:
                 style = "flash"
             elif short > 0:
                 scale = max(scale, min(PULSE_MAX, 1 + PULSE_MIN_PX / short))
+            if style == "pulse" and (node.meta.get("cell") or node.meta.get("ring_arc")
+                                     or self._packed(node, max(w, h) * (scale - 1) / 2.0)):
+                # a cell in a table or a row (or an arc on a ring) would grow into its neighbours: tint it
+                style = "flash"
+                if color is None:
+                    was = self._cur(node, "fill")
+                    if isinstance(was, str) and was.startswith("#") and len(was) == 7:
+                        color = _mix(was, "#ffffff" if node.meta.get("ring_arc") else self.scene.project.colors["hi"],
+                                     0.45 if node.meta.get("ring_arc") else 0.55)
+        if style == "flash" and color is None and node.meta.get("ring_arc"):
+            was = self._cur(node, "fill")
+            if isinstance(was, str) and was.startswith("#") and len(was) == 7:
+                color = _mix(was, "#ffffff", 0.45)     # an arc brightens in its own colour
         if style in BROKEN_EMPHASIS:
             raise OpenCanvizError("emphasize(%s, %r): %s" % (node.id, style, BROKEN_EMPHASIS[style]))
         if style not in EMPHASIS:
@@ -1668,7 +1703,7 @@ class Step:
                                  id=node.id + "_hl", fill=(col + "55") if len(col) == 7 else col, stroke="none",
                                  cornerRadius=10, noGlow=True, zIndex=0)
             self.reveal(hl, "fadeIn", int(total * 0.2), start)
-            self.hide(hl, "fadeOut", int(total * 0.45), start + int(total * 0.55))
+            self._hold(lambda at: self.hide(hl, "fadeOut", FLASH_OUT_MS, at), start, total)
         elif style == "flash":
             key = "color" if f.get("kind") == "text" else "fill"
             was = self._cur(node, key)
@@ -1680,7 +1715,7 @@ class Step:
             if key == "fill" and len(was) == 9 and len(col) == 7:
                 col += "88"          # a see-through flash behind an equation or a label
             self._tw(node, {key: col}, total * 0.2, start, "ease-out")
-            self._tw(node, {key: was}, total * 0.45, start + total * 0.55, "ease-in")
+            self._hold(lambda at: self._tw(node, {key: was}, FLASH_OUT_MS, at, "ease-in"), start, total)
         elif style == "nudge":
             x0 = self._cur(node, "x")
             self._tw(node, {"x": _clean(x0 + distance)}, total * 0.36, start, "ease-out")
@@ -1705,9 +1740,37 @@ class Step:
                                  id="%s_hl_%s" % (node.id, _slug(name)), fill=(col + "55") if len(col) == 7 else col,
                                  stroke="none", cornerRadius=8, noGlow=True, zIndex=0)
             self.reveal(hl, "fadeIn", int(total * 0.2), start)
-            self.hide(hl, "fadeOut", int(total * 0.45), start + int(total * 0.55))
+            self._hold(lambda at, hl=hl: self.hide(hl, "fadeOut", FLASH_OUT_MS, at), start, total)
         self._last_start = start
         return self
+
+    def _packed(self, node, grow):
+        """True when node sits in a row or grid of look-alikes (same kind and size) closer than grow + 4 px,
+        so a pulse would paint over the next one."""
+        f = node.fields
+        r = node.rect
+        for n in self.scene.nodes:
+            g = n.fields
+            if n is node or g.get("kind") != f.get("kind") or abs(g.get("w", 0) - f.get("w", 0)) > 2 \
+                    or abs(g.get("h", 0) - f.get("h", 0)) > 2:
+                continue
+            q = n.rect
+            gx = max(q.x - (r.x + r.w), r.x - (q.x + q.w))
+            gy = max(q.y - (r.y + r.h), r.y - (q.y + q.h))
+            if max(gx, gy) < grow + 4 and min(gx, gy) < 0:
+                return True
+        return False
+
+    def _hold(self, back, start, total):
+        """A flash holds: it goes back (back(offset) adds the actions) at the step's end, and never sooner
+        than FLASH_HOLD_MS after it lit up, so the eye has time to land on it. The cursor still moves on
+        after the flash's own length, so what follows does not wait for the hold."""
+        cur, n0 = self._cursor, len(self.actions)
+        back(int(start + FLASH_HOLD_MS))
+        self._hold_acts.extend((a, a.get("offsetMs", 0)) for a in self.actions[n0:])
+        self._cursor = max(cur, start + total)
+        self._tail = max(self._tail, int(start + FLASH_HOLD_MS + FLASH_OUT_MS))
+        self._last_start = start
 
     def pulse(self, node, scale=1.08, offset=None, duration=440):
         """Scale a node up a little and back (two 220 ms tweens): "look here", "this one changed"."""
@@ -1819,6 +1882,7 @@ class Step:
         start = self._place(duration, offset)
         ms = duration / float(hops)
         movers = [(node, ring.r)] + [(p, p.meta["ring_out"]) for p in node.parts if "ring_out" in p.meta]
+        node.meta["ring_walker"] = True
 
         def at(a, rad):
             t = math.radians(a)
@@ -1832,7 +1896,22 @@ class Step:
             px, py = at(a1, rad)
             self._patch(m, x=_clean(px - f["w"] / 2.0), y=_clean(py - f["h"] / 2.0))
         node.meta["ring_angle"] = a1 % 360
+        # its label would run into the label of the dot it walks to: fade it out before it gets there
+        near = [d for ang, _, d in ring._dots if d is not node and d is not absorb_into
+                and abs(((ang - a1 + 180) % 360) - 180) < 30 and any("ring_out" in q.meta for q in d.parts)]
+        if absorb_into is not None or near:
+            span = a1 - a0
+            for p, _ in movers[1:]:
+                clear = 30.0
+                done = start + duration * max(0.0, (span - clear) / span) if span > 0 else start
+                fade = min(300, max(120, done - start))
+                self.hide(p, "fadeOut", int(fade), int(max(start, done - fade)))
         if absorb_into is not None:
+            # it slides in under the server: a small dot fading out on top leaves an encoder smudge
+            nodes = self.scene.nodes
+            if nodes.index(node) > nodes.index(absorb_into):
+                nodes.remove(node)
+                nodes.insert(nodes.index(absorb_into), node)
             self._motion_out(node, "absorb", None, start + duration, absorb_into, None)
         self._last_start = start
         return self
@@ -1879,6 +1958,7 @@ class Scene:
         self.prefix = "s%d_" % (index + 1)
         self.transition, self.background = transition, background
         self.nodes, self.edges, self.steps, self._ids = [], [], [], set()
+        self._rings = []
         self.paths = {}
 
     def _id(self, want):
@@ -2825,7 +2905,9 @@ class Scene:
         ring.place(node, angle), ring.dot(angle, ...) and ring.arc(a0, a1, ...)."""
         if center is None:
             center = self.project.safe_center()
-        return Ring(self, center, r, color, width, id)
+        ring = Ring(self, center, r, color, width, id)
+        self._rings.append(ring)
+        return ring
 
     def table(self, rows, at, header=True, colors=None, font=None, gap=6, id="tbl"):
         """A grid of labelled cells. rows = [[cell, ...], ...]; header=True makes row 0 bold on the accent
@@ -3191,6 +3273,8 @@ class Scene:
             if e.around:
                 self._route_around(e)
         vis, evis = self._timelines()
+        for ring in self._rings:
+            ring._retrim(vis)
         snap_nodes = []
         for z, n in enumerate(self.nodes):
             f = {k: v for k, v in n.fields.items() if not k.startswith("_") or k == "_animatedProps"}
@@ -3256,6 +3340,8 @@ class Scene:
                 for a, off in st._end_acts:
                     if off + shift:
                         a["offsetMs"] = int(off + shift)
+            for a, off in st._hold_acts:
+                a["offsetMs"] = int(off + max(0, dur - END_PAD_MS - off - (a.get("durationMs") or 0)))
             # openCanviz times algoSwap and algo-field tweens only when the step names its easing;
             # without it a swap snaps and a colour change takes the whole step
             sd["easing"] = st.easing or "ease"
@@ -3499,6 +3585,13 @@ def _advance(ch):
     return 0.72
 
 
+def _mix(a, b, t):
+    """#rrggbb a moved t of the way to #rrggbb b."""
+    ca = [int(a[i:i + 2], 16) for i in (1, 3, 5)]
+    cb = [int(b[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join("%02x" % int(round(x + (y - x) * t)) for x, y in zip(ca, cb))
+
+
 class Ring:
     """A circle to place things on, from scene.ring(). Angles: degrees, 0 = straight up, clockwise."""
 
@@ -3552,9 +3645,85 @@ class Ring:
         n = self.scene.node("wedge", None, x=self.cx - ro, y=self.cy - ro, w=2 * ro, h=2 * ro, id=id,
                             startAngle=_clean(a0 - 90), endAngle=_clean(a1 - 90),
                             innerRadius=round((self.r - thickness / 2.0) / ro, 4), fill=col, stroke="none", noGlow=True)
+        n.meta["ring_arc"] = True
         self._arcs.append((float(a0), float(a1), n))
         self._layer()
         return n
+
+    def _gap(self, size):
+        return math.degrees((size / 2.0 + DOT_GAP) / self.r)
+
+    def _retrim(self, vis):
+        """A dot that appears inside an arc while the arc is on screen (server D added between B and C)
+        cuts the arc back: its free end tweens to DOT_GAP px short of the new dot as the dot comes in.
+        The arc keeps the side whose end has a dot on it (a server owns the arc just before it, so by
+        default the end side). Walked dots (keys) are left alone: they pass over arcs by design."""
+        scene = self.scene
+        fixed = [(a, s, d) for a, s, d in self._dots if not d.meta.get("ring_walker")]
+        for a0, a1, arc in self._arcs:
+            f = arc.fields
+            s0 = f.get("startAngle", -90) + 90.0
+            s1 = f.get("endAngle", 270) + 90.0
+            while s1 <= s0:
+                s1 += 360
+            at_end = any(abs(((ang - a1 + 180) % 360) - 180) < self._gap(sz) + 0.5 for ang, sz, _ in fixed)
+            at_start = any(abs(((ang - a0 + 180) % 360) - 180) < self._gap(sz) + 0.5 for ang, sz, _ in fixed)
+            keep_end = at_end or not at_start
+            for st in scene.steps:
+                k = st.index
+                arc_on = vis[arc.id][k] or _in_start(st, arc.id) is not None
+                if not arc_on:
+                    continue
+                arc_before = vis[arc.id][k - 1] if k > 0 else False
+                a_in = _in_start(st, arc.id)
+                for ang, sz, dot in fixed:
+                    if not vis[dot.id][k]:
+                        continue
+                    g = self._gap(sz)
+                    span = s1 - s0
+                    rel = (ang - s0) % 360
+                    if not (rel < span + g - 0.3 or rel > 360 - g + 0.3):
+                        continue      # clear of the arc already
+                    if rel > 360 - g or rel < g:
+                        n0, n1 = ang + g, s1
+                        if rel > 360 - g:
+                            n0 = s0 + (rel - 360) + g
+                    elif rel > span - g:
+                        n0, n1 = s0, s0 + rel - g
+                    elif keep_end:
+                        n0, n1 = s0 + rel + g, s1
+                    else:
+                        n0, n1 = s0, s0 + rel - g
+                    if n1 - n0 < 1:
+                        continue
+                    d_in = _in_start(st, dot.id)
+                    dot_before = vis[dot.id][k - 1] if k > 0 else getattr(dot, "initial_visible", False) and \
+                        d_in is None
+                    to = {}
+                    if abs(n0 - s0) > 0.01:
+                        to["startAngle"] = _clean(n0 - 90)
+                    if abs(n1 - s1) > 0.01:
+                        to["endAngle"] = _clean(n1 - 90)
+                    if not to:
+                        continue
+                    shown_first = arc_before or (a_in is not None and d_in is not None and a_in < d_in)
+                    if shown_first and d_in is not None and not dot_before:
+                        # the arc is up before the dot: cut it back as the dot comes in
+                        st._tw(arc, to, 400, d_in, "ease-out")
+                        st._patch(arc, **to)
+                    elif not arc_before and k == min(i for i in range(len(scene.steps)) if vis[arc.id][i]
+                                                    or _in_start(scene.steps[i], arc.id) is not None):
+                        # the arc first appears with the dot already there: it starts out trimmed
+                        f.update(to)
+                        for act in st.actions:
+                            if act.get("type") == "transformTween" and act["target"].get("id") == arc.id \
+                                    and "endAngle" in act.get("from", {}):
+                                act["from"]["endAngle"] = _clean(f["startAngle"] + 1)
+                                act["to"]["endAngle"] = f["endAngle"]
+                    else:
+                        st._tw(arc, to, 400, d_in or 0, "ease-out")
+                        st._patch(arc, **to)
+                    s0, s1 = n0, n1
 
     def _layer(self):
         """Arcs draw under the ring's dots (they move below the first dot in the stacking order) and stop
@@ -3614,8 +3783,10 @@ class Table:
                 f = dict(fill=fill, stroke=th["line"], strokeWidth=2, cornerRadius=8, noGlow=True, labelFontSize=font)
                 if head:
                     f["labelFontWeight"] = "bold"
-                line.append(scene.node("rect", c if c else None, x=at.x + j * (cw + gap), y=y0 + i * (ch + gap), w=cw, h=ch,
-                                       id="%s_r%dc%d" % (id, i, j), **f))
+                cell = scene.node("rect", c if c else None, x=at.x + j * (cw + gap), y=y0 + i * (ch + gap), w=cw, h=ch,
+                                  id="%s_r%dc%d" % (id, i, j), **f)
+                cell.meta["cell"] = True
+                line.append(cell)
             self.cells.append(line)
 
     def row(self, r):
@@ -3790,6 +3961,7 @@ class Plot:
         col = color or self.scene.project.colors["hi"]
         n = self.scene.node("circle", None, x=px - size / 2.0, y=py - size / 2.0, w=size, h=size,
                             id="%s_%s" % (self.id, id), fill=col, stroke="none", noGlow=True)
+        n.meta["on_curve"] = True     # pop() grows it in place: a dot rising from below reads as off the curve
         if label:
             fs = font or self.scene._floor("tick")
             bw = len(str(label)) * fs * 0.62 + 16
@@ -3879,8 +4051,10 @@ class NumberLine:
 
     def point(self, v, size=30, color=None, id="pt"):
         col = color or self.scene.project.colors["hi"]
-        return self.scene.node("circle", None, x=self.to_px(v) - size / 2.0, y=self.cy - size / 2.0, w=size, h=size,
-                               id="%s_%s" % (self.id, id), fill=col, stroke="none", noGlow=True)
+        n = self.scene.node("circle", None, x=self.to_px(v) - size / 2.0, y=self.cy - size / 2.0, w=size, h=size,
+                            id="%s_%s" % (self.id, id), fill=col, stroke="none", noGlow=True)
+        n.meta["on_curve"] = True
+        return n
 
 
 class Matrix:
@@ -4907,10 +5081,41 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             _screen_checks(P, ab, captions, nodes, edges, vis, view, W, once, later)
         _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once)
         _arrow_length_checks(P, nodes, edges, vis, W, once)
+        _ring_arc_checks(P, vis, W, once)
         if k == len(steps) - 1 and ab:
             _fill_check(P, ab, captions, vis, W)
         prev_edge_trim = {i: e.get("trim", 1) for i, e in edges.items()}
         prev_vis_nodes = vis_nodes
+
+
+def _ring_arc_checks(P, vis, W, once):
+    """A ring band (a wedge with a large innerRadius) that runs under a visible dot on its ring, or stops
+    closer than DOT_GAP px to it: a server added after the arcs were cut."""
+    for a in vis:
+        if a.get("kind") != "wedge" or not (a.get("innerRadius") or 0) > 0.5 or (a.get("opacity", 1) or 0) <= 0:
+            continue
+        ro = a["w"] / 2.0
+        rm = ro * (1 + a["innerRadius"]) / 2.0
+        cx, cy = a["x"] + ro, a["y"] + a["h"] / 2.0
+        s0, s1 = a.get("startAngle", -90), a.get("endAngle", 270)
+        while s1 <= s0:
+            s1 += 360
+        for d in vis:
+            if d.get("kind") != "circle" or d is a or (d.get("opacity", 1) or 0) <= 0 or abs(d["w"] - d["h"]) > 1:
+                continue
+            if d.get("fill") in (None, "transparent", "none"):
+                continue
+            rd = d["w"] / 2.0
+            dx, dy = d["x"] + rd - cx, d["y"] + rd - cy
+            if abs(math.hypot(dx, dy) - rm) > rd:
+                continue
+            ang = math.degrees(math.atan2(dy, dx))         # the wedge's own convention: 0 = right, clockwise
+            g = math.degrees((rd + DOT_GAP - 2) / rm)
+            rel = (ang - s0) % 360
+            if (rel < (s1 - s0) + g or rel > 360 - g) and once(("ringarc", a["id"], d["id"])):
+                W("%s: arc %s runs under (or within %d px of) the dot %s on its ring; cut it back short of the "
+                  "dot (ring.arc() and the compiler do this for dots made with ring.dot())."
+                  % (P, a["id"], DOT_GAP, d["id"]))
 
 
 def _balance_check(P, ab, vis, W, once):
