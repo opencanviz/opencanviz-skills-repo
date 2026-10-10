@@ -175,7 +175,7 @@ Not supported in exported videos, so do not hand-roll them: a `blur` tween (only
 | `reveal "wipe"` | Grows from its left edge (a box, a bar) or is uncovered left to right (an equation, an image) | A bar that measures, an equation being written | 600 ms (900 ms on an image or equation) |
 | `reveal "draw"` | An svg path, curve or arc draws itself on | Curves, outlines, arcs, triangles | 900 ms (800 ms on an arc) |
 | `reveal "pop"` / `pop(...)` | Scales up from 0.35 with a `back` overshoot; `from_="below"`, `"edges"`, `"scatter"` or `None` | A number, a key word, a group landing together | 500 ms, 40 ms stagger |
-| `emphasize "pulse"` / `pulse(n, scale=1.08)` | Scales up and back | "Look at this one" | 440 ms |
+| `emphasize "pulse"` / `pulse(n, scale=1.08)` | Scales up and back; always grows the short side by 10 px or more (a small node gets a bigger scale), and a wide, thin node (one side over 3.5x the other: a table row, a bar) flashes instead | "Look at this one" | 440 ms |
 | `emphasize "shake"` | Side to side | An error, a rejection, a cache miss | 300 ms |
 | `emphasize "wiggle"` | A small rotation | Playful attention | 400 ms |
 | `emphasize "flash"` | Its fill (or text colour, or a highlighter behind an equation term) flashes to `color` and back | A changed term, the answer | 800 ms |
@@ -187,8 +187,11 @@ Not supported in exported videos, so do not hand-roll them: a `blur` tween (only
 | `hide "absorb"` (`into=`) | Flies into another node and fades | A key reaching its server, an item consumed | 500 ms |
 | `hide "scatter"` | A list of letters or nodes blows apart from their centre | Ending a title beat | 380 ms, 28 ms apart |
 
+Any `hide(..., offset="end")` runs at the very end of its step (finishing 150 ms before the next step), so the screen is never empty while the caption still plays. Use it for the exit that closes a scene.
+
 How to use them:
 
+- **No dead air.** A captioned step must have something on screen for all of it. The validator errors when the screen is blank for more than a second: an exit early in the step (use `offset="end"`), or a first reveal that waits.
 - **One emphasis per beat.** Pulse, flash or shake one thing in a step, not three. Emphasize only what is already on screen.
 - **Match the entrance to its meaning.** Drop for an arrival, zoom for the centrepiece, wipe for a bar that measures or an equation being written, draw for a curve or arc, pop for numbers, fade for support.
 - **Vary the entrances.** Do not open every scene the same way; mix a pop, a zoom, a draw and a stagger across a video.
@@ -230,11 +233,13 @@ eq = s.math(r"\frac{d}{dx} x^2 = 2x", at=r, size=64)            # .reveal(eq, st
 row = s.math_row([r"a^2", r"+", r"b^2", r"=", r"c^2"], at=r)      # one node per term on one baseline: .stagger(row, "fade", gap=300)
 lines = s.derivation([[r"f(x) =", r"x^2"], [r"f'(x) =", r"2x"]], at=body, size=72, align="eq")
 #   one line per step: .stagger(lines[i], "fade", gap=300); the changed term: .emphasize(lines[i][1], "flash", color="#f59e0b")
+eq = s.math(r"\frac{\part{a}{x^2} + 2xh + h^2 - \part{b}{x^2}}{h}", at=r, size=80)
+#   one term inside an equation: .emphasize(eq, "flash", part=["a", "b"]) lights up just the two x^2
 pl = s.plot(r, (-3, 3), (-1, 9), x_ticks=[-2, 0, 2], y_ticks=[0, 4, 8], grid=True, x_label="x", y_label="y")
 curve = pl.curve(lambda x: x * x)                                # .reveal(curve, style="draw")
 shade = pl.area(lambda x: x * x, 0, 2)                           # area under the curve, a see-through fill
 dot = pl.point(-2, 4); tan = pl.tangent(lambda x: x * x, -2)     # .pop([dot]).reveal(tan, style="zoom"); .ride(dot, pl, fn, -2, 2, tangent=tan)
-key = pl.legend([("y = x squared", "#38bdf8"), ("tangent", "#f59e0b")], at=side)
+key = pl.legend([("y = x squared", "#38bdf8"), ("tangent", "#f59e0b")], at=side)  # .reveal(curve).reveal(key, offset="with")
 tri = s.poly([A, B, C]); s.angle_mark(B, A, C, label="θ"); s.side_label(A, B, "4")  # .reveal(tri, style="draw")
 mat = s.matrix([["1", "0"], ["0", "1"]], at=r)                   # .tint(mat.row(0), "#f59e0b")
 nl = s.number_line(r, 0, 5, 1); m = nl.point(3)                  # .pop([m])
@@ -242,10 +247,14 @@ venn = s.venn(["A", "B"], at=r)                                  # .pop(venn, st
 ```
 
 - One derivation line per step, and flash the term that changed in that step (one flash per beat). `align="eq"` lines the equals signs up when each line is written as `[lhs, rhs]`.
-- `size=` is the letter height in px; 56 to 80 reads well at 1080p. Math raises when it does not fit its rect.
+- **Flash exactly what the caption names.** When the caption says "the x squared terms cancel", highlight those terms, not the whole line. Inside one equation (a fraction, a limit) mark each term with `\part{name}{...}` and pass `part="name"` (or a list) to `emphasize(eq, "flash")`: the helper measures that term's glyphs and puts the highlighter on it alone. Terms that sit side by side on one line can instead be separate `math_row` / `derivation` terms, each flashed on its own.
+- `size=` is the font size in px (about the height of a capital). The floor is 56 in landscape and 78 in portrait; below it the helper raises. The defaults (64 for `math` and `math_row`, the floor for `derivation`) follow the frame. Prefer 72 to 120 for a single formula; split a long derivation over two steps or scenes rather than shrinking it. Math raises when it does not fit its rect.
+- **A plot next to an equation uses both halves.** Split the frame (about 0.6 / 0.4) and put something in the side column from the first step (the function, the legend), or center a bigger plot alone. The validator warns when a plot leaves a third of the frame empty.
+- Reveal a legend together with its curve (`offset="with"`), so it is not still fading in after the curve is drawn.
 - A distance or lookup table is a `table`; a matrix is a `matrix` (no header row).
 - Draw curves and outlines on (`"draw"`), wipe equations (`"wipe"`), pop points and set circles.
-- The tangent is a 10 px bar (the export drops anything under 10 px); reveal it with `"zoom"` or `"fade"`, never `"wipe"`.
+- The tangent is a 10 px bar (the export drops anything under 10 px); reveal it with `"zoom"` or `"fade"`, never `"wipe"`. It belongs to the `pl.point()` at the same x (or `point=`): its reveal is moved to start with that dot or later, never before, and revealing it while the dot is hidden raises.
+- Ring arcs (`ring.arc`) draw under the ring's dots and stop 6 px short of a dot at either end, so a band never paints over a server.
 
 ## Workflow
 
@@ -396,6 +405,9 @@ Full field lists and enums are in `schema.json`.
 | "2.5x faster" in a caption | The voice stumbles on the decimal | "two and a half times faster" |
 | Every node fades in the same way | Reads as a slide deck | Pick presets by meaning (Motion presets) |
 | A hand-written `mathTex` node | Nothing renders | `scene.math()`, which embeds the SVG |
+| Exit at the start of a step, nothing after it | The caption plays over a blank screen | `hide(..., offset="end")`, or reveal the next thing in the same step |
+| Flashing a whole equation for one term | The eye does not know where to look | `\part{name}{...}` plus `emphasize(eq, "flash", part="name")` |
+| Indented JSON with many equations | The import times out (about 150 KB) | `p.save()` writes compact JSON; keep equations few and reuse them |
 
 ## Checklist before you answer
 
@@ -416,4 +428,6 @@ Full field lists and enums are in `schema.json`.
 - [ ] The visual fits the topic (table at the top); boxes and arrows only for flows and systems.
 - [ ] Every edge has `animationStyle`; no delta step lists edges without a node; no `glow: 0`, `sketchMode`, `kind: "icon"` or lottie.
 - [ ] Every node has an explicit `zIndex`; captions have no decimals; easing names are spelled as in Actions.
+- [ ] No captioned step shows a blank screen for more than a second; every flash lands on the term the caption names.
+- [ ] The file is compact JSON (no indent) and under about 150 KB.
 - [ ] No internal fields (only the code node's `_animatedProps` flag), comments or trailing commas.

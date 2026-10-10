@@ -30,7 +30,7 @@ s1.step("That is the answer.").emphasize(lines[3][1], style="flash", color="#f59
 
 # Scene 2: the curve, the area under it and a tangent that rides it.
 s2 = p.scene("Plot")
-plot_r, side = area.inset(40, 20).split(0.68)
+plot_r, side = area.inset(40, 20).split(0.62)   # a plot next to equations: both sides used from step 0
 pl = s2.plot(plot_r, (-3, 3), (-1, 9), x_ticks=[-3, -2, -1, 0, 1, 2, 3], y_ticks=[0, 2, 4, 6, 8], grid=True,
              x_label="x", y_label="y")
 curve = pl.curve(sq, color="#38bdf8")
@@ -38,8 +38,11 @@ shade = pl.area(sq, 0, 2, color="#22c55e")
 dot = pl.point(-2, 4, size=30, color="#f59e0b")
 tan = pl.tangent(sq, -2, length=320, color="#f59e0b")
 key = pl.legend([("y = x squared", "#38bdf8"), ("tangent", "#f59e0b")])
-eq = s2.math(r"\text{slope} = 2x", at=side.inset(20, 0).cut_top(160)[0], size=60)
-s2.step("Here is x squared.").reveal(pl.node).reveal(curve, style="draw").reveal(key)
+fx_r, eq_r = side.inset(20, 0).cut_top(side.h * 0.5)
+fx = s2.math(r"y = x^2", at=fx_r, size=80)
+eq = s2.math(r"\text{slope} = 2x", at=eq_r.cut_top(160)[0], size=72)
+s2.step("Here is x squared.").reveal(pl.node).reveal(curve, style="draw").reveal(key, offset="with") \
+    .reveal(fx, style="wipe")
 s2.step("The area from zero to two.").reveal(shade)
 s2.step("A tangent touches the curve at one point.").pop([dot]).reveal(tan, style="zoom")
 s2.step("As the point slides, the slope changes: two x.").reveal(eq, style="wipe") \

@@ -151,6 +151,13 @@ BROKEN_EMPHASIS = {"glow": "a glow tween is not drawn and a glow change is barel
 MOTION_OUT = {"fade", "slide", "shrink", "absorb", "scatter"}
 CAPTION_DECIMAL = re.compile(r"\d\.\d")
 SFX_PACKS = {"soft", "playful", "retro", "mech", "off"}
+END_PAD_MS = 150
+IMPORT_SOFT_LIMIT = 150 * 1024
+DOT_GAP = 6            # px a ring arc stops short of a dot at its end
+PULSE_MIN_PX = 10      # a pulse grows a node's short side by at least this much
+PULSE_MAX = 1.3
+PULSE_THIN = 3.5       # one side over 3.5x the other: a pulse would not show, flash instead       # hide(offset="end") finishes this long before the step ends
+DEAD_AIR_MS = 1000     # a captioned step may be blank this long at most (an exit finishing, a late reveal)
 STEADY_MS = 300        # stage="steady": every scene crossfades this long (260-340 ms reads as one stage)
 POP_MS, POP_FROM = 500, 0.6
 STAGGER_MS = 180
@@ -222,7 +229,7 @@ def edge_label_min(width, height):
     return 28 if height > width else 22
 
 
-FONT_FLOORS = {"body": 34, "code": 30, "tick": 28, "var": 34}
+FONT_FLOORS = {"body": 34, "code": 30, "tick": 28, "var": 34, "math": 56}
 
 
 def font_floor(kind, width, height):
@@ -741,6 +748,7 @@ class Step:
         self.actions, self.remove_nodes, self.remove_edges = [], [], []
         self.camera_spec = None
         self._cursor, self._last_start, self._tail = 0, 0, 0
+        self._end_acts = []    # (action, offset as placed) for hide(offset="end"), moved to the step's end
         self._shift = None          # (from_ms, by_ms) when the follow camera delayed this step's arrivals
         self.timed = []             # (node, field, offset_ms): scene-time markers filled at compile time
         self.hooks = []             # fn(snapshot_by_id, step_start_ms, step_dict, adjust_offset) run at compile time
@@ -878,7 +886,15 @@ class Step:
         """Hide a node (fadeOut, hide, slideOut*), a list of nodes, or undraw an arrow. Arrows and parts of a
         hidden node go with it. Exit presets: "fade", "slide" (out to the right), "shrink" (scales to 0.6 as
         it fades), "absorb" (flies into the node into= and fades: a key reaching its server) and "scatter"
-        (a list of letters or nodes blows apart from their center, gap ms apart)."""
+        (a list of letters or nodes blows apart from their center, gap ms apart).
+
+        offset="end" plays the exit at the very end of the step, once its length is known, so the screen is
+        not left blank while the caption plays (the checker refuses more than 1 s of dead air)."""
+        if offset == "end":
+            n0 = len(self.actions)
+            self.hide(item, style, duration, self._cursor, ease, into, distance, gap)
+            self._end_acts.extend((a, a.get("offsetMs", 0)) for a in self.actions[n0:])
+            return self
         if style == "scatter":
             return self._scatter_out(item, None if duration == 400 else duration, offset, gap, distance or 160)
         if style == "fade":
@@ -1586,19 +1602,38 @@ class Step:
         self._last_start = start
         return self
 
-    def emphasize(self, node, style="pulse", duration=None, offset=None, color=None, scale=1.08, distance=40):
+    def emphasize(self, node, style="pulse", duration=None, offset=None, color=None, scale=1.08, distance=40,
+                  part=None):
         """Draw the eye to a node that is already on screen, then leave it as it was. One per beat.
         style: pulse (scale up and back, 440 ms), shake (side to side, 300 ms: an error, a rejection),
         wiggle (a small rotation, 400 ms: playful attention), flash (its fill, or a text's colour, flashes
         to color and back, 800 ms) or nudge (a 40 px push right and back, 500 ms: "this one moves next").
-        "glow" is refused: a glow tween is not drawn."""
+        "glow" is refused: a glow tween is not drawn.
+        A pulse always grows the node by at least PULSE_MIN_PX on its short side (scale is raised for a
+        small node); a wide, thin node (a table row, a cell, a bar: one side over PULSE_THIN times the
+        other) gets a flash instead, since a few px of growth on its short side does not show.
+        part= (flash on an equation only) lights up one marked term: write it as \\part{name}{...} in the
+        TeX, e.g. scene.math(r"\\frac{\\part{a}{x^2} + 2xh - \\part{b}{x^2}}{h}") and then
+        emphasize(eq, "flash", part="a"); a list of names flashes several terms together."""
         if isinstance(node, (list, tuple)):
             start = self._place(0, offset)
             for n in node:
-                self.emphasize(n, style, duration, start, color, scale, distance)
+                self.emphasize(n, style, duration, start, color, scale, distance, part)
             self._last_start = start
             return self
         self._own(node, Node)
+        if part is not None:
+            if style != "flash" or not node.fields.get("imageData"):
+                raise OpenCanvizError("emphasize(%s, part=%r): part= works with style=\"flash\" on an equation "
+                                      "from scene.math() / math_row() / derivation()." % (node.id, part))
+            return self._flash_parts(node, [part] if isinstance(part, str) else list(part), duration, offset, color)
+        if style == "pulse":
+            w, h = float(node.fields.get("w", 0) or 0), float(node.fields.get("h", 0) or 0)
+            short, long_ = min(w, h), max(w, h)
+            if short > 0 and long_ / short > PULSE_THIN and not node.fields.get("imageData"):
+                style = "flash"
+            elif short > 0:
+                scale = max(scale, min(PULSE_MAX, 1 + PULSE_MIN_PX / short))
         if style in BROKEN_EMPHASIS:
             raise OpenCanvizError("emphasize(%s, %r): %s" % (node.id, style, BROKEN_EMPHASIS[style]))
         if style not in EMPHASIS:
@@ -1650,6 +1685,27 @@ class Step:
             x0 = self._cur(node, "x")
             self._tw(node, {"x": _clean(x0 + distance)}, total * 0.36, start, "ease-out")
             self._tw(node, {"x": x0}, total * 0.64, start + total * 0.36, "back")
+        self._last_start = start
+        return self
+
+    def _flash_parts(self, node, names, duration, offset, color):
+        parts = node.meta.get("parts") or {}
+        f = node.fields
+        total = duration or EMPHASIS["flash"]
+        start = self._place(total, offset)
+        col = color or self.scene.project.colors["hi"]
+        for name in names:
+            if name not in parts:
+                raise OpenCanvizError("emphasize(%s, part=%r): no such part; its TeX marks %s. Mark a term with "
+                                      "\\part{name}{...}." % (node.id, name, sorted(parts) or "none"))
+            fx, fy, fw, fh = parts[name]
+            pad = 6
+            hl = self.scene.node("rect", None, x=f["x"] + fx * f["w"] - pad, y=f["y"] + fy * f["h"] - pad,
+                                 w=max(10, fw * f["w"] + 2 * pad), h=max(10, fh * f["h"] + 2 * pad),
+                                 id="%s_hl_%s" % (node.id, _slug(name)), fill=(col + "55") if len(col) == 7 else col,
+                                 stroke="none", cornerRadius=8, noGlow=True, zIndex=0)
+            self.reveal(hl, "fadeIn", int(total * 0.2), start)
+            self.hide(hl, "fadeOut", int(total * 0.45), start + int(total * 0.55))
         self._last_start = start
         return self
 
@@ -2785,15 +2841,21 @@ class Scene:
         return CompareBars(self, items, at, unit, font, id)
 
     # math and graphs ---------------------------------------------------------------------------
-    def math(self, tex, at=None, x=None, y=None, size=64, color=None, align="center", id="math"):
+    def math(self, tex, at=None, x=None, y=None, size=None, color=None, align="center", id="math"):
         """A LaTeX formula, compiled here to an SVG image (node + mathjax-full: scripts/tex2svg.js) and
         sized so its letters are about size px tall. at=Rect centers it there (align="left" puts it on the
         left edge); x, y put its top-left corner. Reveal it with style "wipe" (left to right), a fade, or
         build it term by term with math_row()."""
+        size = size or max(64, self._floor("math"))
         res = _tex2svg([(tex, color or self.project.colors["text"])])[0]
         return self._math_node(tex, res, at, x, y, size, align, id)
 
     def _math_node(self, tex, res, at, x, y, size, align, id):
+        floor = self._floor("math")
+        if size < floor:
+            raise OpenCanvizError("math(%r): size=%g is below the %d px floor for equations in this frame (56 "
+                                  "landscape, 78 portrait); a smaller equation is unreadable on a phone. Raise size= "
+                                  "and give it the room (split a long line into a derivation)." % (tex, size, floor))
         k = size * MATH_EX
         w, h = max(10.0, res["widthEx"] * k), max(10.0, res["heightEx"] * k)
         if at is not None:
@@ -2805,18 +2867,20 @@ class Scene:
         if x is None or y is None:
             raise OpenCanvizError("math(%r): give at=Rect or x, y." % tex)
         url = "data:image/svg+xml;base64," + base64.b64encode(res["svg"].encode("utf-8")).decode("ascii")
-        n = self.node("rect", None, x=x, y=y, w=w, h=h, id=id, imageData=url, mathTex=tex, fill="transparent",
+        n = self.node("rect", None, x=x, y=y, w=w, h=h, id=id, imageData=url, mathTex=_tex_parts(tex), fill="transparent",
                       stroke="none", noGlow=True)
         n.meta["math"] = {"k": k, "heightEx": res["heightEx"], "depthEx": res["depthEx"]}
+        n.meta["parts"] = dict(res.get("parts") or {})
         return n
 
-    def math_row(self, terms, x=None, baseline=None, at=None, size=64, color=None, gap=None, colors=None, id="term"):
+    def math_row(self, terms, x=None, baseline=None, at=None, size=None, color=None, gap=None, colors=None, id="term"):
         """Several LaTeX terms side by side on one baseline (each its own node), for an equation that is
         built term by term: step.stagger(row, "fade", gap=300). at=Rect centers the row there. colors =
         one colour per term (None = the text colour). Returns the list of term nodes."""
         terms = list(terms)
         if not terms:
             raise OpenCanvizError("math_row(): give at least one term.")
+        size = size or max(64, self._floor("math"))
         cols = list(colors or [None] * len(terms))
         res = _tex2svg([(t, c or color or self.project.colors["text"]) for t, c in zip(terms, cols)])
         k = size * MATH_EX
@@ -2839,7 +2903,7 @@ class Scene:
             x += w + g
         return out
 
-    def derivation(self, lines, at, size=56, gap=None, align="left", color=None, id="line"):
+    def derivation(self, lines, at, size=None, gap=None, align="left", color=None, id="line"):
         """A derivation: one LaTeX line per step, stacked top to bottom in at. A line is a string, or a
         list of terms (math_row) so a changed term can be flashed with step.emphasize(term, "flash").
         Returns one entry per line: a node, or the list of term nodes. Reveal line i in its own step with
@@ -2851,6 +2915,7 @@ class Scene:
         lines = list(lines)
         if not lines:
             raise OpenCanvizError("derivation(): give at least one line.")
+        size = size or self._floor("math")
         k = size * MATH_EX
         g = size * 0.5 if gap is None else gap
         flat = [(i, t) for i, ln in enumerate(lines) for t in ([ln] if isinstance(ln, str) else ln)]
@@ -3094,6 +3159,29 @@ class Scene:
             evis[e.id] = arr
         return vis, evis
 
+    def _tangent_after_dot(self, st, k, vis):
+        # a tangent line drawn before its dot reads as a stray bar: start it with the dot or later
+        for n in self.nodes:
+            dot = n.meta.get("tangent_dot")
+            if dot is None:
+                continue
+            t0 = _in_start(st, n.id)
+            if t0 is None:
+                continue
+            d0 = _in_start(st, dot.id)
+            if d0 is None:
+                if not (vis[dot.id][k - 1] if k > 0 else getattr(dot, "initial_visible", True)):
+                    raise OpenCanvizError("scene %d step %d: tangent %s is revealed but its dot %s is hidden. Reveal "
+                                          "the dot first (or in the same step)." % (self.index + 1, k, n.id, dot.id))
+                continue
+            if t0 >= d0:
+                continue
+            by = d0 - t0
+            for a in st.actions:
+                if a.get("target", {}).get("id") == n.id and a.get("offsetMs", 0) >= t0:
+                    a["offsetMs"] = int(a.get("offsetMs", 0) + by)
+                    st._cursor = max(st._cursor, a["offsetMs"] + (a.get("durationMs") or 0))
+
     def _compile(self):
         if not self.steps:
             raise OpenCanvizError("scene %d (%s) has no steps; add at least one with scene.step(caption)."
@@ -3146,6 +3234,7 @@ class Scene:
             for eid in list(st.remove_edges):
                 if eid in twins:
                     st.remove_edges.append(twins[eid])
+            self._tangent_after_dot(st, k, vis)
             dur = st.duration
             words = len(str(st.narration or st.caption).split())
             need = max(st._cursor, st._tail)
@@ -3161,6 +3250,12 @@ class Scene:
                 sd["delta"] = True
             sd["durationMs"] = dur
             sd["caption"] = st.caption
+            if st._end_acts:
+                last = max(off + (a.get("durationMs") or 0) for a, off in st._end_acts)
+                shift = max(0, dur - END_PAD_MS - last)
+                for a, off in st._end_acts:
+                    if off + shift:
+                        a["offsetMs"] = int(off + shift)
             # openCanviz times algoSwap and algo-field tweens only when the step names its easing;
             # without it a swap snaps and a colour change takes the whole step
             sd["easing"] = st.easing or "ease"
@@ -3352,13 +3447,21 @@ TEX2SVG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tex2svg.js")
 _TEX_CACHE = {}
 
 
+_PART_RE = re.compile(r"\\part\s*\{([A-Za-z0-9_-]+)\}")
+
+
+def _tex_parts(tex):
+    """\\part{name}{...} -> \\cssId{oc-name}{...}: tex2svg.js measures each marked group."""
+    return _PART_RE.sub(lambda m: r"\cssId{oc-%s}" % m.group(1), tex)
+
+
 def _tex2svg(items):
-    """Compile [(tex, color), ...] to [{svg, widthEx, heightEx, depthEx}] with node + mathjax-full
+    """Compile [(tex, color), ...] to [{svg, widthEx, heightEx, depthEx, parts}] with node + mathjax-full
     (scripts/tex2svg.js). Raises OpenCanvizError saying what to install when either is missing."""
     import subprocess
     todo = [it for it in dict.fromkeys(items) if it not in _TEX_CACHE]
     if todo:
-        payload = json.dumps({"items": [{"tex": t, "color": c, "display": True} for t, c in todo]})
+        payload = json.dumps({"items": [{"tex": _tex_parts(t), "color": c, "display": True} for t, c in todo]})
         try:
             r = subprocess.run(["node", TEX2SVG], input=payload, capture_output=True, text=True, timeout=120)
         except FileNotFoundError:
@@ -3405,6 +3508,7 @@ class Ring:
         self.color = color or th["muted"]
         self.node = scene.node("circle", None, x=self.cx - r, y=self.cy - r, w=2 * r, h=2 * r, id=id,
                                fill="transparent", stroke=self.color, strokeWidth=width, noGlow=True)
+        self._dots, self._arcs = [], []    # (angle, size, node), (a0, a1, node)
 
     def point(self, angle):
         a = math.radians(angle)
@@ -3424,6 +3528,8 @@ class Ring:
         col = color or self.scene.project.colors["accent"]
         n = self.scene.node("circle", None, x=0, y=0, w=size, h=size, id=id, fill=col, stroke="none", noGlow=True, **kw)
         self.place(n, angle)
+        self._dots.append((float(angle) % 360, float(size), n))
+        self._layer()
         if label:
             fs = font or self.scene._floor("body")
             d = self.r + (out if out is not None else size / 2.0 + fs * 1.4)
@@ -3443,9 +3549,34 @@ class Ring:
             a1 += 360
         ro = self.r + thickness / 2.0
         col = color or self.scene.project.colors["hi"]
-        return self.scene.node("wedge", None, x=self.cx - ro, y=self.cy - ro, w=2 * ro, h=2 * ro, id=id,
-                               startAngle=_clean(a0 - 90), endAngle=_clean(a1 - 90),
-                               innerRadius=round((self.r - thickness / 2.0) / ro, 4), fill=col, stroke="none", noGlow=True)
+        n = self.scene.node("wedge", None, x=self.cx - ro, y=self.cy - ro, w=2 * ro, h=2 * ro, id=id,
+                            startAngle=_clean(a0 - 90), endAngle=_clean(a1 - 90),
+                            innerRadius=round((self.r - thickness / 2.0) / ro, 4), fill=col, stroke="none", noGlow=True)
+        self._arcs.append((float(a0), float(a1), n))
+        self._layer()
+        return n
+
+    def _layer(self):
+        """Arcs draw under the ring's dots (they move below the first dot in the stacking order) and stop
+        DOT_GAP px short of a dot that sits on either end, so a band never paints over a server."""
+        nodes = self.scene.nodes
+        dots = [d for _, _, d in self._dots]
+        for a0, a1, arc in self._arcs:
+            first = min((nodes.index(d) for d in dots), default=None)
+            if first is not None and nodes.index(arc) > first:
+                nodes.remove(arc)
+                nodes.insert(first, arc)
+            s0, s1 = a0, a1
+            for ang, size, _ in self._dots:
+                gap = math.degrees((size / 2.0 + DOT_GAP) / self.r)
+                d0 = ((ang - a0 + 180) % 360) - 180
+                d1 = ((ang - a1 + 180) % 360) - 180
+                if abs(d0) < gap:
+                    s0 = max(s0, a0 + d0 + gap)
+                if abs(d1) < gap:
+                    s1 = min(s1, a1 + d1 - gap)
+            if s1 - s0 > 1:
+                arc.fields["startAngle"], arc.fields["endAngle"] = _clean(s0 - 90), _clean(s1 - 90)
 
 
 class Table:
@@ -3536,11 +3667,18 @@ class CompareBars:
                                            id="%s_num%d" % (id, i)))
 
 
+def _in_start(st, nid):
+    offs = [a.get("offsetMs", 0) for a in st.actions if a.get("type") == "visibility"
+            and a.get("target", {}).get("id") == nid and a.get("mode") in VIS_IN]
+    return min(offs) if offs else None
+
+
 class Plot:
     """A coordinate plane from scene.plot()."""
 
     def __init__(self, scene, at, x_range, y_range, x_ticks, y_ticks, grid, font, color, x_label, y_label, id):
         self.scene, self.id = scene, id
+        self._points = []
         th = scene.project.colors
         self.xlo, self.xhi = float(x_range[0]), float(x_range[1])
         self.ylo, self.yhi = float(y_range[0]), float(y_range[1])
@@ -3658,6 +3796,7 @@ class Plot:
             n.parts.append(self.scene.text(str(label), x=px + size * 0.6, y=py - size * 0.6 - _tline(fs), w=bw,
                                            h=_tline(fs), fontSize=fs, color=col, textAlign="left",
                                            id="%s_%s_lbl" % (self.id, id)))
+        self._points.append((float(x), float(y), n))
         return n
 
     def vector(self, x0, y0, x1, y1, color=None, width=5, id="vec"):
@@ -3675,10 +3814,15 @@ class Plot:
         return self.scene.svg_path([{"d": d, "stroke": color or self.scene.project.colors["hi"], "strokeWidth": width,
                                      "fill": "none"}], x_0, y_0, w, h, id="%s_%s" % (self.id, id))
 
-    def tangent(self, fn, x, length=360, color=None, thickness=10, id="tan"):
+    def tangent(self, fn, x, length=360, color=None, thickness=10, id="tan", point=None):
         """A tangent line to fn at x (a thin bar turned to the slope). step.ride(dot, plot, fn, x0, x1,
-        tangent=this) slides it along the curve."""
+        tangent=this) slides it along the curve. It belongs to the dot at (x, fn(x)) made by plot.point()
+        (or the node you pass as point=): its reveal is moved so it starts with that dot or later, never
+        before, and revealing it while the dot is hidden raises."""
         px, py = self.to_px(x, fn(x))
+        if point is None:
+            point = next((d for xx, yy, d in self._points
+                          if abs(xx - x) < 1e-9 and abs(yy - fn(x)) < 1e-6), None)
         n = self.scene.node("rect", None, x=px - length / 2.0, y=py - 5, w=length, h=10, id="%s_%s" % (self.id, id),
                             fill=color or self.scene.project.colors["hi"], stroke="none", cornerRadius=3, noGlow=True,
                             rotationZ=self.slope_deg(fn, x))
@@ -3686,6 +3830,8 @@ class Plot:
             raise OpenCanvizError("plot.tangent(): thickness must be >= 10; the export renderer drops nodes under 10 px.")
         n.fields["h"] = thickness
         n.fields["y"] = _clean(py - thickness / 2.0)
+        if point is not None:
+            n.meta["tangent_dot"] = point
         return n
 
     def legend(self, items, at=None, font=None, id="key"):
@@ -3896,9 +4042,14 @@ class Project:
             raise OpenCanvizError("%d problem(s), nothing written:\n  - %s" % (len(problems), "\n  - ".join(problems)))
         for w in warnings:
             sys.stderr.write("warning: %s\n" % w)
+        # compact: no indent and no spaces after separators (an import over ~150 KB can time out)
+        text = json.dumps(doc, separators=(",", ":"), allow_nan=False)
+        if len(text) > IMPORT_SOFT_LIMIT:
+            sys.stderr.write("note: %s is %d KB; an import much over %d KB can time out. Equations and images are "
+                             "the heavy part: reuse one math node instead of repeating it, and split a long video "
+                             "into two files.\n" % (path, len(text) // 1024, IMPORT_SOFT_LIMIT // 1024))
         with open(path, "w") as fh:
-            json.dump(doc, fh, indent=2, allow_nan=False)
-            fh.write("\n")
+            fh.write(text + "\n")
         return doc
 
 
@@ -4658,6 +4809,10 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
 
         # state checks at the end of the step
         vis_nodes = {i for i, n in nodes.items() if (n.get("opacity", 1) or 0) > 0.01}
+        if str(st.get("caption", "")).strip():
+            _dead_air_check(P, st, dur, nodes, vis_nodes, prev_vis_nodes, E)
+        if ab and vis_nodes:
+            _balance_check(P, ab, [nodes[i] for i in vis_nodes], W, once)
         for nid in vis_nodes:
             if k > 0 and before_n.get(nid, {}).get("opacity", 1) <= 0.01 and nid not in visual_in and \
                     nid not in {n.get("id") for n in st.get("addNodes") or []}:
@@ -4756,6 +4911,55 @@ def _validate_scene(sc, si, ab, E, W, all_ids, captions=True):
             _fill_check(P, ab, captions, vis, W)
         prev_edge_trim = {i: e.get("trim", 1) for i, e in edges.items()}
         prev_vis_nodes = vis_nodes
+
+
+def _balance_check(P, ab, vis, W, once):
+    """A plot from scene.plot() that sits in one side of the frame and leaves the other third or more empty:
+    a plot pushed left of a side column that has nothing in it yet."""
+    top = ab["y"] + ab["height"] * 0.17
+    body = [n for n in vis if isinstance(n.get("x"), (int, float)) and isinstance(n.get("w"), (int, float))
+            and n.get("y", 0) + n.get("h", 0) > top and not (n.get("kind") == "text" and n.get("y", 0) < top)]
+    ids = {n.get("id") for n in vis}
+
+    def is_plot(n):   # scene.plot(): an svg node with tick labels <id>_x... and <id>_y...
+        i = str(n.get("id"))
+        return n.get("kind") == "svg" and any(str(j).startswith(i + "_x") for j in ids) and \
+            any(str(j).startswith(i + "_y") for j in ids)
+    if not any(is_plot(n) and n.get("w", 0) * n.get("h", 0) > ab["width"] * ab["height"] * 0.08 for n in body):
+        return
+    m = SIDE_MARGIN if ab["width"] > ab["height"] else 80
+    sx0, sx1 = ab["x"] + m, ab["x"] + ab["width"] - m
+    x0 = min(n["x"] for n in body)
+    x1 = max(n["x"] + n["w"] for n in body)
+    empty = max(x0 - sx0, sx1 - x1)
+    if empty > 0.3 * (sx1 - sx0) and once(("balance", P.split(" step")[0])):
+        W("%s: the content sits on the %s and the %s %d%% of the frame is empty. Center it and make it bigger, or "
+          "fill the other side from the first step (a plot next to an equation: give each a half, both shown "
+          "together)." % (P, "left" if x0 - sx0 < sx1 - x1 else "right", "right" if x0 - sx0 < sx1 - x1 else "left",
+                          100 * empty / (sx1 - sx0)))
+
+
+def _dead_air_check(P, st, dur, nodes, vis_nodes, prev_vis_nodes, E):
+    """A captioned step must have something on screen: not blank at its end after an exit, and not blank at
+    its start while the first reveal waits."""
+    acts = [a for a in (st.get("actions") or []) if isinstance(a, dict) and a.get("type") == "visibility"]
+    if not vis_nodes:
+        outs = [(a.get("offsetMs") or 0) + (a.get("durationMs") or 200) for a in acts if a.get("mode") in VIS_OUT]
+        blank = dur - max(outs) if outs else dur
+        if blank > DEAD_AIR_MS:
+            E("%s: nothing is on screen for the last %d ms while the caption %r plays (dead air). Keep something "
+              "visible: reveal the next thing in this step, end the exit with the step (offset it later), or merge "
+              "the caption into the next step." % (P, blank, st.get("caption")))
+        return
+    shown = prev_vis_nodes if prev_vis_nodes is not None else {
+        i for i in vis_nodes if not any((a.get("target") or {}).get("id") == i and a.get("mode") in VIS_IN
+                                        for a in acts)}
+    if not shown:
+        ins = [(a.get("offsetMs") or 0) for a in acts if a.get("mode") in VIS_IN]
+        first = min(ins) if ins else 0
+        if first > DEAD_AIR_MS:
+            E("%s: the screen is blank for the first %d ms of the step while the caption %r plays (dead air); "
+              "reveal something at the start." % (P, first, st.get("caption")))
 
 
 def _layout_checks(P, ab, captions, nodes, edges, vis, any_caption, W, once):

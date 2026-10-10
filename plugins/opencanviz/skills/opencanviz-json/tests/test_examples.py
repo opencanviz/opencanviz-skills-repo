@@ -5,6 +5,7 @@ python3 -m unittest discover -s tests   (from the skill folder; stdlib only, jso
 import copy
 import glob
 import json
+import math
 import os
 import subprocess
 import sys
@@ -921,6 +922,31 @@ class MotionPresets(unittest.TestCase):
         with self.assertRaisesRegex(oc.OpenCanvizError, "glow"):
             st.emphasize(b, style="glow")
 
+    def test_dead_air_is_an_error(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("In it comes.").reveal(b)
+        s.step("And now a long caption plays over an empty screen for a while.").hide(b)
+        msgs = quiet(p.to_dict())
+        self.assertTrue(any("dead air" in m for m in msgs), msgs)
+
+    def test_late_first_reveal_is_dead_air(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("A caption that waits for its first picture.").reveal(b, offset=1800)
+        self.assertTrue(any("dead air" in m for m in quiet(p.to_dict())))
+
+    def test_exit_at_end_has_no_dead_air(self):
+        p, s = motion_project()
+        b = s.box("A", at=p.area().centered(400, 240))
+        s.step("In it comes.").reveal(b)
+        s.step("And now a long caption plays before the box goes away.").hide(b, style="shrink", offset="end")
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        st = doc["diagrams"][0]["steps"][1] if "diagrams" in doc else doc["steps"][1]
+        out = [a for a in st["actions"] if a["type"] == "visibility"][0]
+        self.assertAlmostEqual(out["offsetMs"] + out["durationMs"], st["durationMs"] - oc.END_PAD_MS, delta=2)
+
     def test_gentle_pulse_keeps_its_scale(self):
         p, s = motion_project()
         b = s.box("A", at=p.area().centered(400, 240))
@@ -929,12 +955,58 @@ class MotionPresets(unittest.TestCase):
         up = [a for a in step_acts(p.to_dict(), step=1) if a["type"] == "transformTween"][0]
         self.assertEqual(up["to"]["scaleX"], 1.04)
 
+    def test_small_pulse_grows_enough_and_thin_flashes(self):
+        p, s = motion_project()
+        small = s.box("A", at=p.area().cut_top(300)[0].centered(80, 60), id="small")
+        thin = s.box("row", at=p.area().cut_top(300)[1].centered(900, 60), id="thin")
+        s.step("In.").reveal([small, thin])
+        s.step("Look.").pulse(small).emphasize(thin, "pulse")
+        acts = step_acts(p.to_dict(), step=1)
+        up = [a for a in acts if a["type"] == "transformTween" and a["target"]["id"] == small.id][0]
+        self.assertGreaterEqual((up["to"]["scaleY"] - 1) * 60, oc.PULSE_MIN_PX - 0.5)
+        self.assertFalse([a for a in acts if a["type"] == "transformTween" and a["target"]["id"] == thin.id
+                          and "scaleX" in a.get("to", {})])
+        self.assertTrue([a for a in acts if a["target"]["id"] == thin.id])
+
+    def test_flash_one_part_of_an_equation(self):
+        p, s = motion_project()
+        eq = s.math(r"\frac{\part{a}{x^2} + 2xh + h^2 - \part{b}{x^2}}{h}", at=p.area(), size=80)
+        self.assertEqual(sorted(eq.meta["parts"]), ["a", "b"])
+        self.assertNotIn(r"\part", eq.fields["mathTex"])
+        s.step("In.").reveal(eq, style="wipe")
+        s.step("These cancel.").emphasize(eq, "flash", part=["a", "b"])
+        doc = p.to_dict()
+        self.assertEqual(quiet(doc), [])
+        nodes = {n["id"]: n for n in doc["diagrams"][0]["steps"][0]["nodes"]}
+        ha, hb = nodes[eq.id + "_hl_a"], nodes[eq.id + "_hl_b"]
+        self.assertLess(ha["w"], eq.fields["w"] * 0.4)
+        self.assertLess(ha["x"] + ha["w"], hb["x"])
+        self.assertGreater(ha["x"], eq.fields["x"] - 10)
+        self.assertLess(ha["y"] + ha["h"], eq.fields["y"] + eq.fields["h"] * 0.6)   # numerator, not the h below
+        with self.assertRaisesRegex(oc.OpenCanvizError, "no such part"):
+            s.step("Bad.").emphasize(eq, "flash", part="c")
+
+    def test_ring_arcs_sit_under_dots_and_stop_short(self):
+        p, s = motion_project()
+        ring = s.ring(r=300)
+        a = ring.dot(30, id="A")
+        b = ring.dot(150, id="B")
+        arc = ring.arc(30, 150, id="arcAB")
+        s.step("Ring.").reveal(ring.node).pop([a, b]).reveal(arc, style="draw")
+        doc = p.to_dict()
+        nodes = {n["id"]: n for n in doc["diagrams"][0]["steps"][0]["nodes"]}
+        self.assertLess(nodes[arc.id]["zIndex"], nodes[a.id]["zIndex"])
+        self.assertLess(nodes[arc.id]["zIndex"], nodes[b.id]["zIndex"])
+        gap = math.degrees((20 + oc.DOT_GAP) / 300.0)
+        self.assertAlmostEqual(nodes[arc.id]["startAngle"], 30 + gap - 90, delta=0.2)
+        self.assertAlmostEqual(nodes[arc.id]["endAngle"], 150 - gap - 90, delta=0.2)
+
     def test_pop_and_scatter_letters(self):
         p, s = motion_project()
         word = s.letters("HELLO", at=p.area())
         self.assertEqual(len(word), 5)
         s.step("Pop.").pop(word, from_="scatter")
-        s.step("Gone.").hide(word, style="scatter")
+        s.step("Gone.").hide(word, style="scatter", offset="end")
         doc = p.to_dict()
         self.assertEqual(quiet(doc), [])
         ins = [a for a in step_acts(doc) if a["type"] == "visibility"]
@@ -1116,6 +1188,32 @@ class MathAndGraphs(unittest.TestCase):
         self.assertAlmostEqual(last["x"] + dot.fields["w"] / 2.0, px, delta=1)
         with self.assertRaisesRegex(oc.OpenCanvizError, "rotationZ"):
             s.step("Wipe.").reveal(pl.tangent(lambda x: x, 0, id="t2"), style="wipe")
+
+    def test_tangent_never_before_its_dot(self):
+        p, s = motion_project()
+        pl = s.plot(p.area().inset(80, 40), (-2, 2), (0, 4))
+        c = pl.curve(lambda x: x * x)
+        dot = pl.point(1, 1)
+        tan = pl.tangent(lambda x: x * x, 1)
+        self.assertIs(tan.meta["tangent_dot"], dot)
+        s.step("Plot.").reveal(pl.node).reveal(c).pop([dot]).reveal(tan, style="zoom", offset=300)
+        doc = p.to_dict()
+        acts = doc["diagrams"][0]["steps"][0]["actions"]
+        def start(nid):
+            return min(a.get("offsetMs", 0) for a in acts if a["target"].get("id") == nid
+                       and a["type"] == "visibility")
+        self.assertGreaterEqual(start(tan.id), start(dot.id))
+
+    def test_tangent_with_hidden_dot_raises(self):
+        p, s = motion_project()
+        pl = s.plot(p.area().inset(80, 40), (-2, 2), (0, 4))
+        dot = pl.point(1, 1)
+        tan = pl.tangent(lambda x: x * x, 1)
+        s.step("Plot.").reveal(pl.node)
+        s.step("Dot later.").reveal(tan)
+        s.step("Dot.").reveal(dot)
+        with self.assertRaisesRegex(oc.OpenCanvizError, "its dot"):
+            p.to_dict()
 
     def test_shapes(self):
         p, s = motion_project()

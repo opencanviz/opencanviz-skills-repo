@@ -13,7 +13,7 @@ area = p.area()
 s1 = p.scene("Title")
 title = s1.letters("HASHING", cx=area.cx, cy=area.cy, size=150, color="#f8fafc")
 s1.step("Letters pop in one by one.").pop(title, stagger=40, from_="below")
-s1.step("Then they scatter away.").hide(title, style="scatter")
+s1.step("Then they scatter away.").hide(title, style="scatter", offset="end")
 
 # Scene 2: entrances, side by side.
 s2 = p.scene("Entrances")
