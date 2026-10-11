@@ -1,20 +1,27 @@
 # openCanviz skills
 
+[![A consistent hashing ring made with the opencanviz-json skill: server D joins between B and C and takes over only the keys between B and D](docs/demo.gif)](https://opencanviz.com/blog/opencanviz-agent-skill-for-claude-code)
+
 Agent skills for [openCanviz](https://opencanviz.com), which turns an outline into a narrated, animated explainer video.
 
 The `opencanviz-json` skill teaches an AI agent to write openCanviz project JSON that you can paste into **Import** on [opencanviz.com/create](https://opencanviz.com/create). The agent plans scenes and steps, writes the JSON, checks it against the schema, and hands you a file that imports and plays.
+
+openCanviz is our product. The skill is free and MIT licensed.
 
 ## What is in this repository
 
 ```text
 .claude-plugin/marketplace.json          Claude Code marketplace listing
+docs/demo.gif                            the demo above (not part of the plugin)
 plugins/opencanviz/
   .claude-plugin/plugin.json             plugin manifest
+  README.md                              plugin README
   skills/opencanviz-json/
     SKILL.md                             the skill: workflow, rules, checklist
     schema.json                          JSON Schema, same as https://opencanviz.com/schema/v1.json
     scripts/opencanviz.py                Python builder and validator (stdlib only, Python 3.9+)
-    examples/*.json                      six complete projects that import and play
+    scripts/tex2svg.js                   LaTeX to SVG for math scenes (needs node and mathjax-full)
+    examples/*.json                      22 complete projects that import and play
     examples/*.py                        the Python script that writes each example
     tests/test_examples.py               runs the examples and checks the validator refuses bad files
 ```
@@ -28,15 +35,26 @@ import sys; sys.path.insert(0, "plugins/opencanviz/skills/opencanviz-json/script
 from opencanviz import Project
 p = Project("How caching works", aspect="16:9")
 s = p.scene("Cache")
-app_r, cache_r, db_r = p.area().row(3, labels=["2 ms"], h=400)
+title, body = s.title("How caching works")  # every video opens with a title
+app_r, cache_r, db_r = body.row(3, labels=["2 ms"], h=400)
 app, cache, db = s.box("App", at=app_r), s.box("Cache", at=cache_r), s.node("cylinder", "Database", at=db_r)
-s.step("Every request goes to the app.").reveal(app)
+s.step("Every request goes to the app.").reveal(title).reveal(app)
 s.step("A cache keeps recent answers close.").reveal(cache).draw(s.arrow(app, cache, "2 ms"))
 s.step("The database holds everything else.").reveal(db).draw(s.arrow(cache, db))
 p.save("caching.json")  # validated; raises with a fix hint if a rule is broken
 ```
 
 Check any openCanviz JSON file, hand-written or not, with `python3 plugins/opencanviz/skills/opencanviz-json/scripts/opencanviz.py check file.json`. Run the tests with `python3 -m unittest discover -s plugins/opencanviz/skills/opencanviz-json/tests`.
+
+## What it runs
+
+- `python3`, to run the builder and validator in `scripts/opencanviz.py`, when the agent uses the helper. It uses only the standard library. If the `jsonschema` package happens to be installed, it also checks the file against `schema.json`; it is not required.
+- `node` with the `mathjax-full` package, only for LaTeX math scenes. The math calls run `node scripts/tex2svg.js` locally. If Node or the package is missing, they stop and print the install line, `npm i mathjax-full`. Installing it downloads a package from npm.
+- The skill makes no network calls and sends no data anywhere. You copy the JSON into openCanviz yourself.
+
+## Account
+
+The skill itself needs no account. Importing the file needs a free openCanviz account at [opencanviz.com/create](https://opencanviz.com/create). A free account can build and watch the video. Downloading the MP4 needs a plan, or a one-time purchase of that video's export.
 
 ## Install
 
@@ -66,12 +84,18 @@ Download [opencanviz-json.zip](https://opencanviz.com/skills/opencanviz-json.zip
 
 ### Other agents and chatbots
 
-Paste the contents of [SKILL.md](plugins/opencanviz/skills/opencanviz-json/SKILL.md) into the chat or your agent's system prompt, and attach `schema.json` and one of the examples if the tool allows files. Agents that read a skills folder can use the `opencanviz-json` folder as is.
+With the [skills CLI](https://github.com/vercel-labs/skills), which installs into Claude Code, Codex, Cursor and other agents:
+
+```bash
+npx skills add opencanviz/opencanviz-skills-repo
+```
+
+Or paste the contents of [SKILL.md](plugins/opencanviz/skills/opencanviz-json/SKILL.md) into the chat or your agent's system prompt, and attach `schema.json` and one of the examples if the tool allows files. Agents that read a skills folder can use the `opencanviz-json` folder as is.
 
 ## Use the result
 
 1. Copy the JSON the agent writes.
-2. Open [opencanviz.com/create](https://opencanviz.com/create), choose **Import**, paste it and click **Import project**.
+2. Open [opencanviz.com/create](https://opencanviz.com/create) (sign in with a free account), choose **Import**, paste it and click **Import project**.
 3. In the editor, open the **Narration** panel and click **Generate All Scenes** to voice the narration.
 
 ## Docs
