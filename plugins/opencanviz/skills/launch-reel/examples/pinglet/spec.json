@@ -1,0 +1,158 @@
+{
+  "brand": {
+    "ink": "#0f172a",
+    "paper": "#f8fafc",
+    "accents": [
+      "#2563eb",
+      "#16a34a",
+      "#f59e0b"
+    ],
+    "mascot": false,
+    "name": "Pinglet",
+    "logo_letter": "P"
+  },
+  "style": "dark",
+  "story": "showcase",
+  "scenes": [
+    {
+      "type": "logo"
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "Send SMS and OTP",
+        "with one API"
+      ],
+      "underline": "SMS"
+    },
+    {
+      "type": "snippet",
+      "line": "Install in one line",
+      "label": "Node SDK",
+      "code": "npm install pinglet",
+      "status": "Installed"
+    },
+    {
+      "type": "terminal",
+      "title": "Send your first message",
+      "commands": [
+        {
+          "cmd": "curl -X POST api.pinglet.com/v1/messages",
+          "output": [
+            "✓ message queued",
+            "id msg_01HT7Y9S2K",
+            "delivery webhook pending"
+          ]
+        }
+      ],
+      "done": "Message sent",
+      "bg": "accent1"
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "Delivery receipts",
+        "by webhook"
+      ],
+      "underline": "receipts"
+    },
+    {
+      "type": "dashboard",
+      "title": "Delivery events",
+      "kpis": [
+        {
+          "label": "Messages",
+          "value": "12,480",
+          "delta": "+18%"
+        },
+        {
+          "label": "Delivered",
+          "value": "12,231",
+          "delta": "+18.4%"
+        },
+        {
+          "label": "Failed",
+          "value": "249",
+          "delta": "-0.2%"
+        }
+      ],
+      "chart_title": "SMS status",
+      "chart_note": "last 24 hours",
+      "bg": "accent2"
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "Automatic failover",
+        "across 190 countries"
+      ],
+      "underline": "failover"
+    },
+    {
+      "type": "toggle",
+      "line": "Test first, no risk",
+      "title": "Sandbox",
+      "items": [
+        {
+          "label": "Test numbers",
+          "sub": "Magic numbers for success and fail"
+        },
+        {
+          "label": "Webhook inspector",
+          "sub": "See delivery events in real time"
+        },
+        {
+          "label": "No carrier charges",
+          "sub": "Free to test before you ship"
+        }
+      ],
+      "bg": "accent3"
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "Built for",
+        "your stack"
+      ],
+      "underline": "Built"
+    },
+    {
+      "type": "chips",
+      "line": "Build with your stack",
+      "chips": [
+        {
+          "icon": "ph:terminal-bold",
+          "label": "Node.js"
+        },
+        {
+          "icon": "ph:code-bold",
+          "label": "Python"
+        },
+        {
+          "icon": "ph:rocket-bold",
+          "label": "Go"
+        }
+      ]
+    },
+    {
+      "type": "pricing",
+      "plan": "Pay as you go",
+      "price": "$0.008",
+      "period": "/message",
+      "badge": "No monthly fee",
+      "features": [
+        "SMS and OTP in one API",
+        "Automatic failover built in",
+        "Webhook delivery receipts",
+        "Sandbox with test numbers"
+      ],
+      "cta": "Start building"
+    },
+    {
+      "type": "end",
+      "cta": "Start with Pinglet",
+      "tagline": "One API for SMS and OTP"
+    }
+  ],
+  "grounding": []
+}
