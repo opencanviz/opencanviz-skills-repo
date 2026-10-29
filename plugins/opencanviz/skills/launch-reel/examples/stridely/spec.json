@@ -1,0 +1,137 @@
+{
+  "brand": {
+    "ink": "#1a1a2e",
+    "paper": "#fafafa",
+    "accents": [
+      "#ff5a3d",
+      "#2dd4bf",
+      "#3b82f6"
+    ],
+    "mascot": false,
+    "name": "Stridely",
+    "logo_letter": "S"
+  },
+  "style": "flat",
+  "story": "showcase",
+  "scenes": [
+    {
+      "type": "logo"
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "Run your best race",
+        "with Stridely"
+      ],
+      "underline": "best"
+    },
+    {
+      "type": "phone_app",
+      "bg": "accent1",
+      "line": "Live run screen",
+      "title": "Morning Run",
+      "value": "6.2 km",
+      "value_label": "Distance",
+      "rows": [
+        {
+          "icon": "ph:clock-fill",
+          "label": "Avg pace",
+          "value": "5:48 /km"
+        },
+        {
+          "icon": "ph:chart-line-fill",
+          "label": "Elevation",
+          "value": "84 m"
+        },
+        {
+          "icon": "ph:list-checks-fill",
+          "label": "Splits",
+          "value": "1k 5:42"
+        }
+      ],
+      "alert": {
+        "title": "Race pace target",
+        "body": "You're 4% below target pace."
+      }
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "A plan that adapts",
+        "when life happens"
+      ],
+      "underline": "adapts"
+    },
+    {
+      "type": "dashboard",
+      "bg": "accent2",
+      "title": "Marathon plan - week 8",
+      "kpis": [
+        {
+          "label": "This week",
+          "value": "42.5 km",
+          "delta": "+6%"
+        },
+        {
+          "label": "Long run",
+          "value": "18 km",
+          "delta": "+1 km"
+        },
+        {
+          "label": "Sessions",
+          "value": "4",
+          "delta": "-1"
+        }
+      ],
+      "chart_title": "Weekly volume",
+      "chart_note": "Adjusted post-miss"
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "Track every run",
+        "with GPS"
+      ],
+      "underline": "GPS"
+    },
+    {
+      "type": "toggle",
+      "line": "Sync your health stack",
+      "title": "Sharing and sync",
+      "items": [
+        {
+          "label": "Apple Health",
+          "sub": "Sync workouts and heart rate"
+        },
+        {
+          "label": "Strava",
+          "sub": "Share runs with your clubs"
+        },
+        {
+          "label": "Offline mode",
+          "sub": "Record with no signal"
+        }
+      ]
+    },
+    {
+      "type": "pricing",
+      "plan": "Stridely Coached",
+      "price": "$6.99",
+      "period": "/month",
+      "badge": "Coached plan",
+      "features": [
+        "Adaptive race-date plan",
+        "GPS run tracking offline",
+        "Apple Health and Strava sync",
+        "Pace, heart rate and splits"
+      ],
+      "cta": "Get a coached plan"
+    },
+    {
+      "type": "end",
+      "cta": "Get Stridely free",
+      "tagline": "Train smart. Run strong."
+    }
+  ],
+  "grounding": []
+}

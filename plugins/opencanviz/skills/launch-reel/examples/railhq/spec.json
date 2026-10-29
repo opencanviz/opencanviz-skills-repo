@@ -1,0 +1,238 @@
+{
+  "brand": {
+    "ink": "#0f172a",
+    "paper": "#f9fafb",
+    "accents": [
+      "#13243a",
+      "#c42b1c",
+      "#17704b"
+    ],
+    "mascot": false,
+    "name": "Railhq",
+    "logo_letter": "R"
+  },
+  "style": "classic",
+  "story": "problem_solution",
+  "scenes": [
+    {
+      "type": "lineup",
+      "line": "Five lean tools, one Pass",
+      "products": [
+        {
+          "name": "Kickrail",
+          "color": "#0f5e4b",
+          "icon": "ph:link-bold",
+          "desc": "Affiliate and referral tracking"
+        },
+        {
+          "name": "Mailrail",
+          "color": "#4f46e5",
+          "icon": "ph:envelope-bold",
+          "desc": "Email campaigns and signup forms"
+        },
+        {
+          "name": "Pathrail",
+          "color": "#0e6b62",
+          "icon": "ph:chart-bar-bold",
+          "desc": "Privacy friendly web analytics"
+        },
+        {
+          "name": "Demorail",
+          "color": "#3730a3",
+          "icon": "ph:play-bold",
+          "desc": "Interactive product demos"
+        },
+        {
+          "name": "Seorail",
+          "color": "#116d52",
+          "icon": "ph:magnifying-glass-bold",
+          "desc": "Keyword rankings and site audits"
+        }
+      ]
+    },
+    {
+      "type": "problem",
+      "line": "Indie founder stack",
+      "pains": [
+        "Paying $347/mo for 5 tools",
+        "Separate logins for every tool",
+        "Bloated features you never use"
+      ]
+    },
+    {
+      "type": "headline",
+      "lines": [
+        "Meet Railhq",
+        "One Pass, five lean tools"
+      ],
+      "underline": "Railhq",
+      "bg": "paper"
+    },
+    {
+      "type": "dashboard",
+      "product": {
+        "name": "Kickrail",
+        "color": "#0f5e4b"
+      },
+      "title": "Kickrail dashboard",
+      "kpis": [
+        {
+          "label": "Clicks",
+          "value": "12,480",
+          "delta": "+18%"
+        },
+        {
+          "label": "Referrals",
+          "value": "364",
+          "delta": "+12%"
+        },
+        {
+          "label": "Revenue",
+          "value": "$4.2k",
+          "delta": "+24%"
+        }
+      ],
+      "chart_title": "Referral clicks",
+      "chart_note": "Last 30 days"
+    },
+    {
+      "type": "inbox",
+      "product": {
+        "name": "Mailrail",
+        "color": "#4f46e5"
+      },
+      "line": "Inbox that works for you",
+      "items": [
+        {
+          "from": "Priya",
+          "subject": "New signup form",
+          "preview": "A lead just filled your Mailrail form on the pricing page."
+        },
+        {
+          "from": "Billing",
+          "subject": "Payment received",
+          "preview": "Your Mailrail invoice for this month is ready."
+        },
+        {
+          "from": "Dev team",
+          "subject": "Campaign sent",
+          "preview": "Your welcome sequence went out to 1,204 subscribers."
+        }
+      ],
+      "open": 0
+    },
+    {
+      "type": "funnel",
+      "product": {
+        "name": "Pathrail",
+        "color": "#0e6b62"
+      },
+      "line": "Revenue by channel",
+      "stages": [
+        {
+          "label": "Visits",
+          "value": "18,420"
+        },
+        {
+          "label": "Signups",
+          "value": "1,204"
+        },
+        {
+          "label": "Trials",
+          "value": "356"
+        },
+        {
+          "label": "Paid",
+          "value": "89"
+        }
+      ]
+    },
+    {
+      "type": "doc_edit",
+      "product": {
+        "name": "Demorail",
+        "color": "#3730a3"
+      },
+      "icon": "ph:play-bold",
+      "title": "Product Demo",
+      "subtitle": "Onboarding walkthrough",
+      "bullets": [
+        "Record a real app flow",
+        "AI writes the step by step",
+        "Publish in minutes"
+      ],
+      "prompt": "Write demo steps from this video",
+      "chip": "App recording",
+      "output": "Step 1: Click Sign up. Step 2: Connect Stripe. Step 3: Invite a teammate. Your interactive demo is ready to share."
+    },
+    {
+      "type": "browser",
+      "product": {
+        "name": "Seorail",
+        "color": "#116d52"
+      },
+      "url": "app.railhq.com/seorail",
+      "title": "Seorail site audit",
+      "subtitle": "Keyword rankings, audits, and AI visibility tracking for your whole site.",
+      "cta": "Run audit",
+      "nav": [
+        "Rankings",
+        "Audits",
+        "AI Visibility"
+      ],
+      "features": [
+        {
+          "icon": "ph:magnifying-glass-bold",
+          "label": "Keywords"
+        },
+        {
+          "icon": "ph:file-text-bold",
+          "label": "Site audit"
+        },
+        {
+          "icon": "ph:brain-bold",
+          "label": "AI tracking"
+        }
+      ]
+    },
+    {
+      "type": "receipt",
+      "line": "What you pay today",
+      "title": "Your current stack",
+      "items": [
+        {
+          "name": "Rewardful",
+          "price": "$99"
+        },
+        {
+          "name": "Brevo",
+          "price": "$99"
+        },
+        {
+          "name": "Plausible",
+          "price": "$99"
+        },
+        {
+          "name": "Storylane",
+          "price": "$50"
+        }
+      ],
+      "total": "$347",
+      "new_price": "$29",
+      "new_label": "Railhq Pass"
+    },
+    {
+      "type": "stat",
+      "value": "$29",
+      "label": "Railhq Pass, founding price",
+      "sub": "Five tools, one login, one low price",
+      "bg": "accent2"
+    },
+    {
+      "type": "end",
+      "cta": "Get the Railhq Pass",
+      "tagline": "Lean tools for founders"
+    }
+  ],
+  "grounding": []
+}

@@ -9,8 +9,8 @@
     {
       "name": "opencanviz",
       "source": "./plugins/opencanviz",
-      "description": "Write valid openCanviz video and diagram JSON you can paste into Import on opencanviz.com.",
-      "version": "1.0.0",
+      "description": "Write valid openCanviz video and diagram JSON you can paste into Import on opencanviz.com, and build product launch reels from a short spec.",
+      "version": "1.1.0",
       "author": {
         "name": "openCanviz",
         "url": "https://opencanviz.com"
@@ -25,11 +25,13 @@
         "animation",
         "diagram",
         "json",
-        "explainer"
+        "explainer",
+        "launch-video",
+        "promo"
       ]
     }
   ],
   "metadata": {
-    "version": "1.0.0"
+    "version": "1.1.0"
   }
 }

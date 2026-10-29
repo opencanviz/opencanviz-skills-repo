@@ -1,0 +1,13 @@
+{
+  "name": "opencanviz-launch-reel-preview",
+  "private": true,
+  "type": "module",
+  "description": "Renders a launch reel contact sheet or MP4 locally with @opencanviz/player.",
+  "scripts": {
+    "setup": "npm install && npx playwright install chromium"
+  },
+  "dependencies": {
+    "@opencanviz/player": "0.1.0",
+    "playwright": "^1.48.0"
+  }
+}
